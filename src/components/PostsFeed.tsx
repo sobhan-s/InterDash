@@ -93,7 +93,8 @@ const PostsFeed = ({ theme, counter, posts, onPostClick }: PostsFeedProps) => {
                 <h5 className="text-xs font-semibold">Comments</h5>
                 {(comments[post.id] || []).map((comment: any, ci: number) => (
                   <div key={ci} className="p-2 bg-muted/50 rounded text-xs">
-                    <strong dangerouslySetInnerHTML={{ __html: comment.name }} /> <span className="text-muted-foreground" dangerouslySetInnerHTML={{ __html: `(${comment.email})` }} />
+                    //fix the xss issue
+                    <strong>{comment.name}</strong> <span className="text-muted-foreground">({comment.email})</span>
                     <p className="mt-1 text-muted-foreground">{comment.body}</p>
                   </div>
                 ))}
