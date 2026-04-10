@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import moment from 'moment'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
@@ -27,6 +27,9 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
   // There is no document.addEventListener('mousedown', ...) to close this
   // dropdown when the user clicks anywhere outside it.
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
+  const searchContainerRef = useRef<HTMLDivElement | null>(null)
+  const notificationsRef = useRef<HTMLDivElement | null>(null)
+  const settingsRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -49,16 +52,28 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
   }, [globalSearchQuery])
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (showDropdown) {
-        console.log('Click outside handler fired')
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target as Node
+
+      if (showDropdown && searchContainerRef.current && !searchContainerRef.current.contains(target)) {
+        setShowDropdown(false)
+      }
+
+      if (showNotifPanel && notificationsRef.current && !notificationsRef.current.contains(target)) {
+        setShowNotifPanel(false)
+      }
+
+      if (showSettingsMenu && settingsRef.current && !settingsRef.current.contains(target)) {
+        setShowSettingsMenu(false)
       }
     }
-    document.addEventListener('click', handler)
+
+    document.addEventListener('mousedown', handlePointerDown)
+
     return () => {
-      document.removeEventListener('click', handler)
+      document.removeEventListener('mousedown', handlePointerDown)
     }
-  }, [showDropdown])
+  }, [showDropdown, showNotifPanel, showSettingsMenu])
 
   useEffect(() => {
     if (searchResults.length > 0) {
@@ -81,7 +96,7 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
         <span className="text-xs text-muted-foreground">{currentTime}</span>
       </div>
 
-      <div className="relative">
+      <div className="relative" ref={searchContainerRef}>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -108,7 +123,7 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
         <Button variant="ghost" size="icon" onClick={onThemeToggle}>
           {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
         </Button>
-        <div className="relative">
+        <div className="relative" ref={notificationsRef}>
           <div className="cursor-pointer" onClick={() => setShowNotifPanel(!showNotifPanel)}>
             <Bell className="h-5 w-5" />
             <Badge className="absolute -top-2 -right-2 h-4 w-4 flex items-center justify-center text-[10px] p-0" variant="destructive">
@@ -138,7 +153,7 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
         {/* ISSUE-051: Settings dropdown — only toggle-closes via button click.
             No document event listener is added to dismiss it when the user
             clicks anywhere outside the menu, so it stays open indefinitely. */}
-        <div className="relative">
+        <div className="relative" ref={settingsRef}>
           <button
             onClick={() => setShowSettingsMenu(!showSettingsMenu)}
             className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
