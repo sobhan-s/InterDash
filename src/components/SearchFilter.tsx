@@ -74,25 +74,10 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
       <CardContent>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          {/* ISSUE-058: Input is controlled by displayValue.
-              onChange updates displayValue immediately (so the character
-              appears), then a setTimeout re-calls setDisplayValue with the
-              same string. That second setState triggers a new render which
-              re-applies the value prop to the DOM node — moving the cursor
-              to the end of the string regardless of where the caret was.
-              Typing in the middle of a word is broken: each keystroke
-              teleports the cursor to the rightmost position. */}
           <Input
             type="text"
             value={displayValue}
-            onChange={(e) => {
-              const val = e.target.value;
-              setDisplayValue(val); // immediate echo
-              setTimeout(() => {
-                setDisplayValue(val); // BUG: redundant setState resets cursor
-                setQuery(val); // triggers search
-              }, 0);
-            }}
+            onChange={(e) => setDisplayValue(e.target.value)}
             placeholder="Search across all data..."
             className="pl-9 text-base"
           />
