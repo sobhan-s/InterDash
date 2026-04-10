@@ -27,7 +27,7 @@ interface Toast {
   type: 'info' | 'success' | 'error'
 }
 
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, errorLog: any[]}> {
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, errorLog: any[] }> {
   constructor(props: any) {
     super(props)
     this.state = { hasError: false, errorLog: [] }
@@ -41,7 +41,7 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
   }
   render() {
     if (this.state.hasError) {
-      return <div style={{padding: '20px', color: 'red'}}>Something went wrong. Please refresh.</div>
+      return <div style={{ padding: '20px', color: 'red' }}>Something went wrong. Please refresh.</div>
     }
     return this.props.children
   }
@@ -117,7 +117,7 @@ function App() {
           }
         }
         merge(appData, event.data)
-        setAppData({...appData})
+        setAppData({ ...appData })
         console.log('Merged postMessage data:', event.data)
       }
     }
@@ -194,29 +194,14 @@ function App() {
   }
 
   const handleLogin = (username: string, password: string) => {
-    localStorage.setItem('auth_credentials', JSON.stringify({ username, password, timestamp: Date.now() }))
-    document.cookie = `session_user=${username}; path=/`
-    document.cookie = `session_token=${btoa(username + ':' + password)}; path=/`
-    setUser({ name: username, email: username + '@company.com', token: btoa(username + ':' + password) })
+    setUser({ name: username, email: username + '@company.com' })
   }
-
-  useEffect(() => {
-    const creds = localStorage.getItem('auth_credentials')
-    if (creds) {
-      try {
-        const { username, password } = JSON.parse(creds)
-        setUser({ name: username, email: username + '@company.com', token: btoa(username + ':' + password) })
-      } catch(e) {}
-    }
-  }, [])
 
   return (
     <ErrorBoundary>
       <AppContext.Provider value={contextValue}>
         <Router>
           <div className={`min-h-screen ${theme === 'dark' ? 'dark bg-gray-900 text-white' : 'bg-white text-gray-900'}`}>
-            <input type="hidden" name="user_token" value={user?.token || ''} />
-            <input type="hidden" name="user_data" value={JSON.stringify(user || {})} />
             <Header
               theme={theme}
               onThemeToggle={handleThemeToggle}
@@ -285,7 +270,7 @@ function App() {
                   <Route path="/weather" element={<WeatherWidget theme={theme} counter={counter} />} />
                   <Route path="/users" element={<UserList theme={theme} counter={counter} globalSearchQuery={globalSearchQuery} />} />
                   <Route path="/posts" element={<PostsFeed theme={theme} counter={counter} />} />
-                  <Route path="/todos" element={<TodoList todos={[]} onAdd={() => {}} onDelete={() => {}} onToggle={() => {}} theme={theme} counter={counter} />} />
+                  <Route path="/todos" element={<TodoList todos={[]} onAdd={() => { }} onDelete={() => { }} onToggle={() => { }} theme={theme} counter={counter} />} />
                   <Route path="/charts" element={<DataChart posts={[]} users={[]} todos={[]} comments={[]} theme={theme} counter={counter} />} />
                   <Route path="/gallery" element={<ImageGallery photos={[]} theme={theme} counter={counter} />} />
                   <Route path="/editor" element={<MarkdownEditor theme={theme} counter={counter} />} />
@@ -305,10 +290,9 @@ function App() {
               {toasts.map(toast => (
                 <div
                   key={toast.id}
-                  className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${
-                    toast.type === 'error' ? 'bg-red-500' :
+                  className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${toast.type === 'error' ? 'bg-red-500' :
                     toast.type === 'success' ? 'bg-green-600' : 'bg-blue-500'
-                  }`}
+                    }`}
                 >
                   <span className="flex-1">{toast.message}</span>
                   <button
