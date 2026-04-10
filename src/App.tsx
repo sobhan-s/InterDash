@@ -396,7 +396,6 @@ function App() {
                           notifications={notifications}
                           globalSearchQuery={globalSearchQuery}
                           setGlobalSearchQuery={setGlobalSearchQuery}
-                          counter={counter}
                           sidebarOpen={sidebarOpen}
                           getFilteredData={getFilteredData}
                           appData={appData}
