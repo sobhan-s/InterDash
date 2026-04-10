@@ -544,7 +544,13 @@ const Dashboard = ({
                         placeholder="Your name"
                         className="h-8 text-sm mt-1"
                       />
+
                       {/* BUG ISSUE-050: validationErrors.profileName is never rendered here */}
+                      {validationErrors.profileName && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {validationErrors.profileName}
+                          </p>
+                        )}
                     </div>
                     <div>
                       <label className="text-xs font-medium">Email</label>
@@ -555,6 +561,11 @@ const Dashboard = ({
                         className="h-8 text-sm mt-1"
                       />
                       {/* BUG ISSUE-050: validationErrors.profileEmail is never rendered here */}
+                      {validationErrors.profileName && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {validationErrors.profileName}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="text-xs font-medium">Bio</label>
@@ -565,6 +576,11 @@ const Dashboard = ({
                         className="h-8 text-sm mt-1"
                       />
                       {/* BUG ISSUE-050: validationErrors.profileBio is never rendered here */}
+                      {validationErrors.profileBio && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {validationErrors.profileBio}
+                        </p>
+                      )}
                     </div>
                     <Button
                       size="sm"
