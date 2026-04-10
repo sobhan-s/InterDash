@@ -179,10 +179,10 @@ const Header = ({
                 >
                   <div>{notif.body?.slice(0, 80)}</div>
                   {/* ISSUE-052: #aaa on #fff ≈ 2.3:1 contrast — fails WCAG AA */}
-                  <div style={{ color: '#aaa', backgroundColor: '#fff' }} className="mt-1">
+                  <div className="mt-1 text-foreground bg-muted">
                     {notif.email}
                   </div>
-                  <div style={{ color: '#bbb', fontSize: '10px' }}>just now</div>
+                  <div className='text-[10px] text-muted-foreground bg-muted'>just now</div>
                 </div>
               ))}
               <div className="p-2 text-center">
@@ -210,14 +210,7 @@ const Header = ({
           </button>
           {showSettingsMenu && (
             <div
-              className="absolute top-full right-0 mt-1 w-[180px] rounded-md shadow-lg border z-50"
-              style={{ backgroundColor: '#ffffff' }}
-            >
-              {/* ISSUE-052: Hardcoded low-contrast color pairs on menu items.
-                  Label text uses #bbb on #fff (contrast ratio ≈ 1.9:1, below
-                  the WCAG AA minimum of 4.5:1 for normal-size text).
-                  Status and caption lines use #c0c0c0 on #f8f8f8 — similarly
-                  failing contrast requirements. */}
+              className="absolute top-full right-0 mt-1 w-[180px] rounded-md shadow-lg border z-50 bg-popover">
               {[
                 { label: 'Account', status: 'Active' },
                 { label: 'Preferences', status: 'Default' },
@@ -233,9 +226,9 @@ const Header = ({
                     setShowSettingsMenu(false);
                   }}
                 >
-                  <div style={{ color: '#bbb', fontSize: '13px' }}>{item.label}</div>
+                  <div className='text-[13px] text-foreground bg-background'>{item.label}</div>
                   {item.status && (
-                    <div style={{ color: '#c0c0c0', fontSize: '11px', backgroundColor: '#f8f8f8' }}>
+                    <div className='text-[11px] text-muted-foreground bg-muted'>
                       {item.status}
                     </div>
                   )}
@@ -245,7 +238,6 @@ const Header = ({
           )}
         </div>
 
-        {/* ISSUE-052: Notification item timestamps rendered with #aaa on #fff */}
         <span className="text-xs text-muted-foreground">Counter: {counter}</span>
       </div>
     </header>
