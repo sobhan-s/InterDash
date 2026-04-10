@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { List } from 'lucide-react'
 
@@ -28,21 +28,14 @@ const VirtualizedFeed = ({
   itemHeight = 56,
   visibleCount = 8,
 }: VirtualizedFeedProps) => {
-  const containerRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
 
-  // BUG ISSUE-060: Resets scroll to the top on every items/counter change.
-  // The user's reading position is lost every second because `counter`
-  // increments every second and is listed as a dependency.
-  useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = 0
-    }
-    setScrollTop(0)
-  }, [items, counter])
+  // Natively handle scroll bounds to prevent gap without relying on useLayoutEffect
+  const maxScrollTop = Math.max(0, items.length * itemHeight - visibleCount * itemHeight)
+  const clampedScrollTop = Math.min(scrollTop, maxScrollTop)
 
   const totalHeight = items.length * itemHeight
-  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - 1)
+  const startIndex = Math.max(0, Math.floor(clampedScrollTop / itemHeight) - 1)
   const endIndex = Math.min(startIndex + visibleCount + 3, items.length)
   const visibleItems = items.slice(startIndex, endIndex)
   const offsetY = startIndex * itemHeight
@@ -57,7 +50,6 @@ const VirtualizedFeed = ({
       </CardHeader>
       <CardContent>
         <div
-          ref={containerRef}
           className="relative overflow-auto border rounded bg-muted/20"
           style={{ height: `${visibleCount * itemHeight}px` }}
           onScroll={(e) =>
@@ -66,32 +58,33 @@ const VirtualizedFeed = ({
         >
           <div style={{ height: `${totalHeight}px`, position: 'relative' }}>
             <div style={{ transform: `translateY(${offsetY}px)` }}>
-              {visibleItems.map((item: any, i: number) => (
-                // BUG ISSUE-060: Keyed by computed index, not stable item.id.
-                // Any re-order causes every rendered row to remount.
-                <div
-                  key={startIndex + i}
-                  style={{ height: `${itemHeight}px` }}
-                  className="flex items-center px-3 border-b text-sm gap-3 bg-background"
-                >
-                  <span className="text-muted-foreground text-xs w-8 shrink-0 text-right">
-                    {startIndex + i + 1}
-                  </span>
-                  <span className="truncate flex-1">
-                    {item.title || item.name || JSON.stringify(item).slice(0, 70)}
-                  </span>
-                  {item.userId && (
-                    <span className="text-[10px] text-muted-foreground shrink-0">
-                      u/{item.userId}
+              {visibleItems.map((item: any, i: number) => {
+                const stableKey = item.id ?? item.uuid ?? item.slug ?? item.name ?? `${item.title ?? 'item'}-${item.userId ?? startIndex + i}`
+                return (
+                  <div
+                    key={stableKey}
+                    style={{ height: `${itemHeight}px` }}
+                    className="flex items-center px-3 border-b text-sm gap-3 bg-background"
+                  >
+                    <span className="text-muted-foreground text-xs w-8 shrink-0 text-right">
+                      {startIndex + i + 1}
                     </span>
-                  )}
-                </div>
-              ))}
+                    <span className="truncate flex-1">
+                      {item.title || item.name || JSON.stringify(item).slice(0, 70)}
+                    </span>
+                    {item.userId && (
+                      <span className="text-[10px] text-muted-foreground shrink-0">
+                        u/{item.userId}
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
         <p className="text-[11px] text-muted-foreground mt-1">
-          Rows {startIndex + 1}–{endIndex} of {items.length} visible &mdash; scroll resets to top every second
+          Rows {startIndex + 1}–{endIndex} of {items.length} visible
         </p>
       </CardContent>
     </Card>
