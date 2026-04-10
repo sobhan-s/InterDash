@@ -1,79 +1,170 @@
-import React, { useState, useEffect, useRef, useContext } from 'react'
-import _ from 'lodash'
-import moment from 'moment'
-import CryptoTracker from './CryptoTracker'
-import WeatherWidget from './WeatherWidget'
-import UserList from './UserList'
-import PostsFeed from './PostsFeed'
-import TodoList from './TodoList'
-import DataChart from './DataChart'
-import ImageGallery from './ImageGallery'
-import MarkdownEditor from './MarkdownEditor'
-import Analytics from './Analytics'
-import SearchFilter from './SearchFilter'
-import ThreeScene from './ThreeScene'
-import ReportGenerator from './ReportGenerator'
-import D3Visualization from './D3Visualization'
-import MathPlayground from './MathPlayground'
-import DraggableList from './DraggableList'
-import CustomTabPanel from './CustomTabPanel'
-import VirtualizedFeed from './VirtualizedFeed'
-import { Button } from './ui/button'
-import { Badge } from './ui/badge'
-import { Card, CardContent } from './ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
-import { Input } from './ui/input'
-import { RefreshCw, LayoutDashboard, FileText, CheckSquare, Image, Loader2 } from 'lucide-react'
-import { AppContext } from '../App'
+import React, { useState, useEffect, useRef, useContext, useCallback } from 'react';
+import _ from 'lodash';
+import moment from 'moment';
+import CryptoTracker from './CryptoTracker';
+import WeatherWidget from './WeatherWidget';
+import UserList from './UserList';
+import PostsFeed from './PostsFeed';
+import TodoList from './TodoList';
+import DataChart from './DataChart';
+import ImageGallery from './ImageGallery';
+import MarkdownEditor from './MarkdownEditor';
+import Analytics from './Analytics';
+import SearchFilter from './SearchFilter';
+import ThreeScene from './ThreeScene';
+import ReportGenerator from './ReportGenerator';
+import D3Visualization from './D3Visualization';
+import MathPlayground from './MathPlayground';
+import DraggableList from './DraggableList';
+import CustomTabPanel from './CustomTabPanel';
+import VirtualizedFeed from './VirtualizedFeed';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Card, CardContent } from './ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Input } from './ui/input';
+import { RefreshCw, LayoutDashboard, FileText, CheckSquare, Image, Loader2 } from 'lucide-react';
+import { AppContext } from '../App';
 
 // GOD COMPONENT - Everything is here
 interface DashboardProps {
-  theme: string
-  user: any
-  notifications: any[]
-  globalSearchQuery: string
-  setGlobalSearchQuery: (q: string) => void
-  counter: number
-  sidebarOpen: boolean
-  getFilteredData: (data: any[], query: string) => any[]
-  appData: any
-  setAppData: (data: any) => void
-  handleThemeToggle: () => void
+  theme: string;
+  user: any;
+  notifications: any[];
+  globalSearchQuery: string;
+  setGlobalSearchQuery: (q: string) => void;
+  counter: number;
+  sidebarOpen: boolean;
+  getFilteredData: (data: any[], query: string) => any[];
+  appData: any;
+  setAppData: (data: any) => void;
+  handleThemeToggle: () => void;
 }
 
-const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSearchQuery, counter, sidebarOpen, getFilteredData, appData, setAppData, handleThemeToggle }: DashboardProps) => {
-  const [cryptoData, setCryptoData] = useState<any[]>([])
-  const [weatherData, setWeatherData] = useState<any[]>([])
-  const [users, setUsers] = useState<any[]>([])
-  const [posts, setPosts] = useState<any[]>([])
-  const [todos, setTodos] = useState<any[]>([])
-  const [comments, setComments] = useState<any[]>([])
-  const [albums, setAlbums] = useState<any[]>([])
-  const [photos, setPhotos] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('overview')
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
-  const [filterText, setFilterText] = useState('')
-  const [selectedItems, setSelectedItems] = useState<any[]>([])
-  const [modalOpen, setModalOpen] = useState(false)
-  const [modalContent, setModalContent] = useState<any>(null)
-  const [page, setPage] = useState(1)
-  const [itemsPerPage] = useState(10)
-  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({})
-  const [editMode, setEditMode] = useState(false)
-  const [formData, setFormData] = useState<Record<string, any>>({})
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({})
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null)
-  const [refreshCount, setRefreshCount] = useState(0)
+const Dashboard = ({
+  theme,
+  user,
+  notifications,
+  globalSearchQuery,
+  setGlobalSearchQuery,
+  counter,
+  sidebarOpen,
+  getFilteredData,
+  appData,
+  setAppData,
+  handleThemeToggle,
+}: DashboardProps) => {
+  const [cryptoData, setCryptoData] = useState<any[]>([]);
+  const [weatherData, setWeatherData] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [posts, setPosts] = useState<any[]>([]);
+  const [todos, setTodos] = useState<any[]>([]);
+  const [comments, setComments] = useState<any[]>([]);
+  const [albums, setAlbums] = useState<any[]>([]);
+  const [photos, setPhotos] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [filterText, setFilterText] = useState('');
+  const [selectedItems, setSelectedItems] = useState<any[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState<any>(null);
+  const [page, setPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [editMode, setEditMode] = useState(false);
+  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [refreshCount, setRefreshCount] = useState(0);
 
-  const { addToast } = useContext(AppContext)
-  const mountedRef = useRef(false)
+  const { addToast } = useContext(AppContext);
+  const toggleTimeoutsRef = useRef<number[]>([]);
+
+  const fetchAllData = useCallback(async (signal?: AbortSignal) => {
+    setLoading(true);
+    console.log('Fetching all data...');
+
+    try {
+      const usersRes = await fetch('https://jsonplaceholder.typicode.com/users', { signal });
+      const usersData = await usersRes.json();
+      if (signal?.aborted) return;
+      setUsers(usersData);
+
+      const postsRes = await fetch('https://jsonplaceholder.typicode.com/posts', { signal });
+      const postsData = await postsRes.json();
+      if (signal?.aborted) return;
+      setPosts(postsData);
+
+      const todosRes = await fetch('https://jsonplaceholder.typicode.com/todos', { signal });
+      const todosData = await todosRes.json();
+      if (signal?.aborted) return;
+      setTodos(todosData);
+
+      const commentsRes = await fetch('https://jsonplaceholder.typicode.com/comments', { signal });
+      const commentsData = await commentsRes.json();
+      if (signal?.aborted) return;
+      setComments(commentsData);
+
+      const albumsRes = await fetch('https://jsonplaceholder.typicode.com/albums', { signal });
+      const albumsData = await albumsRes.json();
+      if (signal?.aborted) return;
+      setAlbums(albumsData);
+
+      const photosRes = await fetch('https://jsonplaceholder.typicode.com/photos', { signal });
+      const photosData = await photosRes.json();
+      if (signal?.aborted) return;
+      setPhotos(photosData);
+
+      const cryptoRes = await fetch(
+        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1',
+        { signal },
+      );
+      const cryptoJson = await cryptoRes.json();
+      if (signal?.aborted) return;
+      setCryptoData(cryptoJson);
+
+      const cities = [
+        { name: 'London', lat: 51.5, lon: -0.12 },
+        { name: 'New York', lat: 40.71, lon: -74.01 },
+        { name: 'Tokyo', lat: 35.68, lon: 139.69 },
+        { name: 'Sydney', lat: -33.87, lon: 151.21 },
+        { name: 'Paris', lat: 48.85, lon: 2.35 },
+      ];
+
+      const weatherResults: any[] = [];
+      for (const city of cities) {
+        const wRes = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true`,
+          { signal },
+        );
+        const wData = await wRes.json();
+        if (signal?.aborted) return;
+        weatherResults.push({ ...city, weather: wData.current_weather });
+      }
+      setWeatherData(weatherResults);
+
+      setLoading(false);
+      setLastUpdated(moment().format('HH:mm:ss'));
+    } catch (err: any) {
+      if (err?.name === 'AbortError') {
+        return;
+      }
+      console.log('error', err);
+      setError('Something went wrong');
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    console.log('Dashboard mounted/updated', { theme, counter })
-    fetchAllData()
-  }, [theme, counter])
+    console.log('Dashboard mounted/updated', { theme, counter });
+    const controller = new AbortController();
+    fetchAllData(controller.signal);
+    return () => {
+      controller.abort();
+    };
+  }, [theme, refreshCount, counter, fetchAllData]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -82,205 +173,157 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
     }
     window.addEventListener('resize', handleResize)
     window.addEventListener('scroll', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('scroll', handleResize);
+    };
   }, [])
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setLastUpdated(moment().format('HH:mm:ss'))
-      console.log('Auto-refresh tick')
-    }, 5000)
-  }, [])
+      setLastUpdated(moment().format('HH:mm:ss'));
+      console.log('Auto-refresh tick');
+    }, 5000);
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     const pollTimer = setInterval(async () => {
       try {
-        const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=1')
-        const data = await res.json()
-        console.log('Poll result:', data)
-      } catch(e) { /* silent */ }
-    }, 3000)
-  }, [])
-
-  useEffect(() => {
-    const dashboardState = {
-      todos, posts, users, comments, photos, albums,
-      activeTab, page, filterText, sortOrder,
-      selectedItems, formData, counter,
-    }
-    localStorage.setItem('dashboardState', JSON.stringify(dashboardState))
-    console.log('Dashboard state persisted, size:', JSON.stringify(dashboardState).length)
-  }, [counter])
-
-  useEffect(() => {
-    if (photos.length > 0) {
-      const cloned = JSON.parse(JSON.stringify(photos))
-      console.log('Deep cloned', cloned.length, 'photos for no reason')
-    }
-  }, [counter])
-
-  useEffect(() => {
-    const pollTimer = setInterval(async () => {
-      try {
-        const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=1')
-        const data = await res.json()
-        console.log('Poll result:', data)
-      } catch(e) { /* silent */ }
-    }, 3000)
-  }, [])
-
-  useEffect(() => {
-    const dashboardState = {
-      todos, posts, users, comments, photos, albums,
-      activeTab, page, filterText, sortOrder,
-      selectedItems, formData, counter,
-    }
-    localStorage.setItem('dashboardState', JSON.stringify(dashboardState))
-    console.log('Dashboard state persisted, size:', JSON.stringify(dashboardState).length)
-  }, [counter])
-
-  useEffect(() => {
-    if (photos.length > 0) {
-      const cloned = JSON.parse(JSON.stringify(photos))
-      console.log('Deep cloned', cloned.length, 'photos for no reason')
-    }
-  }, [counter])
-
-  const fetchAllData = async () => {
-    setLoading(true)
-    console.log('Fetching all data...')
-
-    try {
-
-      const usersRes = await fetch('https://jsonplaceholder.typicode.com/users')
-      const usersData = await usersRes.json()
-      setUsers(usersData)
-
-      const postsRes = await fetch('https://jsonplaceholder.typicode.com/posts')
-      const postsData = await postsRes.json()
-      setPosts(postsData)
-
-      const todosRes = await fetch('https://jsonplaceholder.typicode.com/todos')
-      const todosData = await todosRes.json()
-      setTodos(todosData)
-
-      const commentsRes = await fetch('https://jsonplaceholder.typicode.com/comments')
-      const commentsData = await commentsRes.json()
-      setComments(commentsData)
-
-      const albumsRes = await fetch('https://jsonplaceholder.typicode.com/albums')
-      const albumsData = await albumsRes.json()
-      setAlbums(albumsData)
-
-      const photosRes = await fetch('https://jsonplaceholder.typicode.com/photos')
-      const photosData = await photosRes.json()
-      setPhotos(photosData)
-
-      // Fetch crypto
-      const cryptoRes = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1')
-      const cryptoJson = await cryptoRes.json()
-      setCryptoData(cryptoJson)
-
-      // Fetch weather for multiple cities
-      const cities = [
-        { name: 'London', lat: 51.5, lon: -0.12 },
-        { name: 'New York', lat: 40.71, lon: -74.01 },
-        { name: 'Tokyo', lat: 35.68, lon: 139.69 },
-        { name: 'Sydney', lat: -33.87, lon: 151.21 },
-        { name: 'Paris', lat: 48.85, lon: 2.35 },
-      ]
-
-      const weatherResults: any[] = []
-      for (const city of cities) {
-        const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true`)
-        const wData = await wRes.json()
-        weatherResults.push({ ...city, weather: wData.current_weather })
+        const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=1');
+        const data = await res.json();
+        console.log('Poll result:', data);
+      } catch (e) {
+        /* silent */
       }
-      setWeatherData(weatherResults)
+    }, 3000);
+    return () => {
+      clearInterval(pollTimer);
+    };
+  }, []);
 
-      setLoading(false)
-      setLastUpdated(moment().format('HH:mm:ss'))
-    } catch (err) {
-      console.log('error', err)
-      setError('Something went wrong')
-      setLoading(false)
+  useEffect(() => {
+    const dashboardState = {
+      todos,
+      posts,
+      users,
+      comments,
+      photos,
+      albums,
+      activeTab,
+      page,
+      filterText,
+      sortOrder,
+      selectedItems,
+      formData,
+    };
+    localStorage.setItem('dashboardState', JSON.stringify(dashboardState));
+    console.log('Dashboard state persisted, size:', JSON.stringify(dashboardState).length);
+  }, [
+    todos,
+    posts,
+    users,
+    comments,
+    photos,
+    albums,
+    activeTab,
+    page,
+    filterText,
+    sortOrder,
+    selectedItems,
+    formData,
+  ]);
+
+  useEffect(() => {
+    if (photos.length > 0) {
+      const cloned = JSON.parse(JSON.stringify(photos));
+      console.log('Deep cloned', cloned.length, 'photos for no reason');
     }
-  }
+  }, [photos]);
 
   const getSortedAndFilteredPosts = () => {
-    console.log('Sorting and filtering posts...')
-    let filtered = posts
+    console.log('Sorting and filtering posts...');
+    let filtered = posts;
 
     if (filterText) {
-      filtered = posts.filter(p =>
-        p.title.toLowerCase().includes(filterText.toLowerCase()) ||
-        p.body.toLowerCase().includes(filterText.toLowerCase())
-      )
+      filtered = posts.filter(
+        (p) =>
+          p.title.toLowerCase().includes(filterText.toLowerCase()) ||
+          p.body.toLowerCase().includes(filterText.toLowerCase()),
+      );
     }
 
-    const sorted = _.orderBy(filtered, ['id'], [sortOrder])
+    const sorted = _.orderBy(filtered, ['id'], [sortOrder]);
 
    //removed fibnocci recursive function due to heavy computation and replaced with simple sort and filter logic. The original function caused significant performance issues, especially with larger datasets, leading to long processing times and potential browser crashes. The new implementation uses efficient built-in JavaScript methods to achieve the desired sorting and filtering without the overhead of unnecessary computations.
 
-    return sorted
-  }
+    return sorted;
+  };
 
   const handleAddTodo = (text: string) => {
-    const newTodo = { id: todos.length + 1, title: text, completed: false, userId: 1 }
-    todos.push(newTodo) // Direct mutation!
-    setTodos(todos) // React won't detect this change
-  }
+    const newTodo = { id: todos.length + 1, title: text, completed: false, userId: 1 };
+    todos.push(newTodo); // Direct mutation!
+    setTodos(todos); // React won't detect this change
+  };
 
   const handleDeleteTodo = (id: number) => {
-    const index = todos.findIndex(t => t.id === id)
-    todos.splice(index, 1) // Direct mutation!
-    setTodos(todos)
-  }
+    const index = todos.findIndex((t) => t.id === id);
+    todos.splice(index, 1); // Direct mutation!
+    setTodos(todos);
+  };
 
   const handleToggleTodo = (id: number) => {
-    setTimeout(() => {
-      const updated = todos.map(t =>
-        t.id === id ? { ...t, completed: !t.completed } : t
-      )
-      setTodos(updated)
-    }, 500)
-  }
+    const timeoutId = window.setTimeout(() => {
+      const updated = todos.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t));
+      setTodos(updated);
+    }, 500);
+    toggleTimeoutsRef.current.push(timeoutId);
+  };
+
+  useEffect(() => {
+    return () => {
+      toggleTimeoutsRef.current.forEach(clearTimeout);
+    };
+  }, []);
 
   const handleSelectItem = (item: any) => {
-    selectedItems.push(item)
-    setSelectedItems(selectedItems)
-  }
+    selectedItems.push(item);
+    setSelectedItems(selectedItems);
+  };
 
   const getPaginatedData = (data: any[]) => {
-    const start = (page - 1) * itemsPerPage
-    const end = start + itemsPerPage + 1
-    return data.slice(start, end)
-  }
+    const start = (page - 1) * itemsPerPage;
+    const end = start + itemsPerPage + 1;
+    return data.slice(start, end);
+  };
 
   const totalPages = (data: any[]) => {
-    return Math.floor(data.length / itemsPerPage)
-  }
+    return Math.floor(data.length / itemsPerPage);
+  };
 
   const handleFormChange = (field: string, value: any) => {
-    setFormData({ [field]: value })
-  }
+    setFormData({ [field]: value });
+  };
 
   // ISSUE-050: validateForm populates validationErrors but the JSX form
   // below never renders those error messages next to the fields.
   // Users see no feedback when they submit invalid data.
   const validateForm = () => {
-    const errors: Record<string, string> = {}
+    const errors: Record<string, string> = {};
     if (!formData.profileName || formData.profileName.trim().length < 2) {
-      errors.profileName = 'Name must be at least 2 characters'
+      errors.profileName = 'Name must be at least 2 characters';
     }
     if (!formData.profileEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.profileEmail)) {
-      errors.profileEmail = 'Enter a valid email address'
+      errors.profileEmail = 'Enter a valid email address';
     }
     if (!formData.profileBio || formData.profileBio.length > 200) {
-      errors.profileBio = 'Bio must be between 1 and 200 characters'
+      errors.profileBio = 'Bio must be between 1 and 200 characters';
     }
-    setValidationErrors(errors)
-    return Object.keys(errors).length === 0
-  }
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   if (loading) {
     return (
@@ -290,14 +333,14 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
         <p className="text-muted-foreground text-sm mt-1">Fetching data from multiple APIs...</p>
         <p className="text-muted-foreground text-xs mt-1">Time elapsed: {counter}s</p>
       </div>
-    )
+    );
   }
 
   if (error) {
-    console.log('Dashboard error state but continuing render...')
+    console.log('Dashboard error state but continuing render...');
   }
 
-  const filterHighlight = `<span style="background:yellow">${filterText}</span>`
+  const filterHighlight = `<span style="background:yellow">${filterText}</span>`;
 
   return (
     <div>
@@ -319,10 +362,19 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
               </TabsTrigger>
             </TabsList>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => { setRefreshCount(refreshCount + 1); fetchAllData(); addToast('Dashboard refreshed', 'success') }}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setRefreshCount((count) => count + 1);
+                  addToast('Dashboard refreshed', 'success');
+                }}
+              >
                 <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
               </Button>
-              <Badge variant="secondary" className="text-xs">Auto-refresh 1s | #{counter}</Badge>
+              <Badge variant="secondary" className="text-xs">
+                Auto-refresh 1s | #{counter}
+              </Badge>
             </div>
           </div>
 
@@ -337,7 +389,10 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
               <div className="loading-shimmer h-1 w-full mb-1 rounded" />
 
               {/* All heavy components rendered at once, no lazy loading */}
-              <div className="grid grid-cols-2 gap-5" style={{ width: '1100px', minWidth: '1100px' }}>
+              <div
+                className="grid grid-cols-2 gap-5"
+                style={{ width: '1100px', minWidth: '1100px' }}
+              >
                 <CryptoTracker
                   theme={theme}
                   counter={counter}
@@ -348,20 +403,32 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
                   theme={theme}
                   counter={counter}
                   data={weatherData}
-                  onCityClick={(city) => { console.log(city); setModalContent(city); setModalOpen(true) }}
+                  onCityClick={(city) => {
+                    console.log(city);
+                    setModalContent(city);
+                    setModalOpen(true);
+                  }}
                 />
                 <UserList
                   theme={theme}
                   counter={counter}
                   users={users}
                   globalSearchQuery={globalSearchQuery}
-                  onUserClick={(user) => { console.log(user); setModalContent(user); setModalOpen(true) }}
+                  onUserClick={(user) => {
+                    console.log(user);
+                    setModalContent(user);
+                    setModalOpen(true);
+                  }}
                 />
                 <PostsFeed
                   theme={theme}
                   counter={counter}
                   posts={getSortedAndFilteredPosts()}
-                  onPostClick={(post) => { console.log(post); setModalContent(post); setModalOpen(true) }}
+                  onPostClick={(post) => {
+                    console.log(post);
+                    setModalContent(post);
+                    setModalOpen(true);
+                  }}
                 />
               </div>
 
@@ -395,11 +462,7 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
               {/* NEW: Heavy report generator with PDF, Excel, CSV */}
               <ReportGenerator posts={posts} users={users} counter={counter} theme={theme} />
 
-              <ImageGallery
-                photos={photos}
-                theme={theme}
-                counter={counter}
-              />
+              <ImageGallery photos={photos} theme={theme} counter={counter} />
 
               <MarkdownEditor theme={theme} counter={counter} />
 
@@ -431,10 +494,32 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
               <CustomTabPanel
                 title="Quick Stats"
                 tabs={[
-                  { label: 'Posts', content: <p className="text-sm text-muted-foreground">Total posts: {posts.length}</p> },
-                  { label: 'Users', content: <p className="text-sm text-muted-foreground">Total users: {users.length}</p> },
-                  { label: 'Todos', content: <p className="text-sm text-muted-foreground">Total todos: {todos.length}</p> },
-                  { label: 'Comments', content: <p className="text-sm text-muted-foreground">Total comments: {comments.length}</p> },
+                  {
+                    label: 'Posts',
+                    content: (
+                      <p className="text-sm text-muted-foreground">Total posts: {posts.length}</p>
+                    ),
+                  },
+                  {
+                    label: 'Users',
+                    content: (
+                      <p className="text-sm text-muted-foreground">Total users: {users.length}</p>
+                    ),
+                  },
+                  {
+                    label: 'Todos',
+                    content: (
+                      <p className="text-sm text-muted-foreground">Total todos: {todos.length}</p>
+                    ),
+                  },
+                  {
+                    label: 'Comments',
+                    content: (
+                      <p className="text-sm text-muted-foreground">
+                        Total comments: {comments.length}
+                      </p>
+                    ),
+                  },
                 ]}
               />
 
@@ -479,9 +564,9 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
                       size="sm"
                       className="mt-1"
                       onClick={() => {
-                        const ok = validateForm()
-                        if (ok) addToast('Profile saved!', 'success')
-                        else addToast('Please fix the errors', 'error')
+                        const ok = validateForm();
+                        if (ok) addToast('Profile saved!', 'success');
+                        else addToast('Please fix the errors', 'error');
                         // errors are set but never shown — user sees toast but no field hints
                       }}
                     >
@@ -508,8 +593,11 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
                   placeholder="Filter posts..."
                   className="max-w-[300px]"
                 />
-                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-                        className="border rounded px-2 py-1 text-sm bg-background">
+                <select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+                  className="border rounded px-2 py-1 text-sm bg-background"
+                >
                   <option value="asc">Ascending</option>
                   <option value="desc">Descending</option>
                 </select>
@@ -518,17 +606,38 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
                 {getPaginatedData(getSortedAndFilteredPosts()).map((post: any, index: number) => (
                   <Card key={index}>
                     <CardContent className="p-3">
-                      <h4 className="font-semibold text-sm" dangerouslySetInnerHTML={{ __html: post.title }} />
+                      <h4
+                        className="font-semibold text-sm"
+                        dangerouslySetInnerHTML={{ __html: post.title }}
+                      />
                       <p className="text-xs text-muted-foreground mt-1">{post.body}</p>
-                      <div className="text-[11px] text-muted-foreground mt-1">Post ID: {post.id} | User: {post.userId}</div>
+                      <div className="text-[11px] text-muted-foreground mt-1">
+                        Post ID: {post.id} | User: {post.userId}
+                      </div>
                     </CardContent>
                   </Card>
                 ))}
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setPage(page - 1)} disabled={page === 1}>Prev</Button>
-                <span className="text-sm">Page {page} of {totalPages(getSortedAndFilteredPosts())}</span>
-                <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={page >= totalPages(getSortedAndFilteredPosts())}>Next</Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 1}
+                >
+                  Prev
+                </Button>
+                <span className="text-sm">
+                  Page {page} of {totalPages(getSortedAndFilteredPosts())}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= totalPages(getSortedAndFilteredPosts())}
+                >
+                  Next
+                </Button>
               </div>
             </div>
           </TabsContent>
@@ -557,20 +666,28 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
       </div>
 
       {modalOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setModalOpen(false)}>
-          <Card className="max-w-lg w-[90%] max-h-[80vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onClick={() => setModalOpen(false)}
+        >
+          <Card
+            className="max-w-lg w-[90%] max-h-[80vh] overflow-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
             <CardContent className="p-5">
               <h3 className="font-semibold mb-3">Details</h3>
               <pre className="text-xs overflow-auto bg-muted/50 p-3 rounded max-h-[400px]">
                 {JSON.stringify(modalContent, null, 2)}
               </pre>
-              <Button className="mt-3" onClick={() => setModalOpen(false)}>Close</Button>
+              <Button className="mt-3" onClick={() => setModalOpen(false)}>
+                Close
+              </Button>
             </CardContent>
           </Card>
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default Dashboard
+export default Dashboard;

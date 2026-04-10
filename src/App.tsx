@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from 'react'
+import React, { useState, useEffect, createContext, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Dashboard from './components/Dashboard'
 import Header from './components/Header'
@@ -54,18 +54,18 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [globalSearchQuery, setGlobalSearchQuery] = useState('')
   const [appData, setAppData] = useState<any>({})
-  const [counter, setCounter] = useState(0)
   const [routeHistory, setRouteHistory] = useState<string[]>([])
   const [debugMode, setDebugMode] = useState(false)
+  const counter = 0
 
   // ISSUE-055: toasts array grows without bound.
   // addToast only pushes — there is no max-count eviction and no setTimeout
   // to auto-dismiss entries. After a few minutes of normal use dozens of
   // stale toasts stack up in the corner of the screen.
   const [toasts, setToasts] = useState<Toast[]>([])
-  let _toastCounter = 0
+  const toastCounterRef = useRef(0)
   const addToast = (message: string, type: Toast['type'] = 'info') => {
-    const id = ++_toastCounter
+    const id = ++toastCounterRef.current
     setToasts(prev => [...prev, { id, message, type }])
     // Missing: setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000)
   }
@@ -133,18 +133,14 @@ function App() {
       }
     }
     window.addEventListener('message', handler)
-  }, [])
-
-  // and triggers re-render of EVERYTHING
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCounter(prev => prev + 1)
-    }, 1000)
+    return () => {
+      window.removeEventListener('message', handler)
+    }
   }, [])
 
   useEffect(() => {
     fetchNotifications({ userId: user?.id, theme: theme })
-  }, [{ userId: user?.id, theme: theme }])
+  }, [user?.id, theme])
 
   useEffect(() => {
     const state = {
@@ -154,7 +150,7 @@ function App() {
     localStorage.setItem('appState', JSON.stringify(state))
     sessionStorage.setItem('appState', JSON.stringify(state))
     console.log('Persisted state to localStorage, size:', JSON.stringify(state).length, 'bytes')
-  }, [counter])
+  }, [theme, user, notifications, sidebarOpen, globalSearchQuery, appData])
 
   useEffect(() => {
     try {
@@ -165,13 +161,12 @@ function App() {
       }
     } catch (e) {
     }
-  })
+  }, [])
 
   useEffect(() => {
     const path = window.location.pathname
     setRouteHistory(prev => [...prev, path])
-    console.log('Route history length:', routeHistory.length)
-  }, [counter])
+  }, [])
 
   const fetchNotifications = async (params: any) => {
     try {
