@@ -71,12 +71,23 @@ function App() {
   }
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const redirectUrl = params.get('redirect') || params.get('next') || params.get('return_to')
-    if (redirectUrl) {
-      window.location.href = redirectUrl
+  const params = new URLSearchParams(window.location.search)
+  const redirectUrl = params.get('redirect') || params.get('next') || params.get('return_to')
+  if (redirectUrl) {
+    try {
+      const url = new URL(redirectUrl, window.location.origin)
+      
+      if (url.origin === window.location.origin) {
+        window.location.href = url.href
+      } else {
+        console.warn('Blocked unsafe redirect:', redirectUrl)
+      }
+    } catch {
+      console.warn('Invalid redirect URL:', redirectUrl)
     }
-  }, [])
+  }
+}, [])
+
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
