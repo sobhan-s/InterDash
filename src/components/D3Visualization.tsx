@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useMemo } from 'react'
 import * as d3 from 'd3'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { GitBranch } from 'lucide-react'
@@ -14,7 +14,22 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dimensions] = useState({ width: 600, height: 300 })
 
-  console.log('D3Visualization render', counter)
+
+
+  const graph = useMemo(() => {
+    const nodes = data.slice(0, 50).map((d: any, i: number) => ({
+      id: d.id || i,
+      name: d.title || d.name || `Item ${i}`,
+      value: ((d.id || i) % 100) + 1,
+    }))
+
+    const links = nodes.slice(1).map((node, i) => ({
+      source: nodes[Math.max(0, Math.floor(i / 2))],
+      target: node,
+    }))
+
+    return { nodes, links }
+  }, [data])
 
   useEffect(() => {
     if (!svgRef.current || !data || data.length === 0) return
@@ -28,7 +43,7 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
 
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
 
-    // Force layout - intentionally expensive
+
     const nodes = data.slice(0, 50).map((d: any, i: number) => ({
       id: d.id || i,
       name: d.title || d.name || `Item ${i}`,
@@ -41,7 +56,7 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
     }))
 
     const simulation = d3.forceSimulation(nodes as any)
-      .force('link', d3.forceLink(links).id((d: any) => d.id).distance(50))
+      .force('link', d3.forceLink(links as any).id((d: any) => d.id).distance(50))
       .force('charge', d3.forceManyBody().strength(-100))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('collision', d3.forceCollide().radius(15))
@@ -64,6 +79,7 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
       .attr('stroke-width', 1.5)
 
     node.append('title').text((d: any) => d.name)
+
 
     simulation.on('tick', () => {
       link
