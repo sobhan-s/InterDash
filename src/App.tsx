@@ -1,5 +1,6 @@
 import React, { useState, useEffect, createContext, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import {Link} from 'react-router-dom'
 import Dashboard from './components/Dashboard'
 import Header from './components/Header'
 import CryptoTracker from './components/CryptoTracker'
@@ -233,21 +234,21 @@ function App() {
                   <h3 className="font-semibold mb-3">Navigation</h3>
                   <p className="text-xs text-muted-foreground mb-4">Uptime: {counter}s</p>
                   <nav className="space-y-1">
-                    <a href="/" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Dashboard</a>
-                    <a href="/crypto" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Crypto</a>
-                    <a href="/weather" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Weather</a>
-                    <a href="/users" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Users</a>
-                    <a href="/posts" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Posts</a>
-                    <a href="/todos" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Todos</a>
-                    <a href="/charts" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Charts</a>
-                    <a href="/gallery" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Gallery</a>
-                    <a href="/editor" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Markdown</a>
-                    <a href="/analytics" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Analytics</a>
-                    <a href="/search" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Search</a>
-                    <a href="/3d" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">3D Scene</a>
-                    <a href="/reports" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Reports</a>
-                    <a href="/d3" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">D3 Graph</a>
-                    <a href="/math" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Math</a>
+                    <Link to="/" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Dashboard</Link>
+                    <Link to="/crypto" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Crypto</Link>
+                    <Link to="/weather" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Weather</Link>
+                    <Link to="/users" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Users</Link>
+                    <Link to="/posts" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Posts</Link>
+                    <Link to="/todos" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Todos</Link>
+                    <Link to="/charts" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Charts</Link>
+                    <Link to="/gallery" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Gallery</Link>
+                    <Link to="/editor" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Markdown</Link>
+                    <Link to="/analytics" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Analytics</Link>
+                    <Link to="/search" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Search</Link>
+                    <Link to="/3d" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">3D Scene</Link>
+                    <Link to="/reports" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Reports</Link>
+                    <Link to="/d3" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">D3 Graph</Link>
+                    <Link to="/math" className="block px-3 py-2 rounded-md text-sm hover:bg-muted transition-colors">Math</Link>
                   </nav>
                   <div className="mt-4 text-[10px] text-muted-foreground max-h-[100px] overflow-auto">
                     <p className="font-semibold">Route History ({routeHistory.length}):</p>
