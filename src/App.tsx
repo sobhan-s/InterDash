@@ -3,21 +3,22 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import {Link} from 'react-router-dom'
 import Dashboard from './components/Dashboard'
 import Header from './components/Header'
-import CryptoTracker from './components/CryptoTracker'
-import WeatherWidget from './components/WeatherWidget'
-import UserList from './components/UserList'
-import PostsFeed from './components/PostsFeed'
-import TodoList from './components/TodoList'
-import DataChart from './components/DataChart'
-import ImageGallery from './components/ImageGallery'
-import MarkdownEditor from './components/MarkdownEditor'
-import Analytics from './components/Analytics'
-import SearchFilter from './components/SearchFilter'
 import Footer from './components/Footer'
-import ThreeScene from './components/ThreeScene'
-import ReportGenerator from './components/ReportGenerator'
-import D3Visualization from './components/D3Visualization'
-import MathPlayground from './components/MathPlayground'
+
+const CryptoTracker = React.lazy(() => import('./components/CryptoTracker'))
+const WeatherWidget = React.lazy(() => import('./components/WeatherWidget'))
+const UserList = React.lazy(() => import('./components/UserList'))
+const PostsFeed = React.lazy(() => import('./components/PostsFeed'))
+const TodoList = React.lazy(() => import('./components/TodoList'))
+const DataChart = React.lazy(() => import('./components/DataChart'))
+const ImageGallery = React.lazy(() => import('./components/ImageGallery'))
+const MarkdownEditor = React.lazy(() => import('./components/MarkdownEditor'))
+const Analytics = React.lazy(() => import('./components/Analytics'))
+const SearchFilter = React.lazy(() => import('./components/SearchFilter'))
+const ThreeScene = React.lazy(() => import('./components/ThreeScene'))
+const ReportGenerator = React.lazy(() => import('./components/ReportGenerator'))
+const D3Visualization = React.lazy(() => import('./components/D3Visualization'))
+const MathPlayground = React.lazy(() => import('./components/MathPlayground'))
 
 export const AppContext = createContext<any>({});
 
