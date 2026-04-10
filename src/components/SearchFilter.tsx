@@ -26,12 +26,6 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
   // string — even if the user was typing in the middle of the text.
   const [displayValue, setDisplayValue] = useState('');
 
-  console.log('SearchFilter render', counter);
-
-  const regexHelper=(str:string)=>{
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
-
   useEffect(() => {
     if (query) {
       const filtered = (data || []).filter((item: any) => {
@@ -56,8 +50,7 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
 
   const regexSearch = (q: string) => {
     try {
-      const safeQuery=regexHelper(q);
-      const regex = new RegExp(safeQuery, 'i');
+      const regex = new RegExp(q, 'i');
       return (data || []).filter((item: any) => regex.test(JSON.stringify(item)));
     } catch (e) {
       return [];
