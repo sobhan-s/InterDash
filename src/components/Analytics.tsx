@@ -69,29 +69,43 @@ const Analytics = ({
       result.commentsPerPost = _.countBy(comments, 'postId');
       result.avgWordCount = _.meanBy(posts, (p: any) => p.body?.split(' ').length || 0);
 
+      const postsByUser = _.groupBy(posts, 'userId');
       const todosByUser = _.groupBy(todos, 'userId');
+      const albumsByUser = _.groupBy(albums, 'userId');
+
       result.completionRates = {} as Record<string, string>;
       Object.entries(todosByUser).forEach(([userId, userTodos]: [string, any[]]) => {
         const completed = userTodos.filter((t: any) => t.completed).length;
         result.completionRates[userId] = ((completed / userTodos.length) * 100).toFixed(1);
       });
 
-      result.userActivity = users.map((user: any) => ({
-        ...user,
-        postCount: posts.filter((p: any) => p.userId === user.id).length,
-        todoCount: todos.filter((t: any) => t.userId === user.id).length,
-        albumCount: albums.filter((a: any) => a.userId === user.id).length,
-      }));
+      result.userActivity = users.map((user) => {
+        const userPosts = postsByUser[user.id] || [];
+        const userTodos = todosByUser[user.id] || [];
+        const userAlbums = albumsByUser[user.id] || [];
 
-      result.commentAuthors = comments.map((comment: any) => {
-        const post = posts.find((p: any) => p.id === comment.postId);
-        const user = users.find((u: any) => u.id === post?.userId);
-        return { ...comment, postAuthor: user?.name, postTitle: post?.title };
+        return {
+          ...user,
+          postCount: userPosts.length,
+          todoCount: userTodos.length,
+          albumCount: userAlbums.length,
+        };
+      });
+      const postMap = new Map(posts.map((p) => [p.id, p]));
+      const userMap = new Map(users.map((u) => [u.id, u]));
+
+      result.commentAuthors = comments.map((comment) => {
+        const post = postMap.get(comment.postId);
+        const user = userMap.get(post?.userId);
+
+        return {
+          ...comment,
+          postAuthor: user?.name,
+          postTitle: post?.title,
+        };
       });
 
-      for (let i = 0; i < 1000000; i++) {
-        Math.sqrt(i) * Math.random();
-      }
+    
 
       // Prepare recharts data
       result.postsChartData = Object.entries(result.postsPerUser).map(([userId, count]) => ({
@@ -99,18 +113,27 @@ const Analytics = ({
         posts: count,
       }));
 
+      let completed = 0;
+      let pending = 0;
+
+      for (const t of todos) {
+        if (t.completed) completed++;
+        else pending++;
+      }
+
       result.todoChartData = [
-        { name: 'Completed', value: todos.filter((t: any) => t.completed).length },
-        { name: 'Pending', value: todos.filter((t: any) => !t.completed).length },
+        { name: 'Completed', value: completed },
+        { name: 'Pending', value: pending },
       ];
 
       return result;
     };
 
+    
     const result = calculateStats();
     setStats(result);
     setCalculating(false);
-  }, [posts, users, todos, comments, albums, photos, counter]);
+  }, [posts, users, todos, comments, albums, photos]);
 
   if (calculating) return <p className="text-sm text-muted-foreground">Calculating analytics...</p>;
 
