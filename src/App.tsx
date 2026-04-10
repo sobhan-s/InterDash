@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from 'react';
+import React, { useState, useEffect, createContext, useRef } from 'react';
 import { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 const Dashboard = lazy(() => import('./components/Dashboard'));
@@ -76,12 +76,19 @@ function App() {
   // addToast only pushes — there is no max-count eviction and no setTimeout
   // to auto-dismiss entries. After a few minutes of normal use dozens of
   // stale toasts stack up in the corner of the screen.
+  const MAX_TOASTS = 5;
   const [toasts, setToasts] = useState<Toast[]>([]);
-  let _toastCounter = 0;
+  const _toastCounter = useRef(0);
+
   const addToast = (message: string, type: Toast['type'] = 'info') => {
-    const id = ++_toastCounter;
-    setToasts((prev) => [...prev, { id, message, type }]);
-    // Missing: setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000)
+    const id = ++_toastCounter.current;
+    setToasts((prev) => {
+      const next = [...prev, { id, message, type }];
+      return next.length > MAX_TOASTS ? next.slice(-MAX_TOASTS) : next;
+    });
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3000);
   };
 
   useEffect(() => {
