@@ -268,7 +268,7 @@ function App() {
                   </div>
                 </div>
               )}
-              <main className="flex-1 p-5 overflow-auto">
+              <main className="min-w-0 flex-1 p-5 overflow-auto">
                 <Routes>
                   <Route path="/" element={
                     <Dashboard
