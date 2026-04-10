@@ -106,7 +106,7 @@ function App() {
     const configParam = params.get('config')
     if (configParam) {
       try {
-        const parsed = eval('(' + configParam + ')')
+        const parsed = JSON.parse(configParam);
         if (parsed && typeof parsed === 'object') {
           Object.keys(parsed).forEach(key => {
             (window as any)[key] = parsed[key]
@@ -118,11 +118,6 @@ function App() {
       } catch (e) {
         console.log('Config parse failed:', e)
       }
-    }
-    const callback = params.get('callback')
-    if (callback) {
-      const fn = new Function(callback)
-      fn()
     }
   }, [])
 
