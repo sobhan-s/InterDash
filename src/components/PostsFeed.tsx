@@ -56,6 +56,7 @@ const PostsFeed = ({ theme, counter, posts, onPostClick }: PostsFeedProps) => {
   }
 
   const handleCommentSubmit = (e: React.FormEvent, postId: number) => {
+    e.preventDefault();
     console.log('Adding comment:', newComment, 'to post', postId)
     setNewComment('')
   }
