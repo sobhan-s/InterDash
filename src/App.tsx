@@ -185,10 +185,11 @@ function App() {
     } catch (e) {}
   });
 
+  //remove counter from useEffect deps
   useEffect(() => {
     const path = window.location.pathname;
     setRouteHistory((prev) => [...prev, path]);
-  }, [counter]);
+  }, []);
 
   const fetchNotifications = async (params: any) => {
     try {
