@@ -211,17 +211,33 @@ const Dashboard = ({
   useEffect(() => {
     const pollTimer = setInterval(async () => {
       try {
-        const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=1');
-        const data = await res.json();
-        console.log('Poll result:', data);
-      } catch (e) {
-        /* silent */
-      }
-    }, 3000);
-    return () => {
-      clearInterval(pollTimer);
-    };
-  }, []);
+        const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=1')
+        const data = await res.json()
+        console.log('Poll result:', data)
+      } catch(e) { /* silent */ }
+    }, 3000)
+  }, [])
+
+  useEffect(() => {
+    const dashboardState = {
+      todos, posts, users, comments, photos, albums,
+      activeTab, page, filterText, sortOrder,
+      selectedItems, formData, counter,
+    }
+    localStorage.setItem('dashboardState', JSON.stringify(dashboardState))
+    console.log('Dashboard state persisted, size:', JSON.stringify(dashboardState).length)
+  }, [counter])
+
+
+  useEffect(() => {
+    const pollTimer = setInterval(async () => {
+      try {
+        const res = await fetch('https://jsonplaceholder.typicode.com/posts?_limit=1')
+        const data = await res.json()
+        console.log('Poll result:', data)
+      } catch(e) { /* silent */ }
+    }, 3000)
+  }, [])
 
   useEffect(() => {
     const dashboardState = {
@@ -255,12 +271,66 @@ const Dashboard = ({
     formData,
   ]);
 
-  useEffect(() => {
-    if (photos.length > 0) {
-      const cloned = JSON.parse(JSON.stringify(photos));
-      console.log('Deep cloned', cloned.length, 'photos for no reason');
+  const fetchAllData = async () => {
+    setLoading(true)
+    console.log('Fetching all data...')
+
+    try {
+
+      const usersRes = await fetch('https://jsonplaceholder.typicode.com/users')
+      const usersData = await usersRes.json()
+      setUsers(usersData)
+
+      const postsRes = await fetch('https://jsonplaceholder.typicode.com/posts')
+      const postsData = await postsRes.json()
+      setPosts(postsData)
+
+      const todosRes = await fetch('https://jsonplaceholder.typicode.com/todos')
+      const todosData = await todosRes.json()
+      setTodos(todosData)
+
+      const commentsRes = await fetch('https://jsonplaceholder.typicode.com/comments')
+      const commentsData = await commentsRes.json()
+      setComments(commentsData)
+
+      const albumsRes = await fetch('https://jsonplaceholder.typicode.com/albums')
+      const albumsData = await albumsRes.json()
+      setAlbums(albumsData)
+
+      const photosRes = await fetch('https://jsonplaceholder.typicode.com/photos')
+      const photosData = await photosRes.json()
+      setPhotos(photosData)
+
+      // Fetch crypto
+      const cryptoRes = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1')
+      const cryptoJson = await cryptoRes.json()
+      setCryptoData(cryptoJson)
+
+      // Fetch weather for multiple cities
+      const cities = [
+        { name: 'London', lat: 51.5, lon: -0.12 },
+        { name: 'New York', lat: 40.71, lon: -74.01 },
+        { name: 'Tokyo', lat: 35.68, lon: 139.69 },
+        { name: 'Sydney', lat: -33.87, lon: 151.21 },
+        { name: 'Paris', lat: 48.85, lon: 2.35 },
+      ]
+
+      const weatherResults: any[] = []
+      for (const city of cities) {
+        const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true`)
+        const wData = await wRes.json()
+        weatherResults.push({ ...city, weather: wData.current_weather })
+      }
+      setWeatherData(weatherResults)
+
+      setLoading(false)
+      setLastUpdated(moment().format('HH:mm:ss'))
+    } catch (err) {
+      console.log('error', err)
+      setError('Something went wrong')
+      setLoading(false)
     }
-  }, [photos]);
+  }
 
   const getSortedAndFilteredPosts = () => {
     console.log('Sorting and filtering posts...');
