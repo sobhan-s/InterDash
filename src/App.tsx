@@ -236,11 +236,12 @@ function App() {
                 The outer flex wrapper and sidebar both use hardcoded px widths instead of
                 responsive units — viewports narrower than 900px get a horizontal scrollbar
                 and right-side content is clipped. */}
-            <div className="flex" style={{ minWidth: '900px' }}>
+                //fix the clasasname
+            <div className="flex min-w-0 w-full overflow-x-hidden">
               {sidebarOpen && (
                 <div
-                  className={`p-5 min-h-[calc(100vh-60px)] border-r ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}
-                  style={{ width: '250px', minWidth: '250px' }}
+                  className={`p-5 min-h-[calc(100vh-60px)] border-r flex-shrink-0 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}
+                  style={{ width: 'clamp(0px, 20vw, 250px)' }}
                 >
                   <h3 className="font-semibold mb-3">Navigation</h3>
                   <p className="text-xs text-muted-foreground mb-4">Uptime: {counter}s</p>
@@ -309,7 +310,7 @@ function App() {
                 <div
                   key={toast.id}
                   className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${toast.type === 'error' ? 'bg-red-500' :
-                      toast.type === 'success' ? 'bg-green-600' : 'bg-blue-500'
+                    toast.type === 'success' ? 'bg-green-600' : 'bg-blue-500'
                     }`}
                 >
                   <span className="flex-1">{toast.message}</span>
