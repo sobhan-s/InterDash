@@ -17,36 +17,36 @@ const MathPlayground = ({ theme }: MathPlaygroundProps) => {
   useEffect(() => {
     const r: any = {}
 
-    // Matrix operations - intentionally wasteful
-    const size = 50
     const A = Array.from({ length: size }, () =>
-      Array.from({ length: size }, () => faker.number.float({ min: -10, max: 10 }))
-    )
+      Array.from({ length: size }, () => Math.random() * 20 - 10),
+    );
+
     const B = Array.from({ length: size }, () =>
-      Array.from({ length: size }, () => faker.number.float({ min: -10, max: 10 }))
-    )
+      Array.from({ length: size }, () => Math.random() * 20 - 10),
+    );
 
-    r.matrixProduct = mathjs.multiply(A, B)
-    r.determinant = mathjs.det(A)
-    r.eigenvalues = 'computing...' // eigenvalues too slow to actually compute every second
+    // Matrix operations
+    r.matrixProduct = mathjs.multiply(A, B);
+    r.determinant = mathjs.det(A);
 
-    // Statistical computations
-    const bigDataset = Array.from({ length: 100000 }, () => faker.number.float({ min: 0, max: 1000 }))
-    r.mean = mathjs.mean(bigDataset)
-    r.std = mathjs.std(bigDataset)
-    r.median = mathjs.median(bigDataset)
-    r.variance = mathjs.variance(bigDataset)
+    // Statistics (reduced size for performance)
+    const bigDataset = Array.from({ length: 20000 }, () => Math.random() * 1000);
 
-    // Expression evaluation
-    r.expr1 = mathjs.evaluate('sin(pi/4) * cos(pi/3)')
-    r.expr2 = mathjs.evaluate('sqrt(2) + e^2')
-    r.expr3 = mathjs.evaluate('log(1000, 10)')
+    r.mean = mathjs.mean(bigDataset);
+    r.std = mathjs.std(bigDataset);
+    r.median = mathjs.median(bigDataset);
+    r.variance = mathjs.variance(bigDataset);
 
-    // Fibonacci sequence using mathjs (slow)
-    r.fib = []
-    for (let i = 0; i < 30; i++) {
-      r.fib.push(mathjs.evaluate(`round(((1 + sqrt(5)) / 2)^${i} / sqrt(5))`))
+    // Expressions (fast)
+    r.expr1 = Math.sin(Math.PI / 4) * Math.cos(Math.PI / 3);
+    r.expr2 = Math.sqrt(2) + Math.exp(2);
+    r.expr3 = Math.log10(1000);
+
+    const fib = [0, 1];
+    for (let i = 2; i < 30; i++) {
+      fib[i] = fib[i - 1] + fib[i - 2];
     }
+    r.fib = fib;
 
     setResults(r)
     setMatrix(A.slice(0, 5).map(row => row.slice(0, 5)))
@@ -57,42 +57,48 @@ const MathPlayground = ({ theme }: MathPlaygroundProps) => {
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Calculator className="h-4 w-4" />
-          Math Playground (mathjs)
+          Math Playground (optimized)
         </CardTitle>
       </CardHeader>
+
       <CardContent>
         <div className="grid grid-cols-2 gap-4 text-sm">
+          {/* Statistics */}
           <div>
-            <h4 className="font-medium text-xs mb-2">Statistics (100K samples)</h4>
+            <h4 className="font-medium text-xs mb-2">Statistics</h4>
             <div className="space-y-1 text-xs">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Mean:</span>
-                <Badge variant="outline">{typeof results.mean === 'number' ? results.mean.toFixed(4) : '...'}</Badge>
+                <Badge variant="outline">{results.mean?.toFixed(4)}</Badge>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Std Dev:</span>
-                <Badge variant="outline">{typeof results.std === 'number' ? results.std.toFixed(4) : '...'}</Badge>
+                <Badge variant="outline">{results.std?.toFixed(4)}</Badge>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Median:</span>
-                <Badge variant="outline">{typeof results.median === 'number' ? results.median.toFixed(4) : '...'}</Badge>
+                <Badge variant="outline">{results.median?.toFixed(4)}</Badge>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Variance:</span>
-                <Badge variant="outline">{typeof results.variance === 'number' ? results.variance.toFixed(4) : '...'}</Badge>
+                <Badge variant="outline">{results.variance?.toFixed(4)}</Badge>
               </div>
             </div>
           </div>
+
+          {/* Expressions */}
           <div>
             <h4 className="font-medium text-xs mb-2">Expressions</h4>
             <div className="space-y-1 text-xs font-mono">
-              <div>sin(π/4)·cos(π/3) = {typeof results.expr1 === 'number' ? results.expr1.toFixed(6) : '...'}</div>
-              <div>√2 + e² = {typeof results.expr2 === 'number' ? results.expr2.toFixed(6) : '...'}</div>
-              <div>log₁₀(1000) = {typeof results.expr3 === 'number' ? results.expr3.toFixed(6) : '...'}</div>
-              <div>det(50×50) = {typeof results.determinant === 'number' ? results.determinant.toExponential(4) : '...'}</div>
+              <div>sin(π/4)·cos(π/3) = {results.expr1?.toFixed(6)}</div>
+              <div>√2 + e² = {results.expr2?.toFixed(6)}</div>
+              <div>log₁₀(1000) = {results.expr3?.toFixed(6)}</div>
+              <div>det(50×50) = {results.determinant?.toExponential(4)}</div>
             </div>
           </div>
         </div>
+
+        {/* Matrix */}
         <div className="mt-3">
           <h4 className="font-medium text-xs mb-2">5×5 Matrix Preview</h4>
           <div className="overflow-auto">
@@ -111,18 +117,22 @@ const MathPlayground = ({ theme }: MathPlaygroundProps) => {
             </table>
           </div>
         </div>
+
+        {/* Fibonacci */}
         <div className="mt-3">
-          <h4 className="font-medium text-xs mb-1">Fibonacci (first 20)</h4>
+          <h4 className="font-medium text-xs mb-1">Fibonacci</h4>
           <div className="flex flex-wrap gap-1">
-            {(results.fib || []).slice(0, 20).map((n: number, i: number) => (
-              <Badge key={i} variant="secondary" className="text-[10px]">{n}</Badge>
+            {results.fib?.slice(0, 20).map((n: number, i: number) => (
+              <Badge key={i} variant="secondary" className="text-[10px]">
+                {n}
+              </Badge>
             ))}
           </div>
         </div>
         <p className="text-xs text-muted-foreground mt-2">Recalculated on load</p>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
 export default memo(MathPlayground)

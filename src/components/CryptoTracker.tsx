@@ -21,37 +21,37 @@ const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
 
   const toggleFavorite = (coin: any) => {
     if (favorites.includes(coin.id)) {
-      const idx = favorites.indexOf(coin.id)
-      favorites.splice(idx, 1)
-      setFavorites(favorites)
+      const idx = favorites.indexOf(coin.id);
+      favorites.splice(idx, 1);
+      setFavorites(favorites);
     } else {
-      favorites.push(coin.id)
-      setFavorites(favorites)
+      favorites.push(coin.id);
+      setFavorites(favorites);
     }
-  }
+  };
 
   const sortedPrices = _.orderBy(
     (data || []).filter((p: any) => p.name?.toLowerCase().includes(search.toLowerCase())),
     [sortBy],
-    [sortDir]
-  )
+    [sortDir],
+  );
 
   const formatPrice = (price: number) => {
-    const str = price?.toString() || '0'
-    const parts = str.split('.')
-    let whole = parts[0]
-    let decimal = parts[1] || '00'
-    let result = ''
-    let count = 0
+    const str = price?.toString() || '0';
+    const parts = str.split('.');
+    let whole = parts[0];
+    let decimal = parts[1] || '00';
+    let result = '';
+    let count = 0;
     for (let i = whole.length - 1; i >= 0; i--) {
-      result = whole[i] + result
-      count++
+      result = whole[i] + result;
+      count++;
       if (count % 3 === 0 && i > 0) {
-        result = ',' + result
+        result = ',' + result;
       }
     }
-    return '$' + result + '.' + decimal.slice(0, 2)
-  }
+    return '$' + result + '.' + decimal.slice(0, 2);
+  };
 
   return (
     <Card>
@@ -69,8 +69,24 @@ const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b">
-                <th className="text-left p-2 cursor-pointer" onClick={() => { setSortBy('name'); setSortDir(sortDir === 'asc' ? 'desc' : 'asc') }}>Name</th>
-                <th className="text-right p-2 cursor-pointer" onClick={() => { setSortBy('current_price'); setSortDir(sortDir === 'asc' ? 'desc' : 'asc') }}>Price</th>
+                <th
+                  className="text-left p-2 cursor-pointer"
+                  onClick={() => {
+                    setSortBy('name');
+                    setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+                  }}
+                >
+                  Name
+                </th>
+                <th
+                  className="text-right p-2 cursor-pointer"
+                  onClick={() => {
+                    setSortBy('current_price');
+                    setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+                  }}
+                >
+                  Price
+                </th>
                 <th className="text-right p-2">24h</th>
                 <th className="p-2">Fav</th>
               </tr>
@@ -82,16 +98,34 @@ const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
                   <td className="p-2 flex items-center gap-2">
                     <img src={coin.image} alt={coin.name} className="w-5 h-5 rounded-full" />
                     <span>{coin.name}</span>
-                    <Badge variant="secondary" className="text-[10px]">{coin.symbol?.toUpperCase()}</Badge>
+                    <Badge variant="secondary" className="text-[10px]">
+                      {coin.symbol?.toUpperCase()}
+                    </Badge>
                   </td>
                   <td className="text-right p-2 font-mono">{formatPrice(coin.current_price)}</td>
-                  <td className={`text-right p-2 flex items-center justify-end gap-1 ${coin.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {coin.price_change_percentage_24h > 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                  <td
+                    className={`text-right p-2 flex items-center justify-end gap-1 ${coin.price_change_percentage_24h > 0 ? 'text-green-600' : 'text-red-600'}`}
+                  >
+                    {coin.price_change_percentage_24h > 0 ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3" />
+                    )}
                     {coin.price_change_percentage_24h?.toFixed(2)}%
                   </td>
                   <td className="p-2 text-center">
-                    <Button variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); toggleFavorite(coin) }}>
-                      <Star className={`h-3 w-3 ${favorites.includes(coin.id) ? 'fill-yellow-400 text-yellow-400' : ''}`} />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(coin);
+                      }}
+                    >
+                      <Star
+                        className={`h-3 w-3 ${favorites.includes(coin.id) ? 'fill-yellow-400 text-yellow-400' : ''}`}
+                      />
                     </Button>
                   </td>
                 </tr>
@@ -104,7 +138,7 @@ const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
         </p>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
 export default memo(CryptoTracker)

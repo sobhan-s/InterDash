@@ -1,3 +1,4 @@
+<<<<<<< fix/bug-18-use-react-memo
 import React, { memo, useState, useEffect } from 'react'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { faker } from '@faker-js/faker'
@@ -22,6 +23,32 @@ const ReportGenerator = ({ posts, users, theme }: ReportGeneratorProps) => {
   const [generating, setGenerating] = useState(false)
   const [fakeData, setFakeData] = useState<any[]>([])
   const [encryptedData, setEncryptedData] = useState('')
+=======
+import React, { useState, useEffect } from 'react';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { faker } from '@faker-js/faker';
+import { saveAs } from 'file-saver';
+import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
+import JSZip from 'jszip';
+import CryptoJS from 'crypto-js';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Download, FileSpreadsheet, FileText, Archive, Lock } from 'lucide-react';
+
+interface ReportGeneratorProps {
+  posts: any[];
+  users: any[];
+  counter: number;
+  theme: string;
+}
+
+const ReportGenerator = ({ posts, users, counter, theme }: ReportGeneratorProps) => {
+  const [generating, setGenerating] = useState(false);
+  const [fakeData, setFakeData] = useState<any[]>([]);
+  const [encryptedData, setEncryptedData] = useState('');
+>>>>>>> dev
 
   useEffect(() => {
     const data = Array.from({ length: 10000 }, () => ({
@@ -39,53 +66,100 @@ const ReportGenerator = ({ posts, users, theme }: ReportGeneratorProps) => {
       city: faker.location.city(),
       country: faker.location.country(),
       bio: faker.lorem.paragraph(),
-    }))
-    setFakeData(data)
+    }));
+    setFakeData(data);
 
     const encrypted = CryptoJS.AES.encrypt(
       JSON.stringify(data.slice(0, 100)),
+<<<<<<< fix/bug-18-use-react-memo
       'secret-key-123'
     ).toString()
     setEncryptedData(encrypted)
   }, [])
+=======
+      'secret-key-123',
+    ).toString();
+    setEncryptedData(encrypted);
+  }, [counter]);
+>>>>>>> dev
 
   const generatePDF = async () => {
-    setGenerating(true)
+    setGenerating(true);
     try {
-      const pdfDoc = await PDFDocument.create()
-      const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-      const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+      const pdfDoc = await PDFDocument.create();
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
       // Title page
-      const titlePage = pdfDoc.addPage([595, 842])
-      titlePage.drawText('InternDash Report', { x: 50, y: 750, size: 30, font: boldFont, color: rgb(0, 0, 0) })
-      titlePage.drawText(`Generated: ${new Date().toISOString()}`, { x: 50, y: 710, size: 12, font, color: rgb(0.5, 0.5, 0.5) })
-      titlePage.drawText(`Total Records: ${fakeData.length}`, { x: 50, y: 690, size: 12, font, color: rgb(0.5, 0.5, 0.5) })
+      const titlePage = pdfDoc.addPage([595, 842]);
+      titlePage.drawText('InternDash Report', {
+        x: 50,
+        y: 750,
+        size: 30,
+        font: boldFont,
+        color: rgb(0, 0, 0),
+      });
+      titlePage.drawText(`Generated: ${new Date().toISOString()}`, {
+        x: 50,
+        y: 710,
+        size: 12,
+        font,
+        color: rgb(0.5, 0.5, 0.5),
+      });
+      titlePage.drawText(`Total Records: ${fakeData.length}`, {
+        x: 50,
+        y: 690,
+        size: 12,
+        font,
+        color: rgb(0.5, 0.5, 0.5),
+      });
 
       // Data pages
       for (let i = 0; i < Math.min(fakeData.length, 50); i++) {
         if (i % 20 === 0) {
-          const page = pdfDoc.addPage([595, 842])
-          page.drawText(`Records ${i + 1} - ${Math.min(i + 20, 50)}`, { x: 50, y: 800, size: 14, font: boldFont })
+          const page = pdfDoc.addPage([595, 842]);
+          page.drawText(`Records ${i + 1} - ${Math.min(i + 20, 50)}`, {
+            x: 50,
+            y: 800,
+            size: 14,
+            font: boldFont,
+          });
         }
-        const page = pdfDoc.getPages()[Math.floor(i / 20) + 1]
-        const y = 770 - (i % 20) * 35
-        page.drawText(`${fakeData[i].firstName} ${fakeData[i].lastName}`, { x: 50, y, size: 10, font: boldFont })
-        page.drawText(`${fakeData[i].email} | ${fakeData[i].company}`, { x: 50, y: y - 12, size: 8, font, color: rgb(0.4, 0.4, 0.4) })
-        page.drawText(`${fakeData[i].jobTitle} - $${fakeData[i].salary.toLocaleString()}`, { x: 50, y: y - 22, size: 8, font, color: rgb(0.6, 0.6, 0.6) })
+        const page = pdfDoc.getPages()[Math.floor(i / 20) + 1];
+        const y = 770 - (i % 20) * 35;
+        page.drawText(`${fakeData[i].firstName} ${fakeData[i].lastName}`, {
+          x: 50,
+          y,
+          size: 10,
+          font: boldFont,
+        });
+        page.drawText(`${fakeData[i].email} | ${fakeData[i].company}`, {
+          x: 50,
+          y: y - 12,
+          size: 8,
+          font,
+          color: rgb(0.4, 0.4, 0.4),
+        });
+        page.drawText(`${fakeData[i].jobTitle} - $${fakeData[i].salary.toLocaleString()}`, {
+          x: 50,
+          y: y - 22,
+          size: 8,
+          font,
+          color: rgb(0.6, 0.6, 0.6),
+        });
       }
 
-      const pdfBytes = await pdfDoc.save()
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' })
-      saveAs(blob, 'interndash-report.pdf')
+      const pdfBytes = await pdfDoc.save();
+      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      saveAs(blob, 'interndash-report.pdf');
     } catch (e) {
-      console.error('PDF generation failed:', e)
+      console.error('PDF generation failed:', e);
     }
-    setGenerating(false)
-  }
+    setGenerating(false);
+  };
 
   const generateExcel = () => {
-    const wsData = fakeData.slice(0, 1000).map(d => ({
+    const wsData = fakeData.slice(0, 1000).map((d) => ({
       Name: `${d.firstName} ${d.lastName}`,
       Email: d.email,
       Phone: d.phone,
@@ -95,29 +169,32 @@ const ReportGenerator = ({ posts, users, theme }: ReportGeneratorProps) => {
       Salary: d.salary,
       City: d.city,
       Country: d.country,
-    }))
-    const ws = XLSX.utils.json_to_sheet(wsData)
-    const wb = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(wb, ws, 'Report')
-    XLSX.writeFile(wb, 'interndash-report.xlsx')
-  }
+    }));
+    const ws = XLSX.utils.json_to_sheet(wsData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Report');
+    XLSX.writeFile(wb, 'interndash-report.xlsx');
+  };
 
   const generateCSV = () => {
-    const csv = Papa.unparse(fakeData.slice(0, 1000))
-    const blob = new Blob([csv], { type: 'text/csv' })
-    saveAs(blob, 'interndash-report.csv')
-  }
+    const csv = Papa.unparse(fakeData.slice(0, 1000));
+    const blob = new Blob([csv], { type: 'text/csv' });
+    saveAs(blob, 'interndash-report.csv');
+  };
 
   const generateZip = async () => {
-    const zip = new JSZip()
-    const csv = Papa.unparse(fakeData.slice(0, 500))
-    zip.file('data.csv', csv)
-    zip.file('metadata.json', JSON.stringify({ generated: new Date().toISOString(), count: fakeData.length }))
-    zip.file('encrypted.txt', encryptedData)
+    const zip = new JSZip();
+    const csv = Papa.unparse(fakeData.slice(0, 500));
+    zip.file('data.csv', csv);
+    zip.file(
+      'metadata.json',
+      JSON.stringify({ generated: new Date().toISOString(), count: fakeData.length }),
+    );
+    zip.file('encrypted.txt', encryptedData);
 
-    const content = await zip.generateAsync({ type: 'blob' })
-    saveAs(content, 'interndash-bundle.zip')
-  }
+    const content = await zip.generateAsync({ type: 'blob' });
+    saveAs(content, 'interndash-bundle.zip');
+  };
 
   return (
     <Card>
@@ -136,7 +213,12 @@ const ReportGenerator = ({ posts, users, theme }: ReportGeneratorProps) => {
           </Badge>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Button variant="outline" onClick={generatePDF} disabled={generating} className="justify-start">
+          <Button
+            variant="outline"
+            onClick={generatePDF}
+            disabled={generating}
+            className="justify-start"
+          >
             <FileText className="h-4 w-4 mr-2" />
             {generating ? 'Generating...' : 'Export PDF'}
           </Button>
@@ -166,7 +248,9 @@ const ReportGenerator = ({ posts, users, theme }: ReportGeneratorProps) => {
             <tbody>
               {fakeData.slice(0, 50).map((d, i) => (
                 <tr key={i} className="border-b">
-                  <td className="p-1.5">{d.firstName} {d.lastName}</td>
+                  <td className="p-1.5">
+                    {d.firstName} {d.lastName}
+                  </td>
                   <td className="p-1.5 text-muted-foreground">{d.email}</td>
                   <td className="p-1.5">{d.company}</td>
                   <td className="p-1.5 text-right font-mono">${d.salary.toLocaleString()}</td>
@@ -177,7 +261,11 @@ const ReportGenerator = ({ posts, users, theme }: ReportGeneratorProps) => {
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
+<<<<<<< fix/bug-18-use-react-memo
 export default memo(ReportGenerator)
+=======
+export default ReportGenerator;
+>>>>>>> dev

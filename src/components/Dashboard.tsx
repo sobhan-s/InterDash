@@ -87,7 +87,6 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
   }
 
   if (error) {
-    console.log('Dashboard error state but continuing render...');
   }
 
   return (
