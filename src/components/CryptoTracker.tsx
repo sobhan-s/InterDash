@@ -15,20 +15,12 @@ interface CryptoTrackerProps {
 }
 
 const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) => {
-  const [prices, setPrices] = useState<any[]>([])
   const [sortBy, setSortBy] = useState('market_cap')
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
   const [search, setSearch] = useState('')
   const [favorites, setFavorites] = useState<string[]>([])
 
   console.log('CryptoTracker render', counter)
-
-  useEffect(() => {
-    fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1')
-      .then(res => res.json())
-      .then(data => setPrices(data))
-      .catch(err => console.log('crypto error', err))
-  }, [counter]) // Refetches every second!
 
   const toggleFavorite = (coin: any) => {
     if (favorites.includes(coin.id)) {
@@ -42,7 +34,7 @@ const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) =
   }
 
   const sortedPrices = _.orderBy(
-    (prices || []).filter((p: any) => p.name?.toLowerCase().includes(search.toLowerCase())),
+    (data || []).filter((p: any) => p.name?.toLowerCase().includes(search.toLowerCase())),
     [sortBy],
     [sortDir]
   )

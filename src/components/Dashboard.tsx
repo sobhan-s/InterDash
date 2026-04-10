@@ -84,46 +84,49 @@ const Dashboard = ({
 
   const fetchAllData = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
+    setError(null);
     console.log('Fetching all data...');
 
     try {
-      const usersRes = await fetch('https://jsonplaceholder.typicode.com/users', { signal });
-      const usersData = await usersRes.json();
-      if (signal?.aborted) return;
-      setUsers(usersData);
+      const fetchJson = async (url: string) => {
+        const response = await fetch(url, { signal });
+        if (!response.ok) {
+          throw new Error(`Request failed: ${response.status} ${response.statusText}`);
+        }
+        return response.json();
+      };
 
-      const postsRes = await fetch('https://jsonplaceholder.typicode.com/posts', { signal });
-      const postsData = await postsRes.json();
-      if (signal?.aborted) return;
-      setPosts(postsData);
+      const dataRequests = await Promise.allSettled([
+        fetchJson('https://jsonplaceholder.typicode.com/users'),
+        fetchJson('https://jsonplaceholder.typicode.com/posts'),
+        fetchJson('https://jsonplaceholder.typicode.com/todos'),
+        fetchJson('https://jsonplaceholder.typicode.com/comments'),
+        fetchJson('https://jsonplaceholder.typicode.com/albums'),
+        fetchJson('https://jsonplaceholder.typicode.com/photos'),
+        fetchJson(
+          'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1',
+        ),
+      ]);
 
-      const todosRes = await fetch('https://jsonplaceholder.typicode.com/todos', { signal });
-      const todosData = await todosRes.json();
       if (signal?.aborted) return;
-      setTodos(todosData);
 
-      const commentsRes = await fetch('https://jsonplaceholder.typicode.com/comments', { signal });
-      const commentsData = await commentsRes.json();
-      if (signal?.aborted) return;
-      setComments(commentsData);
+      const [
+        usersResult,
+        postsResult,
+        todosResult,
+        commentsResult,
+        albumsResult,
+        photosResult,
+        cryptoResult,
+      ] = dataRequests;
 
-      const albumsRes = await fetch('https://jsonplaceholder.typicode.com/albums', { signal });
-      const albumsData = await albumsRes.json();
-      if (signal?.aborted) return;
-      setAlbums(albumsData);
-
-      const photosRes = await fetch('https://jsonplaceholder.typicode.com/photos', { signal });
-      const photosData = await photosRes.json();
-      if (signal?.aborted) return;
-      setPhotos(photosData);
-
-      const cryptoRes = await fetch(
-        'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1',
-        { signal },
-      );
-      const cryptoJson = await cryptoRes.json();
-      if (signal?.aborted) return;
-      setCryptoData(cryptoJson);
+      if (usersResult.status === 'fulfilled') setUsers(usersResult.value);
+      if (postsResult.status === 'fulfilled') setPosts(postsResult.value);
+      if (todosResult.status === 'fulfilled') setTodos(todosResult.value);
+      if (commentsResult.status === 'fulfilled') setComments(commentsResult.value);
+      if (albumsResult.status === 'fulfilled') setAlbums(albumsResult.value);
+      if (photosResult.status === 'fulfilled') setPhotos(photosResult.value);
+      if (cryptoResult.status === 'fulfilled') setCryptoData(cryptoResult.value);
 
       const cities = [
         { name: 'London', lat: 51.5, lon: -0.12 },
@@ -133,17 +136,33 @@ const Dashboard = ({
         { name: 'Paris', lat: 48.85, lon: 2.35 },
       ];
 
-      const weatherResults: any[] = [];
-      for (const city of cities) {
-        const wRes = await fetch(
-          `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true`,
-          { signal },
-        );
-        const wData = await wRes.json();
-        if (signal?.aborted) return;
-        weatherResults.push({ ...city, weather: wData.current_weather });
+      const weatherRequests = await Promise.allSettled(
+        cities.map(async (city) => {
+          const weather = await fetchJson(
+            `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true`,
+          );
+          return { ...city, weather: weather.current_weather };
+        }),
+      );
+
+      if (signal?.aborted) return;
+
+      setWeatherData(
+        weatherRequests
+          .filter(
+            (result): result is PromiseFulfilledResult<{ name: string; lat: number; lon: number; weather: unknown }> => result.status === 'fulfilled',
+          )
+          .map((result) => result.value),
+      );
+
+      const failedRequests = [...dataRequests, ...weatherRequests].filter(
+        (result) => result.status === 'rejected',
+      );
+
+      if (failedRequests.length > 0) {
+        
+        setError('Some dashboard data could not be loaded.');
       }
-      setWeatherData(weatherResults);
 
       setLoading(false);
       setLastUpdated(moment().format('HH:mm:ss'));
@@ -257,7 +276,7 @@ const Dashboard = ({
 
     const sorted = _.orderBy(filtered, ['id'], [sortOrder]);
 
-   //removed fibnocci recursive function due to heavy computation and replaced with simple sort and filter logic. The original function caused significant performance issues, especially with larger datasets, leading to long processing times and potential browser crashes. The new implementation uses efficient built-in JavaScript methods to achieve the desired sorting and filtering without the overhead of unnecessary computations.
+    //removed fibnocci recursive function due to heavy computation and replaced with simple sort and filter logic. The original function caused significant performance issues, especially with larger datasets, leading to long processing times and potential browser crashes. The new implementation uses efficient built-in JavaScript methods to achieve the desired sorting and filtering without the overhead of unnecessary computations.
 
     return sorted;
   };
@@ -416,6 +435,7 @@ const Dashboard = ({
                   theme={theme}
                   counter={counter}
                   users={users}
+                  posts={posts}
                   globalSearchQuery={globalSearchQuery}
                   onUserClick={(user) => {
                     console.log(user);
@@ -427,6 +447,7 @@ const Dashboard = ({
                   theme={theme}
                   counter={counter}
                   posts={getSortedAndFilteredPosts()}
+                  comments={_.groupBy(comments, 'postId')}
                   onPostClick={(post) => {
                     console.log(post);
                     setModalContent(post);
@@ -542,7 +563,13 @@ const Dashboard = ({
                         placeholder="Your name"
                         className="h-8 text-sm mt-1"
                       />
+
                       {/* BUG ISSUE-050: validationErrors.profileName is never rendered here */}
+                      {validationErrors.profileName && (
+                          <p className="text-red-500 text-xs mt-1">
+                            {validationErrors.profileName}
+                          </p>
+                        )}
                     </div>
                     <div>
                       <label className="text-xs font-medium">Email</label>
@@ -553,6 +580,11 @@ const Dashboard = ({
                         className="h-8 text-sm mt-1"
                       />
                       {/* BUG ISSUE-050: validationErrors.profileEmail is never rendered here */}
+                      {validationErrors.profileName && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {validationErrors.profileName}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label className="text-xs font-medium">Bio</label>
@@ -563,6 +595,11 @@ const Dashboard = ({
                         className="h-8 text-sm mt-1"
                       />
                       {/* BUG ISSUE-050: validationErrors.profileBio is never rendered here */}
+                      {validationErrors.profileBio && (
+                        <p className="text-red-500 text-xs mt-1">
+                          {validationErrors.profileBio}
+                        </p>
+                      )}
                     </div>
                     <Button
                       size="sm"
@@ -671,7 +708,7 @@ const Dashboard = ({
 
       {modalOpen && (
         <div
-          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-300"
           onClick={() => setModalOpen(false)}
         >
           <Card
