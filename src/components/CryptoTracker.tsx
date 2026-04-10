@@ -21,14 +21,9 @@ const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) =
   const [favorites, setFavorites] = useState<string[]>([]);
 
   const toggleFavorite = (coin: any) => {
-    if (favorites.includes(coin.id)) {
-      const idx = favorites.indexOf(coin.id);
-      favorites.splice(idx, 1);
-      setFavorites(favorites);
-    } else {
-      favorites.push(coin.id);
-      setFavorites(favorites);
-    }
+    setFavorites((prev) =>
+      prev.includes(coin.id) ? prev.filter((id) => id !== coin.id) : [...prev, coin.id],
+    );
   };
 
   const sortedPrices = _.orderBy(

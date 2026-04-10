@@ -22,8 +22,10 @@ const PostsFeed = ({ theme, counter, posts, comments, onPostClick }: PostsFeedPr
   const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({});
 
   const handleLike = (postId: number) => {
-    likedPosts[postId] = !likedPosts[postId];
-    setLikedPosts(likedPosts);
+    setLikedPosts((prev) => ({
+      ...prev,
+      [postId]: !prev[postId],
+    }));
   };
 
   const handleCommentSubmit = (e: React.FormEvent, postId: number) => {
