@@ -24,8 +24,6 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme, counter }: 
   const inputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
 
-  console.log('TodoList render', counter);
-
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
@@ -37,7 +35,6 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme, counter }: 
   useEffect(() => {
     localStorage.setItem('todos_backup', JSON.stringify(todos));
     localStorage.setItem('todos_timestamp', new Date().toISOString());
-    //console.log('Todos persisted, count:', todos.length)
   }, [todos]); //remove counter added todos in deps
 
   const [completedCount, setCompletedCount] = useState(0);

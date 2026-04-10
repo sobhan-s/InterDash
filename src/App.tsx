@@ -50,8 +50,6 @@ class ErrorBoundary extends React.Component<
     return { hasError: true };
   }
   componentDidCatch(error: any, errorInfo: any) {
-    console.log('Error caught:', error);
-
     //fix the error boundary in componenet did catch
     this.setState((prev) => {
       return {
@@ -129,10 +127,7 @@ function App() {
           if (parsed.theme) setTheme(parsed.theme);
           if (parsed.debug) setDebugMode(true);
         }
-        console.log('Applied URL config:', configParam);
-      } catch (e) {
-        console.log('Config parse failed:', e);
-      }
+      } catch (e) {}
     }
   }, []);
 
@@ -186,7 +181,6 @@ function App() {
       const saved = localStorage.getItem('appState');
       if (saved) {
         const parsed = JSON.parse(saved);
-        console.log('Restored state from localStorage:', parsed.counter);
       }
     } catch (e) {}
   });
@@ -194,7 +188,6 @@ function App() {
   useEffect(() => {
     const path = window.location.pathname;
     setRouteHistory((prev) => [...prev, path]);
-    console.log('Route history length:', routeHistory.length);
   }, [counter]);
 
   const fetchNotifications = async (params: any) => {
@@ -202,9 +195,7 @@ function App() {
       const res = await fetch('https://jsonplaceholder.typicode.com/comments?_limit=5');
       const data = await res.json();
       setNotifications(data);
-    } catch (e) {
-      console.log('notification fetch failed');
-    }
+    } catch (e) {}
   };
 
   const handleThemeToggle = useCallback(() => {
@@ -213,7 +204,6 @@ function App() {
   }, [theme]);
 
   const getFilteredData = (data: any[], query: string) => {
-    console.log('filtering data...', Date.now());
     let result: number[] = [];
     for (let i = 0; i < 10000; i++) {
       result.push(Math.random());

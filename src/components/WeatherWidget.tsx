@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from 'react'
-import moment from 'moment'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Button } from './ui/button'
-import { Cloud, Thermometer, Wind } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import moment from 'moment';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Cloud, Thermometer, Wind } from 'lucide-react';
 
 interface WeatherWidgetProps {
-  theme: string
-  counter: number
-  data?: any[]
-  onCityClick?: (city: any) => void
+  theme: string;
+  counter: number;
+  data?: any[];
+  onCityClick?: (city: any) => void;
 }
 
 const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps) => {
-  const [weatherData, setWeatherData] = useState<any[]>([])
-  const [unit, setUnit] = useState('celsius')
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-
-  console.log('WeatherWidget render', counter)
+  const [weatherData, setWeatherData] = useState<any[]>([]);
+  const [unit, setUnit] = useState('celsius');
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const cities = [
@@ -27,44 +25,54 @@ const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps
       { name: 'Paris', lat: 48.85, lon: 2.35 },
       { name: 'Mumbai', lat: 19.07, lon: 72.87 },
       { name: 'Cairo', lat: 30.04, lon: 31.23 },
-      { name: 'Berlin', lat: 52.52, lon: 13.40 },
-    ]
+      { name: 'Berlin', lat: 52.52, lon: 13.4 },
+    ];
 
     const fetchAll = async () => {
-      const results: any[] = []
+      const results: any[] = [];
       for (const city of cities) {
         try {
-          const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m`)
-          const data = await res.json()
-          results.push({ ...city, weather: data.current_weather, hourly: data.hourly })
-        } catch(e) {
-          console.log('weather error for', city.name)
-        }
+          const res = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m`,
+          );
+          const data = await res.json();
+          results.push({ ...city, weather: data.current_weather, hourly: data.hourly });
+        } catch (e) {}
       }
-      setWeatherData(results)
-    }
+      setWeatherData(results);
+    };
 
-    fetchAll()
-  }, [counter]) // Refetches every second!
+    fetchAll();
+  }, [counter]); // Refetches every second!
 
   const convertTemp = (celsius: number) => {
     if (unit === 'fahrenheit') {
-      return (celsius * 9/5 + 32).toFixed(1) + '°F'
+      return ((celsius * 9) / 5 + 32).toFixed(1) + '°F';
     }
-    return celsius?.toFixed(1) + '°C'
-  }
+    return celsius?.toFixed(1) + '°C';
+  };
 
   const getWeatherEmoji = (code: number) => {
     const map: Record<number, string> = {
-      0: '☀️ Clear', 1: '🌤 Mostly Clear', 2: '⛅ Partly Cloudy', 3: '☁️ Overcast',
-      45: '🌫 Fog', 48: '🌫 Fog',
-      51: '🌦 Light Rain', 53: '🌧 Rain', 55: '🌧 Heavy Rain',
-      61: '🌦 Light Rain', 63: '🌧 Rain', 65: '🌧 Heavy Rain',
-      71: '🌨 Snow', 73: '🌨 Snow', 75: '❄️ Heavy Snow',
-      95: '⛈ Thunderstorm'
-    }
-    return map[code] || '❓ Unknown'
-  }
+      0: '☀️ Clear',
+      1: '🌤 Mostly Clear',
+      2: '⛅ Partly Cloudy',
+      3: '☁️ Overcast',
+      45: '🌫 Fog',
+      48: '🌫 Fog',
+      51: '🌦 Light Rain',
+      53: '🌧 Rain',
+      55: '🌧 Heavy Rain',
+      61: '🌦 Light Rain',
+      63: '🌧 Rain',
+      65: '🌧 Heavy Rain',
+      71: '🌨 Snow',
+      73: '🌨 Snow',
+      75: '❄️ Heavy Snow',
+      95: '⛈ Thunderstorm',
+    };
+    return map[code] || '❓ Unknown';
+  };
 
   return (
     <Card>
@@ -75,8 +83,20 @@ const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps
             Weather
           </CardTitle>
           <div className="flex gap-1">
-            <Button variant={unit === 'celsius' ? 'default' : 'outline'} size="sm" onClick={() => setUnit('celsius')}>°C</Button>
-            <Button variant={unit === 'fahrenheit' ? 'default' : 'outline'} size="sm" onClick={() => setUnit('fahrenheit')}>°F</Button>
+            <Button
+              variant={unit === 'celsius' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setUnit('celsius')}
+            >
+              °C
+            </Button>
+            <Button
+              variant={unit === 'fahrenheit' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setUnit('fahrenheit')}
+            >
+              °F
+            </Button>
           </div>
         </div>
       </CardHeader>
@@ -87,8 +107,8 @@ const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps
               key={idx}
               className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-200'}`}
               onClick={() => {
-                onCityClick && onCityClick({ ...city, timestamp: Date.now() })
-                setExpanded({ ...expanded, [city.name]: !expanded[city.name] })
+                onCityClick && onCityClick({ ...city, timestamp: Date.now() });
+                setExpanded({ ...expanded, [city.name]: !expanded[city.name] });
               }}
             >
               <div className="flex justify-between items-center">
@@ -107,7 +127,10 @@ const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps
                 <div className="mt-3 max-h-[200px] overflow-auto border-t pt-2">
                   <h4 className="text-xs font-semibold mb-1">Hourly Forecast</h4>
                   {city.hourly.time?.map((time: string, i: number) => (
-                    <div key={i} className="flex justify-between text-[11px] py-0.5 border-b border-gray-100">
+                    <div
+                      key={i}
+                      className="flex justify-between text-[11px] py-0.5 border-b border-gray-100"
+                    >
                       <span>{moment(time).format('ddd HH:mm')}</span>
                       <span>{convertTemp(city.hourly.temperature_2m[i])}</span>
                       <span>💧 {city.hourly.relative_humidity_2m[i]}%</span>
@@ -120,7 +143,7 @@ const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default WeatherWidget
+export default WeatherWidget;

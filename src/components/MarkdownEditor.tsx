@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Button } from './ui/button'
-import { FileText, Undo2 } from 'lucide-react'
-import { Badge } from './ui/badge'
+import React, { useState, useEffect } from 'react';
+import { marked } from 'marked';
+import DOMPurify from 'dompurify';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { FileText, Undo2 } from 'lucide-react';
+import { Badge } from './ui/badge';
 
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs'
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 interface MarkdownEditorProps {
-  theme: string
-  counter: number
+  theme: string;
+  counter: number;
 }
 
 const MarkdownEditor = ({ theme, counter }: MarkdownEditorProps) => {
@@ -42,22 +42,20 @@ function hello() {
 1. First item
 2. Second item
 3. Third item
-`)
+`);
 
-  const [preview, setPreview] = useState('')
-  const [wordCount, setWordCount] = useState(0)
-  const [history, setHistory] = useState<string[]>([])
-
-  console.log('MarkdownEditor render', counter)
+  const [preview, setPreview] = useState('');
+  const [wordCount, setWordCount] = useState(0);
+  const [history, setHistory] = useState<string[]>([]);
 
   useEffect(() => {
-    const html = marked(markdown) as string
-    const sanitized = DOMPurify.sanitize(html)
-    setPreview(sanitized)
-    setWordCount(markdown.split(/\s+/).filter(Boolean).length)
+    const html = marked(markdown) as string;
+    const sanitized = DOMPurify.sanitize(html);
+    setPreview(sanitized);
+    setWordCount(markdown.split(/\s+/).filter(Boolean).length);
 
-    setHistory(prev => [...prev, markdown])
-  }, [markdown, counter])
+    setHistory((prev) => [...prev, markdown]);
+  }, [markdown, counter]);
 
   return (
     <Card>
@@ -71,11 +69,16 @@ function hello() {
             <Badge variant="outline">Words: {wordCount}</Badge>
             <Badge variant="secondary">History: {history.length}</Badge>
             <Badge variant="outline">Chars: {markdown.length}</Badge>
-            <Button variant="ghost" size="sm" className="h-7" onClick={() => {
-              if (history.length > 1) {
-                setMarkdown(history[history.length - 2])
-              }
-            }}>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7"
+              onClick={() => {
+                if (history.length > 1) {
+                  setMarkdown(history[history.length - 2]);
+                }
+              }}
+            >
               <Undo2 className="h-3 w-3 mr-1" /> Undo
             </Button>
           </div>
@@ -93,16 +96,15 @@ function hello() {
           </div>
           <div>
             <h4 className="text-sm font-medium mb-2">Preview</h4>
-            <div
-              className="h-[300px] overflow-auto p-3 border rounded-md bg-muted/30 prose prose-sm max-w-none"></div>
+            <div className="h-[300px] overflow-auto p-3 border rounded-md bg-muted/30 prose prose-sm max-w-none"></div>
 
-              { preview }
-           <div />
+            {preview}
+            <div />
           </div>
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default MarkdownEditor
+export default MarkdownEditor;

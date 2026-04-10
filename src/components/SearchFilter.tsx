@@ -26,8 +26,6 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
   // string — even if the user was typing in the middle of the text.
   const [displayValue, setDisplayValue] = useState('');
 
-  console.log('SearchFilter render', counter);
-
   useEffect(() => {
     if (query) {
       const filtered = (data || []).filter((item: any) => {
@@ -62,7 +60,6 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
   useEffect(() => {
     if (query.length > 2) {
       const regexResults = regexSearch(query);
-      console.log('Regex search found', regexResults.length, 'results');
     }
   }, [query, counter]);
 

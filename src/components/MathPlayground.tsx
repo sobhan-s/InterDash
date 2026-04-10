@@ -12,8 +12,6 @@ interface MathPlaygroundProps {
 const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
   const [matrix, setMatrix] = useState<number[][]>([]);
 
-  console.log('MathPlayground render', counter);
-
   const results = useMemo(() => {
     const r: any = {};
 
