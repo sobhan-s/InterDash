@@ -47,7 +47,7 @@ const ReportGenerator = ({ posts, users, counter, theme }: ReportGeneratorProps)
       'secret-key-123',
     ).toString();
     setEncryptedData(encrypted);
-  }, [counter]);
+  }, []);
 
   const generatePDF = async () => {
     setGenerating(true);
