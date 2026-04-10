@@ -293,9 +293,8 @@ const Dashboard = ({
   }, []);
 
   const handleSelectItem = (item: any) => {
-    selectedItems.push(item);
-    setSelectedItems(selectedItems);
-  };
+    setSelectedItems(prev => [...prev.slice(-50), item])
+  }
 
   const getPaginatedData = (data: any[]) => {
     const start = (page - 1) * itemsPerPage;
