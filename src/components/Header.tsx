@@ -29,9 +29,12 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
 
   useEffect(() => {
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       setCurrentTime(moment().format('HH:mm:ss'))
     }, 1000)
+    return () => {
+      clearInterval(intervalId)
+    }
   }, [])
 
   useEffect(() => {
@@ -52,7 +55,10 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
       }
     }
     document.addEventListener('click', handler)
-  })
+    return () => {
+      document.removeEventListener('click', handler)
+    }
+  }, [showDropdown])
 
   useEffect(() => {
     if (searchResults.length > 0) {
@@ -114,7 +120,8 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
               <div className="p-3 border-b font-semibold text-sm">Notifications ({notifications.length})</div>
               {notifications.map((notif: any, i: number) => (
                 <div key={i} className="p-2 border-b border-gray-100 text-xs hover:bg-gray-50 cursor-pointer">
-                  <div dangerouslySetInnerHTML={{ __html: notif.body?.slice(0, 80) }} />
+                  //fix the contrast issues
+                  <div >{ notif.body?.slice(0, 80) } </div>
                   {/* ISSUE-052: #aaa on #fff ≈ 2.3:1 contrast — fails WCAG AA */}
                   <div style={{ color: '#aaa', backgroundColor: '#fff' }} className="mt-1">{notif.email}</div>
                   <div style={{ color: '#bbb', fontSize: '10px' }}>just now</div>

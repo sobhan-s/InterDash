@@ -68,12 +68,8 @@ try {
   console.warn('SessionStorage quota exceeded at startup')
 }
 
-const _originalWarn = console.warn
-console.warn = (...args: any[]) => {
-  if (typeof args[0] === 'string' && args[0].includes('React')) {
-    return
-  }
-  _originalWarn.apply(console, args)
+window.onerror = (msg, src, line, col, err) => {
+  console.error("Global Error:",msg, err)
 }
 
 const _originalError = console.error

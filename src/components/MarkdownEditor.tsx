@@ -94,9 +94,10 @@ function hello() {
           <div>
             <h4 className="text-sm font-medium mb-2">Preview</h4>
             <div
-              className="h-[300px] overflow-auto p-3 border rounded-md bg-muted/30 prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: preview }}
-            />
+              className="h-[300px] overflow-auto p-3 border rounded-md bg-muted/30 prose prose-sm max-w-none"></div>
+
+              { preview }
+           <div />
           </div>
         </div>
       </CardContent>
