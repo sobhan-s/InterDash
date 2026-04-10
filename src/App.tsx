@@ -1,24 +1,33 @@
-import React, { useState, useEffect, createContext, useRef, Suspense, useMemo, useCallback } from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import {Link} from 'react-router-dom'
-import Dashboard from './components/Dashboard'
-import Header from './components/Header'
-import Footer from './components/Footer'
+import React, {
+  useState,
+  useEffect,
+  createContext,
+  useRef,
+  Suspense,
+  useMemo,
+  useCallback,
+} from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+import Dashboard from './components/Dashboard';
+import Header from './components/Header';
+import Footer from './components/Footer';
+import NotFound from './components/NotFound';
 
-const CryptoTracker = React.lazy(() => import('./components/CryptoTracker'))
-const WeatherWidget = React.lazy(() => import('./components/WeatherWidget'))
-const UserList = React.lazy(() => import('./components/UserList'))
-const PostsFeed = React.lazy(() => import('./components/PostsFeed'))
-const TodoList = React.lazy(() => import('./components/TodoList'))
-const DataChart = React.lazy(() => import('./components/DataChart'))
-const ImageGallery = React.lazy(() => import('./components/ImageGallery'))
-const MarkdownEditor = React.lazy(() => import('./components/MarkdownEditor'))
-const Analytics = React.lazy(() => import('./components/Analytics'))
-const SearchFilter = React.lazy(() => import('./components/SearchFilter'))
-const ThreeScene = React.lazy(() => import('./components/ThreeScene'))
-const ReportGenerator = React.lazy(() => import('./components/ReportGenerator'))
-const D3Visualization = React.lazy(() => import('./components/D3Visualization'))
-const MathPlayground = React.lazy(() => import('./components/MathPlayground'))
+const CryptoTracker = React.lazy(() => import('./components/CryptoTracker'));
+const WeatherWidget = React.lazy(() => import('./components/WeatherWidget'));
+const UserList = React.lazy(() => import('./components/UserList'));
+const PostsFeed = React.lazy(() => import('./components/PostsFeed'));
+const TodoList = React.lazy(() => import('./components/TodoList'));
+const DataChart = React.lazy(() => import('./components/DataChart'));
+const ImageGallery = React.lazy(() => import('./components/ImageGallery'));
+const MarkdownEditor = React.lazy(() => import('./components/MarkdownEditor'));
+const Analytics = React.lazy(() => import('./components/Analytics'));
+const SearchFilter = React.lazy(() => import('./components/SearchFilter'));
+const ThreeScene = React.lazy(() => import('./components/ThreeScene'));
+const ReportGenerator = React.lazy(() => import('./components/ReportGenerator'));
+const D3Visualization = React.lazy(() => import('./components/D3Visualization'));
+const MathPlayground = React.lazy(() => import('./components/MathPlayground'));
 
 export const AppContext = createContext<any>({});
 
@@ -42,7 +51,7 @@ class ErrorBoundary extends React.Component<
   }
   componentDidCatch(error: any, errorInfo: any) {
     console.log('Error caught:', error);
-    
+
     //fix the error boundary in componenet did catch
     this.setState((prev) => {
       return {
@@ -125,7 +134,7 @@ function App() {
         console.log('Config parse failed:', e);
       }
     }
-  }, [])
+  }, []);
 
   useEffect(() => {
     const handler = (event: MessageEvent) => {
@@ -213,25 +222,20 @@ function App() {
     return data;
   };
 
-  const contextValue = useMemo(() => ({
-    theme,
-    user,
-    notifications,
-    sidebarOpen,
-    globalSearchQuery,
-    handleThemeToggle,
-    setUser,
-    setGlobalSearchQuery,
-    addToast,
-  }), [
-    theme,
-    user,
-    notifications,
-    sidebarOpen,
-    globalSearchQuery,
-    handleThemeToggle,
-    addToast,
-  ]);
+  const contextValue = useMemo(
+    () => ({
+      theme,
+      user,
+      notifications,
+      sidebarOpen,
+      globalSearchQuery,
+      handleThemeToggle,
+      setUser,
+      setGlobalSearchQuery,
+      addToast,
+    }),
+    [theme, user, notifications, sidebarOpen, globalSearchQuery, handleThemeToggle, addToast],
+  );
 
   const handleLogin = (username: string, password: string) => {
     localStorage.setItem(
@@ -397,6 +401,7 @@ function App() {
               <main className="flex-1 p-5 overflow-auto">
                 <Suspense fallback={<PageFallback />}>
                   <Routes>
+                    <Route path="*" element={<NotFound />} />
                     <Route
                       path="/"
                       element={
