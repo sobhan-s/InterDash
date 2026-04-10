@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useRef } from 'react'
+import React, { useState, useEffect, createContext, useRef, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import {Link} from 'react-router-dom'
 import Dashboard from './components/Dashboard'
@@ -41,7 +41,13 @@ class ErrorBoundary extends React.Component<
   }
   componentDidCatch(error: any, errorInfo: any) {
     console.log('Error caught:', error);
-    this.state.errorLog.push({ error: error.toString(), time: Date.now() });
+    //fix the error boundary in componenet did catch
+    this.setState(prev => {
+      return {
+        ...prev,
+        errorLog: [...prev.errorLog, { error: error.toString(), time: Date.now() }]
+      };
+    });
   }
   render() {
     if (this.state.hasError) {
@@ -364,6 +370,7 @@ function App() {
                       element={
                         <TodoList
                           todos={[]}
+                          onEdit={() =>{}}
                           onAdd={() => {}}
                           onDelete={() => {}}
                           onToggle={() => {}}
