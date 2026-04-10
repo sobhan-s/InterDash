@@ -1,18 +1,27 @@
-import React, { memo, useState, useEffect } from 'react'
-import _ from 'lodash'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Users, Mail, Building, Phone, Globe, Info } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
+import _ from 'lodash';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Users, Mail, Building, Phone, Globe, Info } from 'lucide-react';
 
 interface UserListProps {
-  theme: string
-  users?: any[]
-  posts?: any[]
-  globalSearchQuery?: string
-  onUserClick?: (user: any) => void
+  theme: string;
+  counter: number;
+  users?: any[];
+  posts?: any[];
+  globalSearchQuery?: string;
+  onUserClick?: (user: any) => void;
 }
 
-const UserList = ({ theme, users, posts, globalSearchQuery, onUserClick }: UserListProps) => {
-  const [sortField, setSortField] = useState('name')
+const UserList = ({
+  theme,
+  counter,
+  users,
+  posts,
+  globalSearchQuery,
+  onUserClick,
+}: UserListProps) => {
+  const [sortField, setSortField] = useState('name');
 
   // ISSUE-056 fix: use stable item id instead of array index
   const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -155,4 +164,4 @@ const UserList = ({ theme, users, posts, globalSearchQuery, onUserClick }: UserL
   );
 };
 
-export default memo(UserList)
+export default UserList;

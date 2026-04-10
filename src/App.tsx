@@ -1,6 +1,5 @@
 import React, { useState, useEffect, createContext, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Link } from 'react-router-dom'
 import Dashboard from './components/Dashboard'
 import Header from './components/Header'
 import CryptoTracker from './components/CryptoTracker'
@@ -49,15 +48,15 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 }
 
 function App() {
-  const [theme, setTheme] = useState('light');
-  const [user, setUser] = useState<any>(null);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
-  const [appData, setAppData] = useState<any>({});
-  const counter = 0;
-  const [routeHistory, setRouteHistory] = useState<string[]>([]);
-  const [debugMode, setDebugMode] = useState(false);
+  const [theme, setTheme] = useState('light')
+  const [user, setUser] = useState<any>(null)
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('')
+  const [appData, setAppData] = useState<any>({})
+  const [counter, setCounter] = useState(0)
+  const [routeHistory, setRouteHistory] = useState<string[]>([])
+  const [debugMode, setDebugMode] = useState(false)
 
   // ISSUE-055: toasts array grows without bound.
   // addToast only pushes — there is no max-count eviction and no setTimeout
@@ -128,6 +127,13 @@ function App() {
     window.addEventListener('message', handler)
   }, [])
 
+  // and triggers re-render of EVERYTHING
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCounter(prev => prev + 1)
+    }, 1000)
+  }, [])
+
   useEffect(() => {
     fetchNotifications({ userId: user?.id, theme: theme })
   }, [{ userId: user?.id, theme: theme }])
@@ -149,14 +155,14 @@ function App() {
         const parsed = JSON.parse(saved)
         console.log('Restored state from localStorage:', parsed.counter)
       }
-    } catch (e) { }
-  });
+    } catch (e) {
+    }
+  })
 
   //remove counter from useEffect deps
   useEffect(() => {
     const path = window.location.pathname;
     setRouteHistory((prev) => [...prev, path]);
-    console.log('Route history length:', routeHistory.length);
   }, []);
 
   const fetchNotifications = async (params: any) => {
@@ -201,24 +207,11 @@ function App() {
     const creds = localStorage.getItem('auth_credentials')
     if (creds) {
       try {
-        const { username, password } = JSON.parse(creds);
-        setUser({
-          name: username,
-          email: username + '@company.com',
-          token: btoa(username + ':' + password),
-        });
+        const { username, password } = JSON.parse(creds)
+        setUser({ name: username, email: username + '@company.com', token: btoa(username + ':' + password) })
       } catch (e) { }
-      } catch(e) {}
-=======
-      } catch (e) { }
-
     }
   }, [])
-
-  const onEditPropHandler = useCallback((_id: number, _text: string) => { }, []);
-  const onAddPropHandler = useCallback((_text: string) => { }, []);
-  const onDeletePropHandler = useCallback((_id: number) => { }, []);
-  const onTogglePropHandler = useCallback((_id: number) => { }, []);
 
   return (
     <ErrorBoundary>
@@ -275,109 +268,20 @@ function App() {
                 </div>
               )}
               <main className="flex-1 p-5 overflow-auto">
-                <Suspense fallback={<PageFallback />}>
-                  <Routes>
-                    <Route
-                      path="/"
-                      element={
-                        <Dashboard
-                          theme={theme}
-                          user={user}
-                          notifications={notifications}
-                          globalSearchQuery={globalSearchQuery}
-                          setGlobalSearchQuery={setGlobalSearchQuery}
-                          sidebarOpen={sidebarOpen}
-                          getFilteredData={getFilteredData}
-                          appData={appData}
-                          setAppData={setAppData}
-                          handleThemeToggle={handleThemeToggle}
-                        />
-                      }
-                    />
-
-                    <Route
-                      path="/crypto"
-                      element={<CryptoTracker theme={theme} />}
-                    />
-                    <Route
-                      path="/weather"
-                      element={<WeatherWidget theme={theme} />}
-                    />
-                    <Route
-                      path="/users"
-                      element={
-                        <UserList
-                          theme={theme}
-                          globalSearchQuery={globalSearchQuery}
-                        />
-                      }
-                    />
-                    <Route path="/posts" element={<PostsFeed theme={theme} />} />
-                    <Route
-                      path="/todos"
-                      element={
-                        <TodoList
-                          todos={[]}
-                          onEdit={onEditPropHandler}
-                          onAdd={onAddPropHandler}
-                          onDelete={onDeletePropHandler}
-                          onToggle={onTogglePropHandler}
-                          theme={theme}
-                        />
-                      }
-                    />
-                    <Route
-                      path="/charts"
-                      element={
-                        <DataChart
-                          posts={[]}
-                          users={[]}
-                          todos={[]}
-                          comments={[]}
-                          theme={theme}
-                        />
-                      }
-                    />
-                    <Route
-                      path="/gallery"
-                      element={<ImageGallery photos={[]} theme={theme} />}
-                    />
-                    <Route
-                      path="/editor"
-                      element={<MarkdownEditor theme={theme} />}
-                    />
-                    <Route
-                      path="/analytics"
-                      element={
-                        <Analytics
-                          posts={[]}
-                          users={[]}
-                          todos={[]}
-                          comments={[]}
-                          albums={[]}
-                          photos={[]}
-                          theme={theme}
-                        />
-                      }
-                    />
-                    <Route
-                      path="/search"
-                      element={<SearchFilter data={[]} theme={theme} />}
-                    />
-                    <Route path="/3d" element={<ThreeScene theme={theme} />} />
-                    <Route
-                      path="/reports"
-                      element={
-                        <ReportGenerator posts={[]} users={[]} theme={theme} />
-                      }
-                    />
-                    <Route
-                      path="/d3"
-                      element={<D3Visualization data={[]} theme={theme} />}
-                    />
-                    <Route
-                      path="/math"
-                      element={<MathPlayground theme={theme} />}
+                <Routes>
+                  <Route path="/" element={
+                    <Dashboard
+                      theme={theme}
+                      user={user}
+                      notifications={notifications}
+                      globalSearchQuery={globalSearchQuery}
+                      setGlobalSearchQuery={setGlobalSearchQuery}
+                      counter={counter}
+                      sidebarOpen={sidebarOpen}
+                      getFilteredData={getFilteredData}
+                      appData={appData}
+                      setAppData={setAppData}
+                      handleThemeToggle={handleThemeToggle}
                     />
                   } />
                   <Route path="/crypto" element={<CryptoTracker theme={theme} counter={counter} />} />
@@ -404,17 +308,9 @@ function App() {
               {toasts.map(toast => (
                 <div
                   key={toast.id}
-                  className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${toast.type === 'error'
-                    ? 'bg-red-500'
-                    : toast.type === 'success'
-                      ? 'bg-green-600'
-                      : 'bg-blue-500'
-                    }`}
-
                   className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${toast.type === 'error' ? 'bg-red-500' :
                       toast.type === 'success' ? 'bg-green-600' : 'bg-blue-500'
                     }`}
-
                 >
                   <span className="flex-1">{toast.message}</span>
                   <button

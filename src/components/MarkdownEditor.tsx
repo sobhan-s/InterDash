@@ -1,12 +1,3 @@
-<<<<<<< fix/bug-18-use-react-memo
-import React, { memo, useState, useEffect } from 'react'
-import { marked } from 'marked'
-import DOMPurify from 'dompurify'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Button } from './ui/button'
-import { FileText, Undo2 } from 'lucide-react'
-import { Badge } from './ui/badge'
-=======
 import React, { useState, useEffect } from 'react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
@@ -14,21 +5,16 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { FileText, Undo2 } from 'lucide-react';
 import { Badge } from './ui/badge';
->>>>>>> dev
 
 import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 interface MarkdownEditorProps {
-<<<<<<< fix/bug-18-use-react-memo
-  theme: string
-=======
   theme: string;
   counter: number;
->>>>>>> dev
 }
 
-const MarkdownEditor = ({ theme }: MarkdownEditorProps) => {
+const MarkdownEditor = ({ theme, counter }: MarkdownEditorProps) => {
   const [markdown, setMarkdown] = useState(`# Hello World
 
 This is a **markdown** editor with _live preview_.
@@ -58,15 +44,9 @@ function hello() {
 3. Third item
 `);
 
-<<<<<<< fix/bug-18-use-react-memo
-  const [preview, setPreview] = useState('')
-  const [wordCount, setWordCount] = useState(0)
-  const [history, setHistory] = useState<string[]>([])
-=======
   const [preview, setPreview] = useState('');
   const [wordCount, setWordCount] = useState(0);
   const [history, setHistory] = useState<string[]>([]);
->>>>>>> dev
 
   useEffect(() => {
     const html = marked(markdown) as string;
@@ -74,13 +54,8 @@ function hello() {
     setPreview(sanitized);
     setWordCount(markdown.split(/\s+/).filter(Boolean).length);
 
-<<<<<<< fix/bug-18-use-react-memo
-    setHistory(prev => [...prev, markdown])
-  }, [markdown])
-=======
     setHistory((prev) => [...prev, markdown]);
   }, [markdown, counter]);
->>>>>>> dev
 
   return (
     <Card>
@@ -132,8 +107,4 @@ function hello() {
   );
 };
 
-<<<<<<< fix/bug-18-use-react-memo
-export default memo(MarkdownEditor)
-=======
 export default MarkdownEditor;
->>>>>>> dev

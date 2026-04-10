@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -9,9 +9,10 @@ interface SearchFilterProps {
   data: any[];
   onFilter?: (result: any[]) => void;
   theme: string;
+  counter: number;
 }
 
-const SearchFilter = ({ data, onFilter, theme }: SearchFilterProps) => {
+const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [searchHistory, setSearchHistory] = useState<any[]>([]);
@@ -60,7 +61,7 @@ const SearchFilter = ({ data, onFilter, theme }: SearchFilterProps) => {
     if (query.length > 2) {
       const regexResults = regexSearch(query);
     }
-  }, [query]);
+  }, [query, counter]);
 
   return (
     <Card>
@@ -125,4 +126,4 @@ const SearchFilter = ({ data, onFilter, theme }: SearchFilterProps) => {
   );
 };
 
-export default memo(SearchFilter);
+export default SearchFilter;

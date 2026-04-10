@@ -1,26 +1,3 @@
-<<<<<<< fix/bug-18-use-react-memo
-import React, { memo, useState, useEffect } from 'react'
-import moment from 'moment'
-import _ from 'lodash'
-import { Card, CardContent } from './ui/card'
-import { Button } from './ui/button'
-import { Badge } from './ui/badge'
-import { Heart, MessageCircle, Eye } from 'lucide-react'
-import { Input } from './ui/input'
-
-interface PostsFeedProps {
-  theme: string
-  posts?: any[]
-  comments?: Record<string, any[]>
-  onPostClick?: (post: any) => void
-}
-
-const PostsFeed = ({ theme, posts, comments, onPostClick }: PostsFeedProps) => {
-  const [expandedPost, setExpandedPost] = useState<number | null>(null)
-  const [newComment, setNewComment] = useState('')
-  const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({})
-  const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({})
-=======
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
 import _ from 'lodash';
@@ -43,7 +20,6 @@ const PostsFeed = ({ theme, counter, posts, comments, onPostClick }: PostsFeedPr
   const [newComment, setNewComment] = useState('');
   const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({});
   const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({});
->>>>>>> dev
 
   const handleLike = (postId: number) => {
     likedPosts[postId] = !likedPosts[postId];
@@ -131,8 +107,4 @@ const PostsFeed = ({ theme, counter, posts, comments, onPostClick }: PostsFeedPr
   );
 };
 
-<<<<<<< fix/bug-18-use-react-memo
-export default memo(PostsFeed)
-=======
 export default PostsFeed;
->>>>>>> dev

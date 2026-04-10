@@ -1,38 +1,12 @@
-<<<<<<< fix/bug-18-use-react-memo
-import React, { memo, useState, useEffect, useRef } from 'react'
-import { Chart, registerables } from 'chart.js'
-import _ from 'lodash'
-import moment from 'moment'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { BarChart3 } from 'lucide-react'
-=======
 import React, { useEffect, useRef } from 'react';
 import { Chart, registerables } from 'chart.js';
 import _ from 'lodash';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { BarChart3 } from 'lucide-react';
->>>>>>> dev
 
 Chart.register(...registerables);
 
 interface DataChartProps {
-<<<<<<< fix/bug-18-use-react-memo
-  posts: any[]
-  users: any[]
-  todos: any[]
-  comments: any[]
-  theme: string
-}
-
-const DataChart = ({ posts, users, todos, comments, theme }: DataChartProps) => {
-  const chartRef1 = useRef<HTMLCanvasElement>(null)
-  const chartRef2 = useRef<HTMLCanvasElement>(null)
-  const chartRef3 = useRef<HTMLCanvasElement>(null)
-  const [chart1, setChart1] = useState<Chart | null>(null)
-  const [chart2, setChart2] = useState<Chart | null>(null)
-  const [chart3, setChart3] = useState<Chart | null>(null)
-
-=======
   posts: any[];
   users: any[];
   todos: any[];
@@ -52,7 +26,6 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
   const chartInstance3 = useRef<Chart | null>(null);
 
 
->>>>>>> dev
   useEffect(() => {
     if (!chartRef1.current || posts.length === 0) return;
 
@@ -70,17 +43,6 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
           {
             label: 'Posts per User',
             data: Object.values(postsPerUser),
-<<<<<<< fix/bug-18-use-react-memo
-            backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-              '#FF9F40', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      })
-      setChart1(newChart)
-    }
-  }, [posts])
-=======
             backgroundColor: [
               '#FF6384',
               '#36A2EB',
@@ -100,7 +62,6 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
     };
   }, [posts, counter]);
 
->>>>>>> dev
 
   useEffect(() => {
     if (!chartRef2.current || todos.length === 0) return;
@@ -120,15 +81,6 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
           {
             data: [completed, pending],
             backgroundColor: ['#4BC0C0', '#FF6384'],
-<<<<<<< fix/bug-18-use-react-memo
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      })
-      setChart2(newChart)
-    }
-  }, [todos])
-=======
           },
         ],
       },
@@ -139,7 +91,6 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
       chartInstance2.current?.destroy();
     };
   }, [todos, counter]);
->>>>>>> dev
 
  
   useEffect(() => {
@@ -164,22 +115,12 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
             data: top10.map(([, count]) => count),
             borderColor: '#36A2EB',
             backgroundColor: 'rgba(54, 162, 235, 0.1)',
-<<<<<<< fix/bug-18-use-react-memo
-          }]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-      })
-      setChart3(newChart)
-    }
-  }, [comments])
-=======
             fill: true,
           },
         ],
       },
       options: { responsive: true, maintainAspectRatio: false },
     });
->>>>>>> dev
 
     return () => {
       chartInstance3.current?.destroy();
@@ -217,8 +158,4 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
   );
 };
 
-<<<<<<< fix/bug-18-use-react-memo
-export default memo(DataChart)
-=======
 export default DataChart;
->>>>>>> dev

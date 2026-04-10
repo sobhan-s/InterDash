@@ -1,18 +1,9 @@
-<<<<<<< fix/bug-18-use-react-memo
-import React, { memo, useRef, useState, useEffect } from 'react'
-import * as THREE from 'three'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Text, Box, Sphere, Torus } from '@react-three/drei'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Cuboid } from 'lucide-react'
-=======
 import React, { useRef, useState, useEffect } from 'react';
 import * as THREE from 'three';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls, Text, Box, Sphere, Torus } from '@react-three/drei';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Cuboid } from 'lucide-react';
->>>>>>> dev
 
 function SpinningBox({ position, color }: { position: [number, number, number]; color: string }) {
   const meshRef = useRef<THREE.Mesh>(null!);
@@ -78,12 +69,6 @@ function SpinningTorus() {
 }
 
 interface ThreeSceneProps {
-<<<<<<< fix/bug-18-use-react-memo
-  theme: string
-}
-
-const ThreeScene = ({ theme }: ThreeSceneProps) => {
-=======
   counter: number;
   theme: string;
 }
@@ -94,7 +79,6 @@ const ThreeScene = ({ counter, theme }: ThreeSceneProps) => {
     setRotationSpeed(1 + Math.sin(counter * 0.1) * 0.5);
   }, [counter]);
 
->>>>>>> dev
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -121,13 +105,12 @@ const ThreeScene = ({ counter, theme }: ThreeSceneProps) => {
             <gridHelper args={[10, 10]} />
           </Canvas>
         </div>
+        <p className="text-xs text-muted-foreground mt-2">
+          Rotation speed: {rotationSpeed.toFixed(2)} | Render #{counter}
+        </p>
       </CardContent>
     </Card>
   );
 };
 
-<<<<<<< fix/bug-18-use-react-memo
-export default memo(ThreeScene)
-=======
 export default ThreeScene;
->>>>>>> dev

@@ -88,6 +88,7 @@ export interface DashboardModalProps {
 
 export interface DashboardOverviewTabProps {
   theme: string;
+  counter: number;
   globalSearchQuery: string;
   lastUpdated: string | null;
   cryptoData: CryptoData[];

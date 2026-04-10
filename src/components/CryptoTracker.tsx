@@ -1,23 +1,24 @@
-import React, { memo, useState, useEffect } from 'react'
-import _ from 'lodash'
-import moment from 'moment'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
-import { Badge } from './ui/badge'
-import { Star, TrendingUp, TrendingDown } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import _ from 'lodash';
+import moment from 'moment';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Star, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface CryptoTrackerProps {
-  theme: string
-  data?: any[]
-  onSelect?: (item: any) => void
+  theme: string;
+  counter: number;
+  data?: any[];
+  onSelect?: (item: any) => void;
 }
 
-const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
-  const [sortBy, setSortBy] = useState('market_cap')
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc')
-  const [search, setSearch] = useState('')
-  const [favorites, setFavorites] = useState<string[]>([])
+const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) => {
+  const [sortBy, setSortBy] = useState('market_cap');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const [search, setSearch] = useState('');
+  const [favorites, setFavorites] = useState<string[]>([]);
 
   const toggleFavorite = (coin: any) => {
     if (favorites.includes(coin.id)) {
@@ -93,8 +94,11 @@ const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
             </thead>
             <tbody>
               {sortedPrices.map((coin: any, index: number) => (
-                <tr key={index} className="border-b hover:bg-muted/50 cursor-pointer"
-                  onClick={() => onSelect && onSelect(coin)}>
+                <tr
+                  key={index}
+                  className="border-b hover:bg-muted/50 cursor-pointer"
+                  onClick={() => onSelect && onSelect(coin)}
+                >
                   <td className="p-2 flex items-center gap-2">
                     <img src={coin.image} alt={coin.name} className="w-5 h-5 rounded-full" />
                     <span>{coin.name}</span>
@@ -134,11 +138,11 @@ const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
           </table>
         </div>
         <p className="text-[11px] text-muted-foreground mt-2">
-          Last updated: {moment().format('HH:mm:ss')}
+          Last updated: {moment().format('HH:mm:ss')} | Render #{counter}
         </p>
       </CardContent>
     </Card>
   );
 };
 
-export default memo(CryptoTracker)
+export default CryptoTracker;

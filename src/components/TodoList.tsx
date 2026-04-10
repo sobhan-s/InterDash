@@ -1,4 +1,4 @@
-import React, { memo, useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import moment from 'moment';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -13,9 +13,10 @@ interface TodoListProps {
   onToggle: (id: number) => void;
   onEdit: (id: number, text: string) => void;
   theme: string;
+  counter: number;
 }
 
-const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme }: TodoListProps) => {
+const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme, counter }: TodoListProps) => {
   const [newTodo, setNewTodo] = useState('');
   const [filter, setFilter] = useState('all');
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -41,7 +42,7 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme }: TodoListP
   useEffect(() => {
     setCompletedCount(todos.filter((t) => t.completed).length);
     setActiveCount(todos.filter((t) => !t.completed).length);
-  }, [todos]);
+  }, [todos, counter]);
 
   const filteredTodos = todos.filter((t: any) => {
     if (filter === 'completed') return t.completed;
@@ -180,4 +181,4 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme }: TodoListP
   );
 };
 
-export default memo(TodoList);
+export default TodoList;

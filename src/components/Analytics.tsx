@@ -1,29 +1,3 @@
-<<<<<<< fix/bug-18-use-react-memo
-import React, { memo, useState, useEffect } from 'react'
-import _ from 'lodash'
-import moment from 'moment'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Badge } from './ui/badge'
-import { Activity, BarChart, Users, FileText, CheckSquare, Image } from 'lucide-react'
-
-import { BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts'
-
-interface AnalyticsProps {
-  posts: any[]
-  users: any[]
-  todos: any[]
-  comments: any[]
-  albums: any[]
-  photos: any[]
-  theme: string
-}
-
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#8DD1E1', '#A4DE6C', '#D0ED57']
-
-const Analytics = ({ posts, users, todos, comments, albums, photos, theme }: AnalyticsProps) => {
-  const [stats, setStats] = useState<any>({})
-  const [calculating, setCalculating] = useState(false)
-=======
 import React, { useState, useEffect } from 'react';
 import _ from 'lodash';
 import moment from 'moment';
@@ -84,7 +58,6 @@ const Analytics = ({
 }: AnalyticsProps) => {
   const [stats, setStats] = useState<any>({});
   const [calculating, setCalculating] = useState(false);
->>>>>>> dev
 
   useEffect(() => {
     setCalculating(true);
@@ -134,17 +107,10 @@ const Analytics = ({
       return result;
     };
 
-<<<<<<< fix/bug-18-use-react-memo
-    const result = calculateStats()
-    setStats(result)
-    setCalculating(false)
-  }, [posts, users, todos, comments, albums, photos])
-=======
     const result = calculateStats();
     setStats(result);
     setCalculating(false);
   }, [posts, users, todos, comments, albums, photos, counter]);
->>>>>>> dev
 
   if (calculating) return <p className="text-sm text-muted-foreground">Calculating analytics...</p>;
 
@@ -265,8 +231,4 @@ const Analytics = ({
   );
 };
 
-<<<<<<< fix/bug-18-use-react-memo
-export default memo(Analytics)
-=======
 export default Analytics;
->>>>>>> dev

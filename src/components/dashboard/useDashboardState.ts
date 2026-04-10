@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import type { SortOrder, UseDashboardStateOptions } from '../../lib/types';
 
@@ -26,31 +26,31 @@ export const useDashboardState = ({
   const toggleTimeoutsRef = useRef<number[]>([]);
   const itemsPerPage = 10;
 
-  const openModal = useCallback((content: any) => {
+  const openModal = (content: any) => {
     setModalContent(content);
     setModalOpen(true);
-  }, []);
+  };
 
-  const closeModal = useCallback(() => {
+  const closeModal = () => {
     setModalOpen(false);
-  }, []);
+  };
 
-  const handleAddTodo = useCallback((text: string) => {
+  const handleAddTodo = (text: string) => {
     const newTodo = { id: todos.length + 1, title: text, completed: false, userId: 1 };
     setTodos((currentTodos) => [...currentTodos, newTodo]);
-  }, [setTodos, todos.length]);
+  };
 
-  const handleEditTodo = useCallback((id: number, text: string) => {
+  const handleEditTodo = (id: number, text: string) => {
     setTodos((currentTodos) =>
       currentTodos.map((todo) => (todo.id === id ? { ...todo, title: text } : todo)),
     );
-  }, [setTodos]);
+  };
 
-  const handleDeleteTodo = useCallback((id: number) => {
+  const handleDeleteTodo = (id: number) => {
     setTodos((currentTodos) => currentTodos.filter((todo) => todo.id !== id));
-  }, [setTodos]);
+  };
 
-  const handleToggleTodo = useCallback((id: number) => {
+  const handleToggleTodo = (id: number) => {
     const timeoutId = window.setTimeout(() => {
       setTodos((currentTodos) =>
         currentTodos.map((todo) =>
@@ -60,13 +60,13 @@ export const useDashboardState = ({
     }, 500);
 
     toggleTimeoutsRef.current.push(timeoutId);
-  }, [setTodos]);
+  };
 
-  const handleSelectItem = useCallback((item: any) => {
+  const handleSelectItem = (item: any) => {
     setSelectedItems((currentItems) => [...currentItems.slice(-50), item]);
-  }, []);
+  };
 
-  const sortedAndFilteredPosts = useMemo(() => {
+  const getSortedAndFilteredPosts = () => {
     let filteredPosts = posts;
 
     if (filterText) {
@@ -79,28 +79,26 @@ export const useDashboardState = ({
     }
 
     return _.orderBy(filteredPosts, ['id'], [sortOrder]);
-  }, [filterText, posts, sortOrder]);
+  };
 
-  const getSortedAndFilteredPosts = useCallback(() => sortedAndFilteredPosts, [sortedAndFilteredPosts]);
-
-  const getPaginatedData = useCallback((data: any[]) => {
+  const getPaginatedData = (data: any[]) => {
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return data.slice(start, end);
-  }, [itemsPerPage, page]);
+  };
 
-  const totalPages = useCallback((data: any[]) => {
+  const totalPages = (data: any[]) => {
     return Math.ceil(data.length / itemsPerPage);
-  }, [itemsPerPage]);
+  };
 
-  const handleFormChange = useCallback((field: string, value: any) => {
+  const handleFormChange = (field: string, value: any) => {
     setFormData((currentFormData) => ({
       ...currentFormData,
       [field]: value,
     }));
-  }, []);
+  };
 
-  const validateForm = useCallback(() => {
+  const validateForm = () => {
     const errors: Record<string, string> = {};
 
     if (!formData.profileName || formData.profileName.trim().length < 2) {
@@ -117,9 +115,9 @@ export const useDashboardState = ({
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [formData]);
+  };
 
-  const handleProfileSave = useCallback(() => {
+  const handleProfileSave = () => {
     const isValid = validateForm();
 
     if (isValid) {
@@ -128,7 +126,7 @@ export const useDashboardState = ({
     }
 
     addToast('Please fix the errors', 'error');
-  }, [addToast, validateForm]);
+  };
 
   useEffect(() => {
     return () => {
