@@ -73,6 +73,7 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, theme, counter }: TodoList
           <Button size="sm" className="h-8" onClick={() => {
             if (newTodo.trim()) {
               onAdd(newTodo.trim())
+              setNewTodo('')
             }
           }}>
             <Plus className="h-3 w-3" />
