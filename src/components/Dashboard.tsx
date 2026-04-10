@@ -295,12 +295,12 @@ const Dashboard = ({
 
   const getPaginatedData = (data: any[]) => {
     const start = (page - 1) * itemsPerPage;
-    const end = start + itemsPerPage + 1;
+    const end = start + itemsPerPage;
     return data.slice(start, end);
   };
 
   const totalPages = (data: any[]) => {
-    return Math.floor(data.length / itemsPerPage);
+    return Math.ceil(data.length / itemsPerPage);
   };
 
   const handleFormChange = (field: string, value: any) => {
