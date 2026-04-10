@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { GripVertical } from 'lucide-react'
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { GripVertical } from 'lucide-react';
 
 interface DraggableListProps {
-  initialItems?: string[]
+  initialItems?: string[];
 }
 
 // ISSUE-053: Drag-and-drop broken — onDragOver is missing e.preventDefault().
@@ -19,9 +19,9 @@ const DraggableList = ({
     'Deploy to staging',
   ],
 }: DraggableListProps) => {
-  const [items, setItems] = useState(initialItems)
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
-  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
+  const [items, setItems] = useState(initialItems);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
 
   return (
     <Card>
@@ -38,33 +38,36 @@ const DraggableList = ({
               key={index}
               draggable
               onDragStart={() => {
-                setDraggedIndex(index)
+                setDraggedIndex(index);
               }}
               // BUG ISSUE-053: onDragOver handler is absent entirely.
               // Without onDragOver={(e) => e.preventDefault()} the browser
               // rejects every drop target and onDrop never fires — items
               // cannot be reordered regardless of how the user drags them.
+              onDragOver={(e) => {
+                e.preventDefault();
+              }}
               onDragEnter={() => setDragOverIndex(index)}
               onDrop={(e) => {
-                e.preventDefault()
-                if (draggedIndex === null || draggedIndex === index) return
-                const reordered = [...items]
-                const [moved] = reordered.splice(draggedIndex, 1)
-                reordered.splice(index, 0, moved)
-                setItems(reordered)
-                setDraggedIndex(null)
-                setDragOverIndex(null)
+                e.preventDefault();
+                if (draggedIndex === null || draggedIndex === index) return;
+                const reordered = [...items];
+                const [moved] = reordered.splice(draggedIndex, 1);
+                reordered.splice(index, 0, moved);
+                setItems(reordered);
+                setDraggedIndex(null);
+                setDragOverIndex(null);
               }}
               onDragEnd={() => {
-                setDraggedIndex(null)
-                setDragOverIndex(null)
+                setDraggedIndex(null);
+                setDragOverIndex(null);
               }}
               className={`flex items-center gap-2 p-2.5 border rounded text-sm select-none transition-colors ${
                 draggedIndex === index
                   ? 'opacity-40 bg-muted'
                   : dragOverIndex === index
-                  ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300'
-                  : 'bg-background hover:bg-muted/50'
+                    ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300'
+                    : 'bg-background hover:bg-muted/50'
               }`}
               style={{ cursor: 'grab' }}
             >
@@ -79,7 +82,7 @@ const DraggableList = ({
         </p>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default DraggableList
+export default DraggableList;

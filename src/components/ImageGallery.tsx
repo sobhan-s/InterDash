@@ -76,7 +76,8 @@ const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
           >
             <div className="text-center text-white" onClick={e => e.stopPropagation()}>
               <img src={selectedPhoto.url} alt="photo" className="max-w-[80vw] max-h-[80vh] rounded-lg" />
-              <p className="mt-3 text-sm" dangerouslySetInnerHTML={{ __html: selectedPhoto.title }} />
+              //fix the xss issue
+              <p className="mt-3 text-sm" >{ selectedPhoto.title }</p> 
             </div>
           </div>
         )}

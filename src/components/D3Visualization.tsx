@@ -1,7 +1,8 @@
-import React, { useMemo, useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import * as d3 from 'd3'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { GitBranch } from 'lucide-react'
+
 
 interface D3VisualizationProps {
   data: any[]
@@ -11,30 +12,12 @@ interface D3VisualizationProps {
 
 const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
   const svgRef = useRef<SVGSVGElement>(null)
-  const simulationRef = useRef<d3.Simulation<any, undefined> | null>(null)
   const [dimensions] = useState({ width: 600, height: 300 })
 
   console.log('D3Visualization render', counter)
 
-  const graph = useMemo(() => {
-    const nodes = data.slice(0, 50).map((d: any, i: number) => ({
-      id: d.id || i,
-      name: d.title || d.name || `Item ${i}`,
-      value: ((d.id || i) % 100) + 1,
-    }))
-
-    const links = nodes.slice(1).map((node, i) => ({
-      source: nodes[Math.max(0, Math.floor(i / 2))],
-      target: node,
-    }))
-
-    return { nodes, links }
-  }, [data])
-
   useEffect(() => {
-    if (!svgRef.current || graph.nodes.length === 0) return
-
-    simulationRef.current?.stop()
+    if (!svgRef.current || !data || data.length === 0) return
 
     const svg = d3.select(svgRef.current)
     svg.selectAll('*').remove()
@@ -45,30 +28,42 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
 
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
 
+    // Force layout - intentionally expensive
+    const nodes = data.slice(0, 50).map((d: any, i: number) => ({
+      id: d.id || i,
+      name: d.title || d.name || `Item ${i}`,
+      value: Math.random() * 100,
+    }))
+
+    const links = nodes.slice(1).map((node: any, i: number) => ({
+      source: nodes[Math.floor(Math.random() * Math.min(i, nodes.length))],
+      target: node,
+    }))
+
+    const simulation = d3.forceSimulation(nodes as any)
+      .force('link', d3.forceLink(links).id((d: any) => d.id).distance(50))
+      .force('charge', d3.forceManyBody().strength(-100))
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('collision', d3.forceCollide().radius(15))
+
     const link = g.append('g')
       .selectAll('line')
-      .data(graph.links)
+      .data(links)
       .join('line')
-      .attr('stroke', theme === 'dark' ? '#64748b' : '#999')
+      .attr('stroke', '#999')
       .attr('stroke-opacity', 0.6)
       .attr('stroke-width', 1)
 
     const node = g.append('g')
       .selectAll('circle')
-      .data(graph.nodes)
+      .data(nodes)
       .join('circle')
       .attr('r', (d: any) => 3 + d.value / 20)
-      .attr('fill', (_d: any, i: number) => d3.schemeCategory10[i % 10])
-      .attr('stroke', theme === 'dark' ? '#0f172a' : '#fff')
+      .attr('fill', (d: any, i: number) => d3.schemeCategory10[i % 10])
+      .attr('stroke', '#fff')
       .attr('stroke-width', 1.5)
 
     node.append('title').text((d: any) => d.name)
-
-    const simulation = d3.forceSimulation(graph.nodes as any)
-      .force('link', d3.forceLink(graph.links).id((d: any) => d.id).distance(50))
-      .force('charge', d3.forceManyBody().strength(-100))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('collision', d3.forceCollide().radius(15))
 
     simulation.on('tick', () => {
       link
@@ -82,18 +77,7 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
         .attr('cy', (d: any) => d.y)
     })
 
-    simulationRef.current = simulation
-
-    return () => {
-      simulation.stop()
-    }
-  }, [graph, dimensions, theme])
-
-  useEffect(() => {
-    return () => {
-      simulationRef.current?.stop()
-    }
-  }, [])
+  }, [data, counter, dimensions])
 
   return (
     <Card>

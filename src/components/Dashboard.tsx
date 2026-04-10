@@ -169,15 +169,15 @@ const Dashboard = ({
   useEffect(() => {
     const handleResize = () => {
       console.log('Window resized:', window.innerWidth)
-      setExpandedSections({...expandedSections})
+      setExpandedSections({ ...expandedSections })
     }
-    window.addEventListener('resize', handleResize);
-    window.addEventListener('scroll', handleResize);
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('scroll', handleResize)
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleResize);
     };
-  }, []);
+  }, [])
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -263,10 +263,14 @@ const Dashboard = ({
   };
 
   const handleAddTodo = (text: string) => {
-    const newTodo = { id: todos.length + 1, title: text, completed: false, userId: 1 };
-    todos.push(newTodo); // Direct mutation!
-    setTodos(todos); // React won't detect this change
-  };
+    const newTodo = { id: todos.length + 1, title: text, completed: false, userId: 1 }
+    todos.push(newTodo) // Direct mutation!
+    setTodos(todos) // React won't detect this change
+  }
+
+  const handleEditTodo = (id: number, text: string) => {
+    setTodos(todos.map(t => t.id === id ? { ...t, title: text } : t))
+  }
 
   const handleDeleteTodo = (id: number) => {
     const index = todos.findIndex((t) => t.id === id);
@@ -289,9 +293,8 @@ const Dashboard = ({
   }, []);
 
   const handleSelectItem = (item: any) => {
-    selectedItems.push(item);
-    setSelectedItems(selectedItems);
-  };
+    setSelectedItems(prev => [...prev.slice(-50), item])
+  }
 
   const getPaginatedData = (data: any[]) => {
     const start = (page - 1) * itemsPerPage;
@@ -437,6 +440,7 @@ const Dashboard = ({
                 onAdd={handleAddTodo}
                 onDelete={handleDeleteTodo}
                 onToggle={handleToggleTodo}
+                onEdit={handleEditTodo}
                 theme={theme}
                 counter={counter}
               />
@@ -583,7 +587,7 @@ const Dashboard = ({
               <h2 className="text-lg font-semibold">Posts</h2>
               {filterText && (
                 <div className="text-sm text-muted-foreground">
-                  Filtering by: <span dangerouslySetInnerHTML={{ __html: filterHighlight }} />
+                  Filtering by: <span className="font-medium">{filterText}</span>
                 </div>
               )}
               <div className="flex gap-2">
@@ -607,9 +611,8 @@ const Dashboard = ({
                   <Card key={index}>
                     <CardContent className="p-3">
                       <h4
-                        className="font-semibold text-sm"
-                        dangerouslySetInnerHTML={{ __html: post.title }}
-                      />
+                      //removed setinnerHTML
+                        className="font-semibold text-sm">{post.title}</h4>
                       <p className="text-xs text-muted-foreground mt-1">{post.body}</p>
                       <div className="text-[11px] text-muted-foreground mt-1">
                         Post ID: {post.id} | User: {post.userId}
@@ -650,6 +653,7 @@ const Dashboard = ({
                 onAdd={handleAddTodo}
                 onDelete={handleDeleteTodo}
                 onToggle={handleToggleTodo}
+                onEdit={handleEditTodo}
                 theme={theme}
                 counter={counter}
               />
