@@ -93,7 +93,7 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
           />
         </div>
         {showDropdown && searchResults.length > 0 && (
-          <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 max-h-[200px] overflow-auto z-50 rounded-md shadow-lg">
+          <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 max-h-[200px] overflow-auto z-100 rounded-md shadow-lg">
             {searchResults.map((result: any, idx: number) => (
               <div key={idx} className="p-2 cursor-pointer hover:bg-gray-50 border-b border-gray-100 text-sm"
                    onClick={() => { console.log(result); setShowDropdown(false) }}>
@@ -116,7 +116,7 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
             </Badge>
           </div>
           {showNotifPanel && (
-            <div className="absolute top-full right-0 w-[300px] bg-white border border-gray-200 rounded-md shadow-lg z-50 mt-2 max-h-[300px] overflow-auto">
+            <div className="absolute top-full right-0 w-[300px] bg-white border border-gray-200 rounded-md shadow-lg z-200 mt-2 max-h-[300px] overflow-auto">
               <div className="p-3 border-b font-semibold text-sm">Notifications ({notifications.length})</div>
               {notifications.map((notif: any, i: number) => (
                 <div key={i} className="p-2 border-b border-gray-100 text-xs hover:bg-gray-50 cursor-pointer">
