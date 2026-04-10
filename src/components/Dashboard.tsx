@@ -111,12 +111,6 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
     console.log('Dashboard state persisted, size:', JSON.stringify(dashboardState).length)
   }, [counter])
 
-  useEffect(() => {
-    if (photos.length > 0) {
-      const cloned = JSON.parse(JSON.stringify(photos))
-      console.log('Deep cloned', cloned.length, 'photos for no reason')
-    }
-  }, [counter])
 
   useEffect(() => {
     const pollTimer = setInterval(async () => {
@@ -136,13 +130,6 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
     }
     localStorage.setItem('dashboardState', JSON.stringify(dashboardState))
     console.log('Dashboard state persisted, size:', JSON.stringify(dashboardState).length)
-  }, [counter])
-
-  useEffect(() => {
-    if (photos.length > 0) {
-      const cloned = JSON.parse(JSON.stringify(photos))
-      console.log('Deep cloned', cloned.length, 'photos for no reason')
-    }
   }, [counter])
 
   const fetchAllData = async () => {
