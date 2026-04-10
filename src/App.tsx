@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext } from 'react'
+import React, { useState, useEffect, createContext, useRef } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Dashboard from './components/Dashboard'
 import Header from './components/Header'
@@ -27,7 +27,7 @@ interface Toast {
   type: 'info' | 'success' | 'error'
 }
 
-class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, errorLog: any[]}> {
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, errorLog: any[] }> {
   constructor(props: any) {
     super(props)
     this.state = { hasError: false, errorLog: [] }
@@ -41,7 +41,7 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
   }
   render() {
     if (this.state.hasError) {
-      return <div style={{padding: '20px', color: 'red'}}>Something went wrong. Please refresh.</div>
+      return <div style={{ padding: '20px', color: 'red' }}>Something went wrong. Please refresh.</div>
     }
     return this.props.children
   }
@@ -62,14 +62,21 @@ function App() {
   // addToast only pushes — there is no max-count eviction and no setTimeout
   // to auto-dismiss entries. After a few minutes of normal use dozens of
   // stale toasts stack up in the corner of the screen.
+  // ✅ stable counter via useRef, max 5 toasts, auto-dismiss after 3s
+  const MAX_TOASTS = 5
   const [toasts, setToasts] = useState<Toast[]>([])
-  let _toastCounter = 0
-  const addToast = (message: string, type: Toast['type'] = 'info') => {
-    const id = ++_toastCounter
-    setToasts(prev => [...prev, { id, message, type }])
-    // Missing: setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3000)
-  }
+  const _toastCounter = useRef(0)
 
+  const addToast = (message: string, type: Toast['type'] = 'info') => {
+    const id = ++_toastCounter.current
+    setToasts(prev => {
+      const next = [...prev, { id, message, type }]
+      return next.length > MAX_TOASTS ? next.slice(-MAX_TOASTS) : next
+    })
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id))
+    }, 3000)
+  }
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const redirectUrl = params.get('redirect') || params.get('next') || params.get('return_to')
@@ -114,7 +121,7 @@ function App() {
           }
         }
         merge(appData, event.data)
-        setAppData({...appData})
+        setAppData({ ...appData })
         console.log('Merged postMessage data:', event.data)
       }
     }
@@ -203,7 +210,7 @@ function App() {
       try {
         const { username, password } = JSON.parse(creds)
         setUser({ name: username, email: username + '@company.com', token: btoa(username + ':' + password) })
-      } catch(e) {}
+      } catch (e) { }
     }
   }, [])
 
@@ -282,7 +289,7 @@ function App() {
                   <Route path="/weather" element={<WeatherWidget theme={theme} counter={counter} />} />
                   <Route path="/users" element={<UserList theme={theme} counter={counter} globalSearchQuery={globalSearchQuery} />} />
                   <Route path="/posts" element={<PostsFeed theme={theme} counter={counter} />} />
-                  <Route path="/todos" element={<TodoList todos={[]} onAdd={() => {}} onDelete={() => {}} onToggle={() => {}} theme={theme} counter={counter} />} />
+                  <Route path="/todos" element={<TodoList todos={[]} onAdd={() => { }} onEdit={() => { }} onDelete={() => { }} onToggle={() => { }} theme={theme} counter={counter} />} />
                   <Route path="/charts" element={<DataChart posts={[]} users={[]} todos={[]} comments={[]} theme={theme} counter={counter} />} />
                   <Route path="/gallery" element={<ImageGallery photos={[]} theme={theme} counter={counter} />} />
                   <Route path="/editor" element={<MarkdownEditor theme={theme} counter={counter} />} />
@@ -302,10 +309,9 @@ function App() {
               {toasts.map(toast => (
                 <div
                   key={toast.id}
-                  className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${
-                    toast.type === 'error' ? 'bg-red-500' :
-                    toast.type === 'success' ? 'bg-green-600' : 'bg-blue-500'
-                  }`}
+                  className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${toast.type === 'error' ? 'bg-red-500' :
+                      toast.type === 'success' ? 'bg-green-600' : 'bg-blue-500'
+                    }`}
                 >
                   <span className="flex-1">{toast.message}</span>
                   <button
@@ -323,3 +329,7 @@ function App() {
 }
 
 export default App
+function setToasts(arg0: (prev: any) => any) {
+  throw new Error('Function not implemented.')
+}
+
