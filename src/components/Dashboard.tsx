@@ -169,7 +169,7 @@ const Dashboard = ({
   useEffect(() => {
     const handleResize = () => {
       console.log('Window resized:', window.innerWidth)
-      setExpandedSections({...expandedSections})
+      setExpandedSections({ ...expandedSections })
     }
     window.addEventListener('resize', handleResize)
     window.addEventListener('scroll', handleResize)
@@ -263,10 +263,14 @@ const Dashboard = ({
   };
 
   const handleAddTodo = (text: string) => {
-    const newTodo = { id: todos.length + 1, title: text, completed: false, userId: 1 };
-    todos.push(newTodo); // Direct mutation!
-    setTodos(todos); // React won't detect this change
-  };
+    const newTodo = { id: todos.length + 1, title: text, completed: false, userId: 1 }
+    todos.push(newTodo) // Direct mutation!
+    setTodos(todos) // React won't detect this change
+  }
+
+  const handleEditTodo = (id: number, text: string) => {
+    setTodos(todos.map(t => t.id === id ? { ...t, title: text } : t))
+  }
 
   const handleDeleteTodo = (id: number) => {
     const index = todos.findIndex((t) => t.id === id);
@@ -437,6 +441,7 @@ const Dashboard = ({
                 onAdd={handleAddTodo}
                 onDelete={handleDeleteTodo}
                 onToggle={handleToggleTodo}
+                onEdit={handleEditTodo}
                 theme={theme}
                 counter={counter}
               />
@@ -650,6 +655,7 @@ const Dashboard = ({
                 onAdd={handleAddTodo}
                 onDelete={handleDeleteTodo}
                 onToggle={handleToggleTodo}
+                onEdit={handleEditTodo}
                 theme={theme}
                 counter={counter}
               />

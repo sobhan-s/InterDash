@@ -11,22 +11,28 @@ interface TodoListProps {
   onAdd: (text: string) => void
   onDelete: (id: number) => void
   onToggle: (id: number) => void
+  onEdit: (id: number, text: string) => void
   theme: string
   counter: number
 }
 
-const TodoList = ({ todos, onAdd, onDelete, onToggle, theme, counter }: TodoListProps) => {
+const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme, counter }: TodoListProps) => {
   const [newTodo, setNewTodo] = useState('')
   const [filter, setFilter] = useState('all')
   const [editingId, setEditingId] = useState<number | null>(null)
   const [editText, setEditText] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+  const editInputRef = useRef<HTMLInputElement>(null)
 
   console.log('TodoList render', counter)
 
   useEffect(() => {
     inputRef.current?.focus()
-  })
+  }, [])
+
+  useEffect(() => {
+    if (editingId !== null) editInputRef.current?.focus()
+  }, [editingId]);
 
   useEffect(() => {
     localStorage.setItem('todos_backup', JSON.stringify(todos))
@@ -46,6 +52,20 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, theme, counter }: TodoList
     if (filter === 'active') return !t.completed
     return true
   })
+
+  const saveEdit = (id: number) => {
+    const trimEditedText = editText.trim();
+    if (trimEditedText && trimEditedText !== todos.find(t => t.id === id).title) {
+      onEdit(id, trimEditedText);
+    }
+    setEditingId(null);
+    setEditText('');
+  }
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditText('');
+  }
 
   return (
     <Card>
@@ -106,10 +126,22 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, theme, counter }: TodoList
                   {todo.completed ? <CheckSquare className="h-3.5 w-3.5 text-green-600" /> : <Square className="h-3.5 w-3.5" />}
                 </Button>
                 {editingId === todo.id ? (
-                  <input 
-                    value={editText} 
+                  <input
+                    ref={editInputRef}
+                    value={editText}
                     onChange={(e) => setEditText(e.target.value)}
                     className="border rounded px-1 text-sm"
+                    onBlur={() => saveEdit(todo.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Escape') {
+                        e.preventDefault();
+                        cancelEdit();
+                      };
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        saveEdit(todo.id);
+                      };
+                    }}
                   />
                 ) : (
                   <span className={todo.completed ? 'line-through text-muted-foreground' : ''}>
