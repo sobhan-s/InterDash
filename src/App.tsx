@@ -1,22 +1,24 @@
 import React, { useState, useEffect, createContext } from 'react'
+import { Suspense,lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import Dashboard from './components/Dashboard'
-import Header from './components/Header'
-import CryptoTracker from './components/CryptoTracker'
-import WeatherWidget from './components/WeatherWidget'
-import UserList from './components/UserList'
-import PostsFeed from './components/PostsFeed'
-import TodoList from './components/TodoList'
-import DataChart from './components/DataChart'
-import ImageGallery from './components/ImageGallery'
-import MarkdownEditor from './components/MarkdownEditor'
-import Analytics from './components/Analytics'
-import SearchFilter from './components/SearchFilter'
-import Footer from './components/Footer'
-import ThreeScene from './components/ThreeScene'
-import ReportGenerator from './components/ReportGenerator'
-import D3Visualization from './components/D3Visualization'
-import MathPlayground from './components/MathPlayground'
+const Dashboard =lazy(()=>import('./components/Dashboard')); 
+const Header=lazy(()=>import('./components/Header'));
+const CryptoTracker=lazy(()=>import('./components/CryptoTracker'));
+const WeatherWidget=lazy(()=>import('./components/WeatherWidget'));
+const UserList=lazy(()=>import('./components/UserList'));
+const PostsFeed=lazy(()=>import('./components/PostsFeed'));
+const TodoList=lazy(()=>import('./components/TodoList'));
+const DataChart =lazy(()=>import('./components/DataChart') ) ;
+const ImageGallery=lazy(()=>import('./components/ImageGallery'));
+const MarkdownEditor=lazy(()=>import('./components/MarkdownEditor')) ;
+const Analytics =lazy(()=>import('./components/Analytics'));
+const SearchFilter=lazy(()=>import('./components/SearchFilter'));
+const Footer=lazy(()=>import('./components/Footer'));
+const ThreeScene=lazy(()=>import('./components/ThreeScene'));
+const ReportGenerator=lazy(()=>import('./components/ReportGenerator'));
+const D3Visualization=lazy(()=>import('./components/D3Visualization'));
+const MathPlayground=lazy(()=>import('./components/MathPlayground'));
+
 
 export const AppContext = createContext<any>({})
 
@@ -46,6 +48,20 @@ class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasErr
     return this.props.children
   }
 }
+
+
+
+const PageFallback = () => {
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white">
+      <span className="text-lg font-medium">
+        Loading...
+      </span>
+    </div>
+  );
+};
+
+
 
 function App() {
   const [theme, setTheme] = useState('light')
@@ -265,8 +281,10 @@ function App() {
                 </div>
               )}
               <main className="flex-1 p-5 overflow-auto">
+                <Suspense fallback={<PageFallback/>}>
                 <Routes>
                   <Route path="/" element={
+  
                     <Dashboard
                       theme={theme}
                       user={user}
@@ -281,6 +299,9 @@ function App() {
                       handleThemeToggle={handleThemeToggle}
                     />
                   } />
+
+                  
+                  
                   <Route path="/crypto" element={<CryptoTracker theme={theme} counter={counter} />} />
                   <Route path="/weather" element={<WeatherWidget theme={theme} counter={counter} />} />
                   <Route path="/users" element={<UserList theme={theme} counter={counter} globalSearchQuery={globalSearchQuery} />} />
@@ -296,6 +317,8 @@ function App() {
                   <Route path="/d3" element={<D3Visualization data={[]} counter={counter} theme={theme} />} />
                   <Route path="/math" element={<MathPlayground counter={counter} theme={theme} />} />
                 </Routes>
+                </Suspense>
+                
               </main>
             </div>
             <Footer theme={theme} counter={counter} notifications={notifications} />

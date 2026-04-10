@@ -29,9 +29,12 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
   const [showSettingsMenu, setShowSettingsMenu] = useState(false)
 
   useEffect(() => {
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       setCurrentTime(moment().format('HH:mm:ss'))
     }, 1000)
+    return () => {
+      clearInterval(intervalId)
+    }
   }, [])
 
   useEffect(() => {
@@ -52,7 +55,10 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
       }
     }
     document.addEventListener('click', handler)
-  })
+    return () => {
+      document.removeEventListener('click', handler)
+    }
+  }, [showDropdown])
 
   useEffect(() => {
     if (searchResults.length > 0) {

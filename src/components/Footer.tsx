@@ -14,9 +14,12 @@ const Footer = ({ theme, counter, notifications }: FooterProps) => {
   console.log('Footer render', counter)
 
   useEffect(() => {
-    setInterval(() => {
+    const intervalId = setInterval(() => {
       setFooterTime(moment().format('HH:mm:ss'))
     }, 500)
+    return () => {
+      clearInterval(intervalId)
+    }
   }, [])
 
   useEffect(() => {
@@ -26,9 +29,13 @@ const Footer = ({ theme, counter, notifications }: FooterProps) => {
   }, [counter])
 
   useEffect(() => {
+    const previousHandler = window.onerror
     window.onerror = (msg, src, line, col, err) => {
       console.log('Footer caught global error:', msg)
       return true
+    }
+    return () => {
+      window.onerror = previousHandler
     }
   }, [])
 
