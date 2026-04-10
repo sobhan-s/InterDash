@@ -168,16 +168,16 @@ const Dashboard = ({
 
   useEffect(() => {
     const handleResize = () => {
-      console.log('Window resized:', window.innerWidth)
-      setExpandedSections({...expandedSections})
-    }
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('scroll', handleResize)
+      console.log('Window resized:', window.innerWidth);
+      setExpandedSections({ ...expandedSections });
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleResize);
     };
-  }, [])
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -257,7 +257,7 @@ const Dashboard = ({
 
     const sorted = _.orderBy(filtered, ['id'], [sortOrder]);
 
-   //removed fibnocci recursive function due to heavy computation and replaced with simple sort and filter logic. The original function caused significant performance issues, especially with larger datasets, leading to long processing times and potential browser crashes. The new implementation uses efficient built-in JavaScript methods to achieve the desired sorting and filtering without the overhead of unnecessary computations.
+    //removed fibnocci recursive function due to heavy computation and replaced with simple sort and filter logic. The original function caused significant performance issues, especially with larger datasets, leading to long processing times and potential browser crashes. The new implementation uses efficient built-in JavaScript methods to achieve the desired sorting and filtering without the overhead of unnecessary computations.
 
     return sorted;
   };
