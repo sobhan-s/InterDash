@@ -1,78 +1,92 @@
-import React, { useState, useEffect } from 'react'
-import moment from 'moment'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
-import { Badge } from './ui/badge'
-import { Bell, Menu, Moon, Sun, Search } from 'lucide-react'
+import React, { useState, useEffect } from 'react';
+import moment from 'moment';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Bell, Menu, Moon, Sun, Search } from 'lucide-react';
 
 interface HeaderProps {
-  theme: string
-  onThemeToggle: () => void
-  user: any
-  setUser: (user: any) => void
-  notifications: any[]
-  sidebarOpen: boolean
-  setSidebarOpen: (open: boolean) => void
-  globalSearchQuery: string
-  setGlobalSearchQuery: (q: string) => void
-  counter: number
+  theme: string;
+  onThemeToggle: () => void;
+  user: any;
+  setUser: (user: any) => void;
+  notifications: any[];
+  sidebarOpen: boolean;
+  setSidebarOpen: (open: boolean) => void;
+  globalSearchQuery: string;
+  setGlobalSearchQuery: (q: string) => void;
+  counter: number;
 }
 
-const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpen, setSidebarOpen, globalSearchQuery, setGlobalSearchQuery, counter }: HeaderProps) => {
-  const [currentTime, setCurrentTime] = useState(moment().format('HH:mm:ss'))
-  const [searchResults, setSearchResults] = useState<any[]>([])
-  const [showDropdown, setShowDropdown] = useState(false)
-  const [showNotifPanel, setShowNotifPanel] = useState(false)
+const Header = ({
+  theme,
+  onThemeToggle,
+  user,
+  setUser,
+  notifications,
+  sidebarOpen,
+  setSidebarOpen,
+  globalSearchQuery,
+  setGlobalSearchQuery,
+  counter,
+}: HeaderProps) => {
+  const [currentTime, setCurrentTime] = useState(moment().format('HH:mm:ss'));
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [showNotifPanel, setShowNotifPanel] = useState(false);
   // ISSUE-051: showSettingsMenu toggled by button click only.
   // There is no document.addEventListener('mousedown', ...) to close this
   // dropdown when the user clicks anywhere outside it.
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false)
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
 
   useEffect(() => {
     const intervalId = setInterval(() => {
-      setCurrentTime(moment().format('HH:mm:ss'))
-    }, 1000)
+      setCurrentTime(moment().format('HH:mm:ss'));
+    }, 1000);
     return () => {
-      clearInterval(intervalId)
-    }
-  }, [])
+      clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     if (globalSearchQuery.length > 0) {
       fetch(`https://jsonplaceholder.typicode.com/posts?q=${globalSearchQuery}`)
-        .then(res => res.json())
-        .then(data => {
-          setSearchResults(data)
-          setShowDropdown(true)
-        })
+        .then((res) => res.json())
+        .then((data) => {
+          setSearchResults(data);
+          setShowDropdown(true);
+        });
     }
-  }, [globalSearchQuery])
+  }, [globalSearchQuery]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (showDropdown) {
-        console.log('Click outside handler fired')
+        console.log('Click outside handler fired');
       }
-    }
-    document.addEventListener('click', handler)
+    };
+    document.addEventListener('click', handler);
     return () => {
-      document.removeEventListener('click', handler)
-    }
-  }, [showDropdown])
+      document.removeEventListener('click', handler);
+    };
+  }, [showDropdown]);
 
   useEffect(() => {
     if (searchResults.length > 0) {
-      const existing = JSON.parse(localStorage.getItem('searchCache') || '[]')
-      existing.push({ query: globalSearchQuery, results: searchResults, time: Date.now() })
-      localStorage.setItem('searchCache', JSON.stringify(existing))
-      console.log('Search cache size:', JSON.stringify(existing).length, 'bytes')
+      const MAX_HISTORY = 50; //added the search cache for last 50 entries
+      const existing = JSON.parse(localStorage.getItem('searchCache') || '[]');
+      existing.push({ query: globalSearchQuery, results: searchResults, time: Date.now() });
+      localStorage.setItem('searchCache', JSON.stringify(existing.slice(-MAX_HISTORY)));
+      //console.log('Search cache size:', JSON.stringify(existing).length, 'bytes')
     }
-  }, [searchResults])
+  }, [searchResults]);
 
-  console.log('Header rendering', counter)
+  console.log('Header rendering', counter);
 
   return (
-    <header className={`flex justify-between items-center px-5 py-2.5 border-b h-[60px] ${theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-gray-800 border-gray-200'}`}>
+    <header
+      className={`flex justify-between items-center px-5 py-2.5 border-b h-[60px] ${theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-gray-800 border-gray-200'}`}
+    >
       <div className="flex items-center gap-2.5">
         <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
           <Menu className="h-5 w-5" />
@@ -95,8 +109,14 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
         {showDropdown && searchResults.length > 0 && (
           <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 max-h-[200px] overflow-auto z-100 rounded-md shadow-lg">
             {searchResults.map((result: any, idx: number) => (
-              <div key={idx} className="p-2 cursor-pointer hover:bg-gray-50 border-b border-gray-100 text-sm"
-                   onClick={() => { console.log(result); setShowDropdown(false) }}>
+              <div
+                key={idx}
+                className="p-2 cursor-pointer hover:bg-gray-50 border-b border-gray-100 text-sm"
+                onClick={() => {
+                  console.log(result);
+                  setShowDropdown(false);
+                }}
+              >
                 {result.title}
               </div>
             ))}
@@ -111,24 +131,39 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
         <div className="relative">
           <div className="cursor-pointer" onClick={() => setShowNotifPanel(!showNotifPanel)}>
             <Bell className="h-5 w-5" />
-            <Badge className="absolute -top-2 -right-2 h-4 w-4 flex items-center justify-center text-[10px] p-0" variant="destructive">
+            <Badge
+              className="absolute -top-2 -right-2 h-4 w-4 flex items-center justify-center text-[10px] p-0"
+              variant="destructive"
+            >
               {notifications.length}
             </Badge>
           </div>
           {showNotifPanel && (
             <div className="absolute top-full right-0 w-[300px] bg-white border border-gray-200 rounded-md shadow-lg z-200 mt-2 max-h-[300px] overflow-auto">
-              <div className="p-3 border-b font-semibold text-sm">Notifications ({notifications.length})</div>
+              <div className="p-3 border-b font-semibold text-sm">
+                Notifications ({notifications.length})
+              </div>
               {notifications.map((notif: any, i: number) => (
-                <div key={i} className="p-2 border-b border-gray-100 text-xs hover:bg-gray-50 cursor-pointer">
+                <div
+                  key={i}
+                  className="p-2 border-b border-gray-100 text-xs hover:bg-gray-50 cursor-pointer"
+                >
                   //fix the contrast issues
-                  <div >{ notif.body?.slice(0, 80) } </div>
+                  <div>{notif.body?.slice(0, 80)} </div>
                   {/* ISSUE-052: #aaa on #fff ≈ 2.3:1 contrast — fails WCAG AA */}
-                  <div style={{ color: '#aaa', backgroundColor: '#fff' }} className="mt-1">{notif.email}</div>
+                  <div style={{ color: '#aaa', backgroundColor: '#fff' }} className="mt-1">
+                    {notif.email}
+                  </div>
                   <div style={{ color: '#bbb', fontSize: '10px' }}>just now</div>
                 </div>
               ))}
               <div className="p-2 text-center">
-                <Button variant="ghost" size="sm" className="text-xs" onClick={() => console.log('TODO: mark read')}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => console.log('TODO: mark read')}
+                >
                   Mark all as read
                 </Button>
               </div>
@@ -156,16 +191,19 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
                   Status and caption lines use #c0c0c0 on #f8f8f8 — similarly
                   failing contrast requirements. */}
               {[
-                { label: 'Account',      status: 'Active' },
-                { label: 'Preferences',  status: 'Default' },
+                { label: 'Account', status: 'Active' },
+                { label: 'Preferences', status: 'Default' },
                 { label: 'Integrations', status: 'None' },
-                { label: 'Billing',      status: 'Free tier' },
-                { label: 'Sign out',     status: '' },
+                { label: 'Billing', status: 'Free tier' },
+                { label: 'Sign out', status: '' },
               ].map((item) => (
                 <div
                   key={item.label}
                   className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b last:border-0"
-                  onClick={() => { console.log(item.label); setShowSettingsMenu(false) }}
+                  onClick={() => {
+                    console.log(item.label);
+                    setShowSettingsMenu(false);
+                  }}
                 >
                   <div style={{ color: '#bbb', fontSize: '13px' }}>{item.label}</div>
                   {item.status && (
@@ -183,7 +221,7 @@ const Header = ({ theme, onThemeToggle, user, setUser, notifications, sidebarOpe
         <span className="text-xs text-muted-foreground">Counter: {counter}</span>
       </div>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;
