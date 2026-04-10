@@ -236,7 +236,6 @@ function App() {
                 The outer flex wrapper and sidebar both use hardcoded px widths instead of
                 responsive units — viewports narrower than 900px get a horizontal scrollbar
                 and right-side content is clipped. */}
-                //fix the clasasname
             <div className="flex min-w-0 w-full overflow-x-hidden">
               {sidebarOpen && (
                 <div
