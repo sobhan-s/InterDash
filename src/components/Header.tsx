@@ -41,6 +41,7 @@ const Header = ({
   const searchContainerRef = useRef<HTMLDivElement | null>(null);
   const notificationsRef = useRef<HTMLDivElement | null>(null);
   const settingsRef = useRef<HTMLDivElement | null>(null);
+  const [debouncedQuery, setDebouncedQuery] = useState(globalSearchQuery)
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -51,16 +52,25 @@ const Header = ({
     };
   }, []);
 
+   useEffect(() => {
+  const handler = setTimeout(() => {
+    setDebouncedQuery(globalSearchQuery)
+  }, 300)
+
+  return () => clearTimeout(handler)
+}, [globalSearchQuery])
+
+
   useEffect(() => {
-    if (globalSearchQuery.length > 0) {
-      fetch(`https://jsonplaceholder.typicode.com/posts?q=${globalSearchQuery}`)
+    if (debouncedQuery.length > 0) {
+      fetch(`https://jsonplaceholder.typicode.com/posts?q=${debouncedQuery}`)
         .then((res) => res.json())
         .then((data) => {
           setSearchResults(data);
           setShowDropdown(true);
         });
     }
-  }, [globalSearchQuery]);
+  }, [debouncedQuery]);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {

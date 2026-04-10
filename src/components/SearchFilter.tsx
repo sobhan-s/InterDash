@@ -27,6 +27,14 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
   const [displayValue, setDisplayValue] = useState('');
 
   useEffect(() => {
+    const handler = setTimeout(() => {
+      setQuery(displayValue) 
+    }, 300) 
+
+    return () => clearTimeout(handler) 
+  }, [displayValue])
+
+  useEffect(() => {
     if (query) {
       const filtered = (data || []).filter((item: any) => {
         const str = JSON.stringify(item).toLowerCase();
@@ -88,10 +96,6 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
             onChange={(e) => {
               const val = e.target.value;
               setDisplayValue(val); // immediate echo
-              setTimeout(() => {
-                setDisplayValue(val); // BUG: redundant setState resets cursor
-                setQuery(val); // triggers search
-              }, 0);
             }}
             placeholder="Search across all data..."
             className="pl-9 text-base"
