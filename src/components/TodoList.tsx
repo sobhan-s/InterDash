@@ -146,7 +146,8 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme, counter }: 
                   />
                 ) : (
                   <span className={todo.completed ? 'line-through text-muted-foreground' : ''}>
-                    <span dangerouslySetInnerHTML={{ __html: todo.title }} />
+                    //fix the xss issue
+                    <span>{todo.title }</span>
                   </span>
                 )}
               </div>

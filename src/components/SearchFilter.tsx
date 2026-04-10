@@ -103,10 +103,11 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
         <div className="max-h-[300px] overflow-auto mt-2">
           {results.slice(0, 50).map((item: any, index: number) => (
             <div key={index} className="px-2 py-1.5 border-b border-gray-100 text-xs hover:bg-muted/50">
-              <span dangerouslySetInnerHTML={{ 
-                __html: (item.title || item.name || item.body || JSON.stringify(item).slice(0, 100))
+              //fix the xss issue
+              <span >{
+                item.title || item.name || item.body || JSON.stringify(item).slice(0, 100)
                   .replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>')
-              }} />
+              }</span> 
             </div>
           ))}
         </div>
