@@ -77,6 +77,7 @@ export interface DashboardProps {
   appData: unknown;
   setAppData: (data: unknown) => void;
   handleThemeToggle: () => void;
+  counter:number;
 }
 
 export interface DashboardModalProps {

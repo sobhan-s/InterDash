@@ -14,16 +14,9 @@ interface UserListProps {
 const UserList = ({ theme, users, posts, globalSearchQuery, onUserClick }: UserListProps) => {
   const [sortField, setSortField] = useState('name')
 
-  // ISSUE-056: Selection stored as an array index, not a stable item id.
-  // When sortField changes, _.sortBy reorders the array and the index no
-  // longer refers to the same user — the highlight silently jumps to a
-  // different row (or off the end entirely) without any user action.
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  // ISSUE-056 fix: use stable item id instead of array index
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  // ISSUE-057: Tooltip is positioned at top:'100%', left:0 relative to the
-  // row — a fixed offset that never accounts for how close the row is to the
-  // bottom or right edge of the viewport. Users near the end of the list see
-  // a clipped or fully off-screen tooltip they cannot read.
   const [hoveredTooltipIndex, setHoveredTooltipIndex] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState({ top: 0, left: 0 });
 
@@ -40,6 +33,9 @@ const UserList = ({ theme, users, posts, globalSearchQuery, onUserClick }: UserL
 
   const sorted = _.sortBy(filteredUsers, [sortField]);
 
+  // ISSUE-056 fix: look up selected user by id after every sort/filter
+  const selectedUser = sorted.find((u: any) => u.id === selectedId) ?? null;
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -50,11 +46,7 @@ const UserList = ({ theme, users, posts, globalSearchQuery, onUserClick }: UserL
           </CardTitle>
           <select
             value={sortField}
-            onChange={(e) => {
-              setSortField(e.target.value);
-              // ISSUE-056: selectedIndex is NOT reset here — after reorder it
-              // points at a completely different user in the new sorted array.
-            }}
+            onChange={(e) => setSortField(e.target.value)}
             className="text-sm border rounded px-2 py-1 bg-background"
           >
             <option value="name">Name</option>
@@ -67,15 +59,15 @@ const UserList = ({ theme, users, posts, globalSearchQuery, onUserClick }: UserL
         <div className="max-h-[400px] overflow-auto space-y-2">
           {sorted.map((user: any, index: number) => (
             <div
-              key={index}
-              // ISSUE-056: Highlight driven by index — jumps when sort changes
+              key={user.id}
+              // ISSUE-056 fix: highlight keyed to stable user.id, not array index
               className={`relative p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                selectedIndex === index
+                selectedId === user.id
                   ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20'
                   : 'hover:bg-muted/50'
               }`}
               onClick={() => {
-                setSelectedIndex(index);
+                setSelectedId(user.id);
                 onUserClick && onUserClick(user);
               }}
             >
@@ -98,10 +90,6 @@ const UserList = ({ theme, users, posts, globalSearchQuery, onUserClick }: UserL
                   </div>
                 </div>
 
-                {/* ISSUE-057: Info icon triggers a tooltip positioned at top:'100%'
-                    with no getBoundingClientRect() check. Rows near the bottom of
-                    the viewport produce tooltips that render below the fold and
-                    are invisible to the user. */}
                 <div
                   className="relative shrink-0"
                   onMouseEnter={(e) => {
@@ -120,8 +108,6 @@ const UserList = ({ theme, users, posts, globalSearchQuery, onUserClick }: UserL
                   <Info className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
                   {hoveredTooltipIndex === index &&
                     ReactDOM.createPortal(
-                      // BUG ISSUE-057: Always positioned below-left; no viewport
-                      // boundary check — clipped off-screen for bottom-edge rows.
                       <div
                         className="absolute z-50 bg-popover border rounded-md shadow-lg p-2 text-xs w-[200px]"
                         style={{ top: tooltip.top, left: tooltip.left, marginTop: '4px' }}
@@ -145,14 +131,15 @@ const UserList = ({ theme, users, posts, globalSearchQuery, onUserClick }: UserL
           ))}
         </div>
 
-        {selectedIndex !== null && sorted[selectedIndex] && (
+        {/* ISSUE-056 fix: detail panel uses selectedUser looked up by id */}
+        {selectedUser && (
           <div className="mt-4 p-3 bg-muted/50 rounded-lg">
             <h4 className="font-semibold text-sm mb-2">
-              {sorted[selectedIndex].name}'s Posts (
-              {(posts || []).filter((p: any) => p.userId === sorted[selectedIndex!].id).length})
+              {selectedUser.name}'s Posts (
+              {(posts || []).filter((p: any) => p.userId === selectedUser.id).length})
             </h4>
             {(posts || [])
-              .filter((p: any) => p.userId === sorted[selectedIndex!].id)
+              .filter((p: any) => p.userId === selectedUser.id)
               .map((post: any, i: number) => (
                 <div key={i} className="py-1.5 border-b border-gray-200 last:border-0">
                   <strong className="text-xs">{post.title}</strong>
