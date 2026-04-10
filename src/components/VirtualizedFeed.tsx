@@ -1,10 +1,9 @@
-import React, { useState } from 'react'
+import React, { memo, useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { List } from 'lucide-react'
 
 interface VirtualizedFeedProps {
   items: any[]
-  counter: number
   itemHeight?: number
   visibleCount?: number
 }
@@ -24,18 +23,21 @@ interface VirtualizedFeedProps {
 //   Rows should be keyed by a stable item identifier (e.g. item.id).
 const VirtualizedFeed = ({
   items,
-  counter,
   itemHeight = 56,
   visibleCount = 8,
 }: VirtualizedFeedProps) => {
+  const containerRef = useRef<HTMLDivElement>(null)
   const [scrollTop, setScrollTop] = useState(0)
 
-  // Natively handle scroll bounds to prevent gap without relying on useLayoutEffect
-  const maxScrollTop = Math.max(0, items.length * itemHeight - visibleCount * itemHeight)
-  const clampedScrollTop = Math.min(scrollTop, maxScrollTop)
+  useEffect(() => {
+    if (containerRef.current) {
+      containerRef.current.scrollTop = 0
+    }
+    setScrollTop(0)
+  }, [items])
 
   const totalHeight = items.length * itemHeight
-  const startIndex = Math.max(0, Math.floor(clampedScrollTop / itemHeight) - 1)
+  const startIndex = Math.max(0, Math.floor(scrollTop / itemHeight) - 1)
   const endIndex = Math.min(startIndex + visibleCount + 3, items.length)
   const visibleItems = items.slice(startIndex, endIndex)
   const offsetY = startIndex * itemHeight
@@ -50,6 +52,7 @@ const VirtualizedFeed = ({
       </CardHeader>
       <CardContent>
         <div
+          ref={containerRef}
           className="relative overflow-auto border rounded bg-muted/20"
           style={{ height: `${visibleCount * itemHeight}px` }}
           onScroll={(e) =>
@@ -58,28 +61,25 @@ const VirtualizedFeed = ({
         >
           <div style={{ height: `${totalHeight}px`, position: 'relative' }}>
             <div style={{ transform: `translateY(${offsetY}px)` }}>
-              {visibleItems.map((item: any, i: number) => {
-                const stableKey = item.id ?? item.uuid ?? item.slug ?? item.name ?? `${item.title ?? 'item'}-${item.userId ?? startIndex + i}`
-                return (
-                  <div
-                    key={stableKey}
-                    style={{ height: `${itemHeight}px` }}
-                    className="flex items-center px-3 border-b text-sm gap-3 bg-background"
-                  >
-                    <span className="text-muted-foreground text-xs w-8 shrink-0 text-right">
-                      {startIndex + i + 1}
+              {visibleItems.map((item: any, i: number) => (
+                <div
+                  key={startIndex + i}
+                  style={{ height: `${itemHeight}px` }}
+                  className="flex items-center px-3 border-b text-sm gap-3 bg-background"
+                >
+                  <span className="text-muted-foreground text-xs w-8 shrink-0 text-right">
+                    {startIndex + i + 1}
+                  </span>
+                  <span className="truncate flex-1">
+                    {item.title || item.name || JSON.stringify(item).slice(0, 70)}
+                  </span>
+                  {item.userId && (
+                    <span className="text-[10px] text-muted-foreground shrink-0">
+                      u/{item.userId}
                     </span>
-                    <span className="truncate flex-1">
-                      {item.title || item.name || JSON.stringify(item).slice(0, 70)}
-                    </span>
-                    {item.userId && (
-                      <span className="text-[10px] text-muted-foreground shrink-0">
-                        u/{item.userId}
-                      </span>
-                    )}
-                  </div>
-                )
-              })}
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -91,4 +91,4 @@ const VirtualizedFeed = ({
   )
 }
 
-export default VirtualizedFeed
+export default memo(VirtualizedFeed)

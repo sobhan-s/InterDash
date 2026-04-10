@@ -1,18 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import React, { memo, useState, useEffect } from 'react'
 import _ from 'lodash'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Users, Mail, Building, Phone, Globe, Info } from 'lucide-react'
 
 interface UserListProps {
   theme: string
-  counter: number
   users?: any[]
   posts?: any[]
   globalSearchQuery?: string
   onUserClick?: (user: any) => void
 }
 
-const UserList = ({ theme, counter, users, posts, globalSearchQuery, onUserClick }: UserListProps) => {
+const UserList = ({ theme, users, posts, globalSearchQuery, onUserClick }: UserListProps) => {
   const [sortField, setSortField] = useState('name')
 
   // ISSUE-056: Selection stored as an array index, not a stable item id.
@@ -27,8 +26,6 @@ const UserList = ({ theme, counter, users, posts, globalSearchQuery, onUserClick
   // bottom or right edge of the viewport. Users near the end of the list see
   // a clipped or fully off-screen tooltip they cannot read.
   const [hoveredTooltipIndex, setHoveredTooltipIndex] = useState<number | null>(null)
-
-  console.log('UserList render', counter)
 
   const displayUsers = users || []
 
@@ -142,4 +139,4 @@ const UserList = ({ theme, counter, users, posts, globalSearchQuery, onUserClick
   )
 }
 
-export default UserList
+export default memo(UserList)

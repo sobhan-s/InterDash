@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import _ from 'lodash';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -9,10 +9,9 @@ interface SearchFilterProps {
   data: any[];
   onFilter?: (result: any[]) => void;
   theme: string;
-  counter: number;
 }
 
-const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => {
+const SearchFilter = ({ data, onFilter, theme }: SearchFilterProps) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [searchHistory, setSearchHistory] = useState<any[]>([]);
@@ -25,8 +24,6 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
   // prop to the DOM input element, which resets the cursor to the end of the
   // string — even if the user was typing in the middle of the text.
   const [displayValue, setDisplayValue] = useState('');
-
-  console.log('SearchFilter render', counter);
 
   useEffect(() => {
     if (query) {
@@ -64,7 +61,7 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
       const regexResults = regexSearch(query);
       console.log('Regex search found', regexResults.length, 'results');
     }
-  }, [query, counter]);
+  }, [query]);
 
   return (
     <Card>
@@ -129,4 +126,4 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
   );
 };
 
-export default SearchFilter;
+export default memo(SearchFilter);

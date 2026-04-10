@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { memo, useState, useEffect } from 'react'
 import moment from 'moment'
 import _ from 'lodash'
 import { Card, CardContent } from './ui/card'
@@ -9,19 +9,16 @@ import { Input } from './ui/input'
 
 interface PostsFeedProps {
   theme: string
-  counter: number
   posts?: any[]
   comments?: Record<string, any[]>
   onPostClick?: (post: any) => void
 }
 
-const PostsFeed = ({ theme, counter, posts, comments, onPostClick }: PostsFeedProps) => {
+const PostsFeed = ({ theme, posts, comments, onPostClick }: PostsFeedProps) => {
   const [expandedPost, setExpandedPost] = useState<number | null>(null)
   const [newComment, setNewComment] = useState('')
   const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({})
   const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({})
-
-  console.log('PostsFeed render', counter)
 
   const handleLike = (postId: number) => {
     likedPosts[postId] = !likedPosts[postId]
@@ -90,4 +87,4 @@ const PostsFeed = ({ theme, counter, posts, comments, onPostClick }: PostsFeedPr
   )
 }
 
-export default PostsFeed
+export default memo(PostsFeed)

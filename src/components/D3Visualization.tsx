@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react'
+import React, { memo, useRef, useEffect, useState, useMemo } from 'react'
 import * as d3 from 'd3'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { GitBranch } from 'lucide-react'
@@ -6,11 +6,10 @@ import { GitBranch } from 'lucide-react'
 
 interface D3VisualizationProps {
   data: any[]
-  counter: number
   theme: string
 }
 
-const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
+const D3Visualization = ({ data, theme }: D3VisualizationProps) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dimensions] = useState({ width: 600, height: 300 })
 
@@ -93,7 +92,7 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
         .attr('cy', (d: any) => d.y)
     })
 
-  }, [data, counter, dimensions])
+  }, [data, dimensions])
 
   return (
     <Card>
@@ -108,11 +107,11 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
           <svg ref={svgRef} width={dimensions.width} height={dimensions.height} className="w-full" />
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Nodes: {Math.min(data?.length || 0, 50)} | Render #{counter}
+          Nodes: {Math.min(data?.length || 0, 50)}
         </p>
       </CardContent>
     </Card>
   )
 }
 
-export default D3Visualization
+export default memo(D3Visualization)

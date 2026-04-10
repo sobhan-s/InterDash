@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { memo, useState, useEffect } from 'react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -11,10 +11,9 @@ import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs'
 
 interface MarkdownEditorProps {
   theme: string
-  counter: number
 }
 
-const MarkdownEditor = ({ theme, counter }: MarkdownEditorProps) => {
+const MarkdownEditor = ({ theme }: MarkdownEditorProps) => {
   const [markdown, setMarkdown] = useState(`# Hello World
 
 This is a **markdown** editor with _live preview_.
@@ -48,8 +47,6 @@ function hello() {
   const [wordCount, setWordCount] = useState(0)
   const [history, setHistory] = useState<string[]>([])
 
-  console.log('MarkdownEditor render', counter)
-
   useEffect(() => {
     const html = marked(markdown) as string
     const sanitized = DOMPurify.sanitize(html)
@@ -57,7 +54,7 @@ function hello() {
     setWordCount(markdown.split(/\s+/).filter(Boolean).length)
 
     setHistory(prev => [...prev, markdown])
-  }, [markdown, counter])
+  }, [markdown])
 
   return (
     <Card>
@@ -96,8 +93,8 @@ function hello() {
             <div
               className="h-[300px] overflow-auto p-3 border rounded-md bg-muted/30 prose prose-sm max-w-none"></div>
 
-              { preview }
-           <div />
+            {preview}
+            <div />
           </div>
         </div>
       </CardContent>
@@ -105,4 +102,4 @@ function hello() {
   )
 }
 
-export default MarkdownEditor
+export default memo(MarkdownEditor)

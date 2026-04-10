@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { memo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ImageIcon } from 'lucide-react';
 import { Grid } from 'react-window';
@@ -6,7 +6,6 @@ import { Grid } from 'react-window';
 interface ImageGalleryProps {
   photos: any[];
   theme: string;
-  counter: number;
 }
 
 const Cell = ({ columnIndex, rowIndex, style, photos, columns, setSelectedPhoto }: any) => {
@@ -26,7 +25,7 @@ const Cell = ({ columnIndex, rowIndex, style, photos, columns, setSelectedPhoto 
   );
 };
 
-const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
+const ImageGallery = ({ photos, theme }: ImageGalleryProps) => {
   const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
   const [columns, setColumns] = useState(5);
   const [loadedImages, setLoadedImages] = useState<string[]>([]);
@@ -93,4 +92,4 @@ const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
   );
 };
 
-export default ImageGallery;
+export default memo(ImageGallery);

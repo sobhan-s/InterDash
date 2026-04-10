@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { memo, useState, useEffect, useRef } from 'react';
 import moment from 'moment';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -13,18 +13,15 @@ interface TodoListProps {
   onToggle: (id: number) => void;
   onEdit: (id: number, text: string) => void;
   theme: string;
-  counter: number;
 }
 
-const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme, counter }: TodoListProps) => {
+const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme }: TodoListProps) => {
   const [newTodo, setNewTodo] = useState('');
   const [filter, setFilter] = useState('all');
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
   const inputRef = useRef<HTMLInputElement>(null);
   const editInputRef = useRef<HTMLInputElement>(null);
-
-  console.log('TodoList render', counter);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -45,7 +42,7 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme, counter }: 
   useEffect(() => {
     setCompletedCount(todos.filter((t) => t.completed).length);
     setActiveCount(todos.filter((t) => !t.completed).length);
-  }, [todos, counter]);
+  }, [todos]);
 
   const filteredTodos = todos.filter((t: any) => {
     if (filter === 'completed') return t.completed;
@@ -184,4 +181,4 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme, counter }: 
   );
 };
 
-export default TodoList;
+export default memo(TodoList);

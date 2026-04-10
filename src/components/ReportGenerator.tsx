@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { memo, useState, useEffect } from 'react'
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { faker } from '@faker-js/faker'
 import { saveAs } from 'file-saver'
@@ -15,16 +15,13 @@ import { Download, FileSpreadsheet, FileText, Archive, Lock } from 'lucide-react
 interface ReportGeneratorProps {
   posts: any[]
   users: any[]
-  counter: number
   theme: string
 }
 
-const ReportGenerator = ({ posts, users, counter, theme }: ReportGeneratorProps) => {
+const ReportGenerator = ({ posts, users, theme }: ReportGeneratorProps) => {
   const [generating, setGenerating] = useState(false)
   const [fakeData, setFakeData] = useState<any[]>([])
   const [encryptedData, setEncryptedData] = useState('')
-
-  console.log('ReportGenerator render', counter)
 
   useEffect(() => {
     const data = Array.from({ length: 10000 }, () => ({
@@ -50,7 +47,7 @@ const ReportGenerator = ({ posts, users, counter, theme }: ReportGeneratorProps)
       'secret-key-123'
     ).toString()
     setEncryptedData(encrypted)
-  }, [counter])
+  }, [])
 
   const generatePDF = async () => {
     setGenerating(true)
@@ -183,4 +180,4 @@ const ReportGenerator = ({ posts, users, counter, theme }: ReportGeneratorProps)
   )
 }
 
-export default ReportGenerator
+export default memo(ReportGenerator)

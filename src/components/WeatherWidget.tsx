@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { memo, useState, useEffect } from 'react'
 import moment from 'moment'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
@@ -6,19 +6,21 @@ import { Cloud, Thermometer, Wind } from 'lucide-react'
 
 interface WeatherWidgetProps {
   theme: string
-  counter: number
   data?: any[]
   onCityClick?: (city: any) => void
 }
 
-const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps) => {
+const WeatherWidget = ({ theme, data, onCityClick }: WeatherWidgetProps) => {
   const [weatherData, setWeatherData] = useState<any[]>([])
   const [unit, setUnit] = useState('celsius')
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
-  console.log('WeatherWidget render', counter)
-
   useEffect(() => {
+    if (data && data.length > 0) {
+      setWeatherData(data)
+      return
+    }
+
     const cities = [
       { name: 'London', lat: 51.5, lon: -0.12 },
       { name: 'New York', lat: 40.71, lon: -74.01 },
@@ -37,7 +39,7 @@ const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps
           const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m`)
           const data = await res.json()
           results.push({ ...city, weather: data.current_weather, hourly: data.hourly })
-        } catch(e) {
+        } catch (e) {
           console.log('weather error for', city.name)
         }
       }
@@ -45,11 +47,11 @@ const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps
     }
 
     fetchAll()
-  }, [counter]) // Refetches every second!
+  }, [data])
 
   const convertTemp = (celsius: number) => {
     if (unit === 'fahrenheit') {
-      return (celsius * 9/5 + 32).toFixed(1) + '°F'
+      return (celsius * 9 / 5 + 32).toFixed(1) + '°F'
     }
     return celsius?.toFixed(1) + '°C'
   }
@@ -123,4 +125,4 @@ const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps
   )
 }
 
-export default WeatherWidget
+export default memo(WeatherWidget)

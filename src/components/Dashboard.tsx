@@ -13,8 +13,6 @@ import { useDashboardState } from './dashboard/useDashboardState';
 import TodoList from './TodoList';
 import ImageGallery from './ImageGallery';
 
-const DASHBOARD_COUNTER = 0;
-
 const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
   const { addToast } = useContext(AppContext);
   const [refreshCount, setRefreshCount] = useState(0);
@@ -125,7 +123,6 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
           <TabsContent value="overview">
             <DashboardOverviewTab
               theme={theme}
-              counter={DASHBOARD_COUNTER}
               globalSearchQuery={globalSearchQuery}
               lastUpdated={lastUpdated}
               cryptoData={cryptoData}
@@ -174,7 +171,6 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
                 onToggle={handleToggleTodo}
                 onEdit={handleEditTodo}
                 theme={theme}
-                counter={DASHBOARD_COUNTER}
               />
             </div>
           </TabsContent>
@@ -182,7 +178,7 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
           <TabsContent value="gallery">
             <div className="space-y-3">
               <h2 className="text-lg font-semibold">Gallery</h2>
-              <ImageGallery photos={photos} theme={theme} counter={DASHBOARD_COUNTER} />
+              <ImageGallery photos={photos} theme={theme} />
             </div>
           </TabsContent>
         </Tabs>

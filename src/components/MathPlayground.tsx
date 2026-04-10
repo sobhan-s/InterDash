@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { memo, useState, useEffect } from 'react'
 import * as mathjs from 'mathjs'
 import { faker } from '@faker-js/faker'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -7,15 +7,12 @@ import { Calculator } from 'lucide-react'
 
 
 interface MathPlaygroundProps {
-  counter: number
   theme: string
 }
 
-const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
+const MathPlayground = ({ theme }: MathPlaygroundProps) => {
   const [results, setResults] = useState<any>({})
   const [matrix, setMatrix] = useState<number[][]>([])
-
-  console.log('MathPlayground render', counter)
 
   useEffect(() => {
     const r: any = {}
@@ -53,7 +50,7 @@ const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
 
     setResults(r)
     setMatrix(A.slice(0, 5).map(row => row.slice(0, 5)))
-  }, [counter])
+  }, [])
 
   return (
     <Card>
@@ -122,10 +119,10 @@ const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
             ))}
           </div>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">Recalculated at render #{counter}</p>
+        <p className="text-xs text-muted-foreground mt-2">Recalculated on load</p>
       </CardContent>
     </Card>
   )
 }
 
-export default MathPlayground
+export default memo(MathPlayground)

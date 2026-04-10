@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { memo, useRef, useState, useEffect } from 'react'
 import * as THREE from 'three'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Text, Box, Sphere, Torus } from '@react-three/drei'
@@ -70,18 +70,10 @@ function SpinningTorus() {
 }
 
 interface ThreeSceneProps {
-  counter: number
   theme: string
 }
 
-const ThreeScene = ({ counter, theme }: ThreeSceneProps) => {
-  console.log('ThreeScene render', counter)
-
-  const [rotationSpeed, setRotationSpeed] = useState(1)
-  useEffect(() => {
-    setRotationSpeed(1 + Math.sin(counter * 0.1) * 0.5)
-  }, [counter])
-
+const ThreeScene = ({ theme }: ThreeSceneProps) => {
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -108,12 +100,9 @@ const ThreeScene = ({ counter, theme }: ThreeSceneProps) => {
             <gridHelper args={[10, 10]} />
           </Canvas>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">
-          Rotation speed: {rotationSpeed.toFixed(2)} | Render #{counter}
-        </p>
       </CardContent>
     </Card>
   )
 }
 
-export default ThreeScene
+export default memo(ThreeScene)

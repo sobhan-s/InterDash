@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { memo, useState, useEffect, useRef } from 'react'
 import { Chart, registerables } from 'chart.js'
 import _ from 'lodash'
 import moment from 'moment'
@@ -13,18 +13,15 @@ interface DataChartProps {
   todos: any[]
   comments: any[]
   theme: string
-  counter: number
 }
 
-const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartProps) => {
+const DataChart = ({ posts, users, todos, comments, theme }: DataChartProps) => {
   const chartRef1 = useRef<HTMLCanvasElement>(null)
   const chartRef2 = useRef<HTMLCanvasElement>(null)
   const chartRef3 = useRef<HTMLCanvasElement>(null)
   const [chart1, setChart1] = useState<Chart | null>(null)
   const [chart2, setChart2] = useState<Chart | null>(null)
   const [chart3, setChart3] = useState<Chart | null>(null)
-
-  console.log('DataChart render', counter)
 
   useEffect(() => {
     if (chartRef1.current && posts.length > 0) {
@@ -40,14 +37,14 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
             label: 'Posts per User',
             data: Object.values(postsPerUser),
             backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
-                            '#FF9F40', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
+              '#FF9F40', '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0'],
           }]
         },
         options: { responsive: true, maintainAspectRatio: false }
       })
       setChart1(newChart)
     }
-  }, [posts, counter])
+  }, [posts])
 
   useEffect(() => {
     if (chartRef2.current && todos.length > 0) {
@@ -69,7 +66,7 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
       })
       setChart2(newChart)
     }
-  }, [todos, counter])
+  }, [todos])
 
   useEffect(() => {
     if (chartRef3.current && comments && comments.length > 0) {
@@ -97,7 +94,7 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
       })
       setChart3(newChart)
     }
-  }, [comments, counter])
+  }, [comments])
 
 
   return (
@@ -128,4 +125,4 @@ const DataChart = ({ posts, users, todos, comments, theme, counter }: DataChartP
   )
 }
 
-export default DataChart
+export default memo(DataChart)

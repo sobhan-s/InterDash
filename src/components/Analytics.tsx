@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { memo, useState, useEffect } from 'react'
 import _ from 'lodash'
 import moment from 'moment'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -15,16 +15,13 @@ interface AnalyticsProps {
   albums: any[]
   photos: any[]
   theme: string
-  counter: number
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#8DD1E1', '#A4DE6C', '#D0ED57']
 
-const Analytics = ({ posts, users, todos, comments, albums, photos, theme, counter }: AnalyticsProps) => {
+const Analytics = ({ posts, users, todos, comments, albums, photos, theme }: AnalyticsProps) => {
   const [stats, setStats] = useState<any>({})
   const [calculating, setCalculating] = useState(false)
-
-  console.log('Analytics render', counter)
 
   useEffect(() => {
     setCalculating(true)
@@ -77,7 +74,7 @@ const Analytics = ({ posts, users, todos, comments, albums, photos, theme, count
     const result = calculateStats()
     setStats(result)
     setCalculating(false)
-  }, [posts, users, todos, comments, albums, photos, counter])
+  }, [posts, users, todos, comments, albums, photos])
 
   if (calculating) return <p className="text-sm text-muted-foreground">Calculating analytics...</p>
 
@@ -185,4 +182,4 @@ const Analytics = ({ posts, users, todos, comments, albums, photos, theme, count
   )
 }
 
-export default Analytics
+export default memo(Analytics)
