@@ -62,7 +62,6 @@ function App() {
   // addToast only pushes — there is no max-count eviction and no setTimeout
   // to auto-dismiss entries. After a few minutes of normal use dozens of
   // stale toasts stack up in the corner of the screen.
-  // ✅ stable counter via useRef, max 5 toasts, auto-dismiss after 3s
   const MAX_TOASTS = 5
   const [toasts, setToasts] = useState<Toast[]>([])
   const _toastCounter = useRef(0)
