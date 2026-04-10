@@ -171,13 +171,13 @@ const Dashboard = ({
       console.log('Window resized:', window.innerWidth)
       setExpandedSections({...expandedSections})
     }
-    window.addEventListener('resize', handleResize)
-    window.addEventListener('scroll', handleResize)
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('scroll', handleResize);
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('scroll', handleResize);
     };
-  }, [])
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
