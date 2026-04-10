@@ -7,12 +7,12 @@ interface UserListProps {
   theme: string
   counter: number
   users?: any[]
+  posts?: any[]
   globalSearchQuery?: string
   onUserClick?: (user: any) => void
 }
 
-const UserList = ({ theme, counter, users, globalSearchQuery, onUserClick }: UserListProps) => {
-  const [localUsers, setLocalUsers] = useState<any[]>([])
+const UserList = ({ theme, counter, users, posts, globalSearchQuery, onUserClick }: UserListProps) => {
   const [sortField, setSortField] = useState('name')
 
   // ISSUE-056: Selection stored as an array index, not a stable item id.
@@ -21,7 +21,6 @@ const UserList = ({ theme, counter, users, globalSearchQuery, onUserClick }: Use
   // different row (or off the end entirely) without any user action.
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
 
-  const [userPosts, setUserPosts] = useState<any[]>([])
 
   // ISSUE-057: Tooltip is positioned at top:'100%', left:0 relative to the
   // row — a fixed offset that never accounts for how close the row is to the
@@ -31,32 +30,13 @@ const UserList = ({ theme, counter, users, globalSearchQuery, onUserClick }: Use
 
   console.log('UserList render', counter)
 
-  useEffect(() => {
-    fetch('https://jsonplaceholder.typicode.com/users')
-      .then(res => res.json())
-      .then(data => setLocalUsers(data))
-  }, [])
-
-  useEffect(() => {
-    // ISSUE-056: After sort the selectedIndex may point at a different user,
-    // but we still fetch posts for whoever is now at that index position.
-    if (selectedIndex !== null && sorted[selectedIndex]) {
-      fetch('https://jsonplaceholder.typicode.com/posts')
-        .then(res => res.json())
-        .then(data => {
-          setUserPosts(data.filter((p: any) => p.userId === sorted[selectedIndex!].id))
-        })
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedIndex])
-
-  const displayUsers = users || localUsers
+  const displayUsers = users || []
 
   const filteredUsers = displayUsers.filter((u: any) => {
     if (!globalSearchQuery) return true
     return u.name.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
-           u.email.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
-           u.company?.name?.toLowerCase().includes(globalSearchQuery.toLowerCase())
+      u.email.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
+      u.company?.name?.toLowerCase().includes(globalSearchQuery.toLowerCase())
   })
 
   const sorted = _.sortBy(filteredUsers, [sortField])
@@ -90,11 +70,10 @@ const UserList = ({ theme, counter, users, globalSearchQuery, onUserClick }: Use
             <div
               key={index}
               // ISSUE-056: Highlight driven by index — jumps when sort changes
-              className={`relative p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                selectedIndex === index
-                  ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20'
-                  : 'hover:bg-muted/50'
-              }`}
+              className={`relative p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md ${selectedIndex === index
+                ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20'
+                : 'hover:bg-muted/50'
+                }`}
               onClick={() => {
                 setSelectedIndex(index)
                 onUserClick && onUserClick(user)
@@ -148,9 +127,9 @@ const UserList = ({ theme, counter, users, globalSearchQuery, onUserClick }: Use
         {selectedIndex !== null && sorted[selectedIndex] && (
           <div className="mt-4 p-3 bg-muted/50 rounded-lg">
             <h4 className="font-semibold text-sm mb-2">
-              {sorted[selectedIndex].name}'s Posts ({userPosts.length})
+              {sorted[selectedIndex].name}'s Posts ({(posts || []).filter((p: any) => p.userId === sorted[selectedIndex!].id).length})
             </h4>
-            {userPosts.map((post: any, i: number) => (
+            {(posts || []).filter((p: any) => p.userId === sorted[selectedIndex!].id).map((post: any, i: number) => (
               <div key={i} className="py-1.5 border-b border-gray-200 last:border-0">
                 <strong className="text-xs">{post.title}</strong>
                 <p className="text-[11px] text-muted-foreground mt-0.5">{post.body.slice(0, 100)}...</p>
