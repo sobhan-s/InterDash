@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createContext, useRef, Suspense } from 'react'
+import React, { useState, useEffect, createContext, useRef, Suspense, useMemo, useCallback } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import {Link} from 'react-router-dom'
 import Dashboard from './components/Dashboard'
@@ -86,7 +86,7 @@ function App() {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const _toastCounter = useRef(0);
 
-  const addToast = (message: string, type: Toast['type'] = 'info') => {
+  const addToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     const id = ++_toastCounter.current;
     setToasts((prev) => {
       const next = [...prev, { id, message, type }];
@@ -95,7 +95,7 @@ function App() {
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
-  };
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -210,10 +210,10 @@ function App() {
     }
   };
 
-  const handleThemeToggle = () => {
+  const handleThemeToggle = useCallback(() => {
     setTheme(theme === 'light' ? 'dark' : 'light');
     document.documentElement.classList.toggle('dark');
-  };
+  }, [theme]);
 
   const getFilteredData = (data: any[], query: string) => {
     console.log('filtering data...', Date.now());
@@ -225,18 +225,25 @@ function App() {
     return data;
   };
 
-  const contextValue = {
+  const contextValue = useMemo(() => ({
     theme,
     user,
     notifications,
-    counter,
     sidebarOpen,
     globalSearchQuery,
     handleThemeToggle,
     setUser,
     setGlobalSearchQuery,
     addToast,
-  };
+  }), [
+    theme,
+    user,
+    notifications,
+    sidebarOpen,
+    globalSearchQuery,
+    handleThemeToggle,
+    addToast,
+  ]);
 
   const handleLogin = (username: string, password: string) => {
     localStorage.setItem(
