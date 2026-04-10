@@ -251,8 +251,7 @@ const Dashboard = ({ theme, user, notifications, globalSearchQuery, setGlobalSea
   }
 
   const handleSelectItem = (item: any) => {
-    selectedItems.push(item)
-    setSelectedItems(selectedItems)
+    setSelectedItems(prev => [...prev.slice(-50), item])
   }
 
   const getPaginatedData = (data: any[]) => {
