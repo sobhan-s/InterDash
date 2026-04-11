@@ -65,7 +65,8 @@ const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) =
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b">
-                <th
+                <th>
+                <button
                   className="text-left p-2 cursor-pointer"
                   onClick={() => {
                     setSortBy('name');
@@ -73,6 +74,7 @@ const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) =
                   }}
                 >
                   Name
+                  </button>
                 </th>
                 <th
                   className="text-right p-2 cursor-pointer"

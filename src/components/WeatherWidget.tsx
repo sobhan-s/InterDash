@@ -103,13 +103,14 @@ const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps
       <CardContent>
         <div className="grid grid-cols-2 gap-3">
           {weatherData.map((city: any, idx: number) => (
-            <div
+            <button
               key={idx}
               className={`p-3 border rounded-lg cursor-pointer transition-colors hover:bg-muted/50 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-200'}`}
               onClick={() => {
                 onCityClick && onCityClick({ ...city, timestamp: Date.now() });
                 setExpanded({ ...expanded, [city.name]: !expanded[city.name] });
               }}
+              aria-label={`View weather for ${city.name}`}
             >
               <div className="flex justify-between items-center">
                 <strong className="text-sm">{city.name}</strong>
@@ -138,7 +139,7 @@ const WeatherWidget = ({ theme, counter, data, onCityClick }: WeatherWidgetProps
                   ))}
                 </div>
               )}
-            </div>
+            </button>
           ))}
         </div>
       </CardContent>

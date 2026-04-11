@@ -116,11 +116,18 @@ const TodoList = ({ todos, onAdd, onDelete, onToggle, onEdit, theme, counter }: 
         <div className="max-h-[300px] overflow-auto space-y-1">
           {filteredTodos.map((todo: any, index: number) => (
             <div
-              key={index}
+              role="button"
+              tabIndex={0}    
               className={`flex justify-between items-center p-2 border rounded text-sm ${todo.completed ? 'bg-green-50 dark:bg-green-900/10' : 'bg-background'}`}
               onDoubleClick={() => {
                 setEditingId(todo.id);
                 setEditText(todo.title);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setEditingId(todo.id);
+                  setEditText(todo.title);
+                }
               }}
             >
               <div className="flex items-center gap-2">

@@ -16,13 +16,14 @@ const Cell = ({ columnIndex, rowIndex, style, photos, columns, setSelectedPhoto 
   if (!photo) return null;
 
   return (
-    <div style={style} className="p-1 cursor-pointer" onClick={() => setSelectedPhoto(photo)}>
+    <button style={style} className="p-1 cursor-pointer" onClick={() => setSelectedPhoto(photo)} aria-label={`View image ${photo.title}`}>
       <img
         src={photo.thumbnailUrl}
+        alt="photo"
         loading="lazy"
         className="w-full h-[100px] object-cover rounded"
       />
-    </div>
+    </button>
   );
 };
 

@@ -57,6 +57,7 @@ const UserList = ({
             value={sortField}
             onChange={(e) => setSortField(e.target.value)}
             className="text-sm border rounded px-2 py-1 bg-background"
+            aria-label='Sort Users'
           >
             <option value="name">Name</option>
             <option value="email">Email</option>
@@ -67,7 +68,7 @@ const UserList = ({
       <CardContent>
         <div className="max-h-[400px] overflow-auto space-y-2">
           {sorted.map((user: any, index: number) => (
-            <div
+            <button
               key={user.id}
               // ISSUE-056 fix: highlight keyed to stable user.id, not array index
               className={`relative p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
@@ -78,6 +79,14 @@ const UserList = ({
               onClick={() => {
                 setSelectedId(user.id);
                 onUserClick && onUserClick(user);
+              }}
+              aria-label={`Select user ${user.name}`}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setSelectedId(user.id);
+                  onUserClick && onUserClick(user);
+                }
               }}
             >
               <div className="flex items-start justify-between gap-2">
@@ -101,6 +110,14 @@ const UserList = ({
 
                 <div
                   className="relative shrink-0"
+                  role="button"
+                  tabIndex={0}
+                  aria-label="View user details"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                    }
+                  }}
                   onMouseEnter={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     let top = rect.bottom + window.scrollY + 6;
@@ -136,7 +153,7 @@ const UserList = ({
                     )}
                 </div>
               </div>
-            </div>
+            </button>
           ))}
         </div>
 
