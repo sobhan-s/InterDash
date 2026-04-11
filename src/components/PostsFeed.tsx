@@ -23,7 +23,7 @@ const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: Po
   const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({})
   const [loading, setLoading] = useState(false)
 
-  // fetch posts if none passed in
+  
   useEffect(() => {
     if (propPosts && propPosts.length > 0) return
     setLoading(true)
@@ -34,7 +34,7 @@ const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: Po
       .finally(() => setLoading(false))
   }, [])
 
-  // fetch comments for a post when it gets expanded
+  
   const handleExpand = (postId: number) => {
     const isClosing = expandedPost === postId
     setExpandedPost(isClosing ? null : postId)

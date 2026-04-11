@@ -27,7 +27,7 @@ const UserList = ({
   // ISSUE-056 fix: use stable item id instead of array index
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  // fixed: track by user.id not array index so tooltip survives re-sort
+
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState({ top: 0, left: 0 });
 
@@ -60,10 +60,10 @@ const UserList = ({
 
   const sorted = _.sortBy(filteredUsers, [sortField]);
 
-  // ISSUE-056 fix: look up selected user by id after every sort/filter
+
   const selectedUser = sorted.find((u: any) => u.id === selectedId) ?? null;
 
-  // fixed: tooltip-root fallback to document.body if element missing
+  
   const tooltipRoot = document.getElementById('tooltip-root') || document.body;
 
   return (
@@ -91,7 +91,6 @@ const UserList = ({
           {sorted.map((user: any) => (
             <button
               key={user.id}
-              // ISSUE-056 fix: highlight keyed to stable user.id, not array index
               className={`relative w-full text-left p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md ${selectedId === user.id
                   ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20'
                   : 'hover:bg-muted/50'
@@ -146,7 +145,6 @@ const UserList = ({
                     }
                     const left = rect.left + window.scrollX + rect.width / 2;
                     setTooltip({ top, left });
-                    // fixed: track by user.id not array index
                     setHoveredUserId(user.id);
                   }}
                   onMouseLeave={() => setHoveredUserId(null)}
@@ -178,7 +176,6 @@ const UserList = ({
           ))}
         </div>
 
-        {/* ISSUE-056 fix: detail panel uses selectedUser looked up by id */}
         {selectedUser && (
           <div className="mt-4 p-3 bg-muted/50 rounded-lg">
             <h4 className="font-semibold text-sm mb-2">
