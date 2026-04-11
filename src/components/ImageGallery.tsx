@@ -1,66 +1,70 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { ImageIcon } from 'lucide-react'
-import { API_ENDPOINTS } from '../utils/constants'
+import React, { useState, useEffect, useCallback } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { ImageIcon } from 'lucide-react';
+import { API_ENDPOINTS } from '../utils/constants';
 
 interface Photo {
-  id: number
-  thumbnailUrl: string
-  url: string
-  title: string
+  id: number;
+  thumbnailUrl: string;
+  url: string;
+  title: string;
 }
 
 interface ImageGalleryProps {
-  photos?: Photo[]
-  theme: string
-  counter: number
+  photos?: Photo[];
+  theme: string;
+  counter: number;
 }
 
 const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
-  const [photos, setPhotos] = useState<Photo[]>([])
-  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
-  const [columns, setColumns] = useState(5)
-  const [loading, setLoading] = useState(true)
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [columns, setColumns] = useState(5);
+  const [loading, setLoading] = useState(true);
 
-  
   useEffect(() => {
-    const fetchPhotos = async () => {
-      setLoading(true)
+    let isMounted = true;
 
+    const fetchPhotos = async () => {
+      setLoading(true);
       try {
-        if (propPhotos && propPhotos.length > 0) {
-          setPhotos(propPhotos)
+        if (propPhotos?.length) {
+          if (isMounted) setPhotos(propPhotos);
         } else {
-          const res = await fetch(`${API_ENDPOINTS.photos}?_limit=100`)
-          const data = await res.json()
-          setPhotos(data)
+          const res = await fetch(`${API_ENDPOINTS.photos}?_limit=100`);
+          const data = await res.json();
+          if (isMounted) setPhotos(data);
         }
       } catch (e) {
-        console.error('Failed to fetch photos')
-        setPhotos([])
+        console.error('Failed to fetch photos');
+        if (isMounted) setPhotos([]);
       } finally {
-        setLoading(false)
+        if (isMounted) setLoading(false);
       }
-    }
+    };
 
-    fetchPhotos()
-  }, [propPhotos?.length]) 
+    fetchPhotos();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [propPhotos]);
 
   const handleSelectPhoto = useCallback((photo: Photo) => {
-    setSelectedPhoto(photo)
-  }, [])
+    setSelectedPhoto(photo);
+  }, []);
 
   const handleCloseModal = useCallback(() => {
-    setSelectedPhoto(null)
-  }, [])
+    setSelectedPhoto(null);
+  }, []);
 
   const handleStopPropagation = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation()
-  }, [])
+    e.stopPropagation();
+  }, []);
 
   const handleColumnChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setColumns(Number(e.target.value))
-  }, [])
+    setColumns(Number(e.target.value));
+  }, []);
 
   return (
     <Card>
@@ -88,15 +92,11 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
 
       <CardContent>
         {loading && (
-          <p className="text-sm text-muted-foreground py-4 text-center">
-            Loading photos...
-          </p>
+          <p className="text-sm text-muted-foreground py-4 text-center">Loading photos...</p>
         )}
 
         {!loading && photos.length === 0 && (
-          <p className="text-sm text-muted-foreground py-4 text-center">
-            No photos available
-          </p>
+          <p className="text-sm text-muted-foreground py-4 text-center">No photos available</p>
         )}
 
         {!loading && photos.length > 0 && (
@@ -114,9 +114,8 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
                   className="cursor-pointer p-0 border-0 bg-transparent"
                   onClick={() => handleSelectPhoto(photo)}
                 >
-                
                   <img
-                    src={`https://picsum.photos/id/${photo.id}/200/200`}
+                    src={photo.thumbnailUrl}
                     alt={photo.title}
                     loading="lazy"
                     className="w-[110px] h-[110px] object-cover rounded"
@@ -134,19 +133,17 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
           >
             <div onClick={handleStopPropagation}>
               <img
-                src={`https://picsum.photos/id/${selectedPhoto.id}/800/600`}
+                src={selectedPhoto.url}
                 alt={selectedPhoto.title}
                 className="max-w-[80vw] max-h-[80vh] rounded-lg"
               />
-              <p className="mt-3 text-sm text-white text-center">
-                {selectedPhoto.title}
-              </p>
+              <p className="mt-3 text-sm text-white text-center">{selectedPhoto.title}</p>
             </div>
           </div>
         )}
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default React.memo(ImageGalleryComponent)
+export default React.memo(ImageGalleryComponent);
