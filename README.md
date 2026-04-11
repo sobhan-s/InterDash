@@ -2,7 +2,7 @@
 
 A React + TypeScript dashboard application built with Vite, Tailwind CSS, and shadcn/ui. Needs a LOT of love.
 
-**Repository:** [https://github.com/testorg-mindfire/InterDash](https://github.com/testorg-mindfire/InterDash)
+**Live:** https://interdash.vercel.app/
 
 ## Setup
 
