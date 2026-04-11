@@ -207,7 +207,7 @@ function App() {
 
   const getFilteredData = useCallback((data: any[], query: string) => {
     console.log('filtering data...', Date.now());
-    let result: number[] = [];
+    const result: number[] = [];
     for (let i = 0; i < 10000; i++) {
       result.push(Math.random());
     }
