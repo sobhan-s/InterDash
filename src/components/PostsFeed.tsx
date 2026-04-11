@@ -1,44 +1,71 @@
-import React, { useState, useEffect } from 'react';
-import moment from 'moment';
-import _ from 'lodash';
-import { Card, CardContent } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Heart, MessageCircle, Eye } from 'lucide-react';
-import { Input } from './ui/input';
+import React, { useState, useEffect } from 'react'
+import moment from 'moment'
+import { Card, CardContent } from './ui/card'
+import { Button } from './ui/button'
+import { Badge } from './ui/badge'
+import { Heart, MessageCircle, Eye } from 'lucide-react'
+import { Input } from './ui/input'
+import { API_ENDPOINTS, ITEMS_PER_PAGE } from '../utils/constants'
 
 interface PostsFeedProps {
-  theme: string;
-  counter: number;
-  posts?: any[];
-  comments?: Record<string, any[]>;
-  onPostClick?: (post: any) => void;
+  theme: string
+  counter: number
+  posts?: any[]
+  comments?: Record<number, any[]>
+  onPostClick?: (post: any) => void
 }
 
-const PostsFeed = ({ theme, counter, posts, comments, onPostClick }: PostsFeedProps) => {
-  const [expandedPost, setExpandedPost] = useState<number | null>(null);
-  const [newComment, setNewComment] = useState('');
-  const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({});
-  const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({});
+const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: PostsFeedProps) => {
+  const [posts, setPosts] = useState<any[]>(propPosts || [])
+  const [comments, setComments] = useState<Record<number, any[]>>(propComments || {})
+  const [expandedPost, setExpandedPost] = useState<number | null>(null)
+  const [likedPosts, setLikedPosts] = useState<Record<number, boolean>>({})
+  const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({})
+  const [loading, setLoading] = useState(false)
+
+  
+  useEffect(() => {
+    if (propPosts && propPosts.length > 0) return
+    setLoading(true)
+    fetch(`${API_ENDPOINTS.posts}?_limit=${ITEMS_PER_PAGE}`)
+      .then((r) => r.json())
+      .then((data) => setPosts(data))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  
+  const handleExpand = (postId: number) => {
+    const isClosing = expandedPost === postId
+    setExpandedPost(isClosing ? null : postId)
+
+    if (!isClosing && !comments[postId]) {
+      fetch(`${API_ENDPOINTS.comments}?postId=${postId}`)
+        .then((r) => r.json())
+        .then((data) => setComments((prev) => ({ ...prev, [postId]: data })))
+        .catch(() => {})
+    }
+  }
 
   const handleLike = (postId: number) => {
-    setLikedPosts((prev) => ({
-      ...prev,
-      [postId]: !prev[postId],
-    }));
-  };
+    setLikedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }))
+  }
 
   const handleCommentSubmit = (e: React.FormEvent, postId: number) => {
-    e.preventDefault();
-    setNewComment('');
-  };
+    e.preventDefault()
+    setCommentDrafts((prev) => ({ ...prev, [postId]: '' }))
+  }
 
-  const displayPosts = posts || [];
+  if (loading) {
+    return (
+      <p className="text-sm text-muted-foreground py-4 text-center">Loading posts...</p>
+    )
+  }
 
   return (
     <div className="max-h-[500px] overflow-auto space-y-3">
-      {displayPosts.slice(0, 20).map((post: any, index: number) => (
-        <Card key={index} className="overflow-hidden">
+      {posts.slice(0, ITEMS_PER_PAGE).map((post: any) => (
+        <Card key={post.id} className="overflow-hidden">
           <CardContent className="p-4">
             <div className="flex justify-between items-start">
               <h4 className="font-semibold text-sm flex-1">{post.title}</h4>
@@ -63,7 +90,7 @@ const PostsFeed = ({ theme, counter, posts, comments, onPostClick }: PostsFeedPr
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs"
-                onClick={() => setExpandedPost(expandedPost === post.id ? null : post.id)}
+                onClick={() => handleExpand(post.id)}
               >
                 <MessageCircle className="h-3 w-3 mr-1" />
                 Comments
@@ -78,21 +105,29 @@ const PostsFeed = ({ theme, counter, posts, comments, onPostClick }: PostsFeedPr
                 View
               </Button>
             </div>
+
             {expandedPost === post.id && (
               <div className="mt-3 pt-3 border-t space-y-2">
                 <h5 className="text-xs font-semibold">Comments</h5>
-                {(comments[post.id] || []).map((comment: any, ci: number) => (
-                  <div key={ci} className="p-2 bg-muted/50 rounded text-xs">
-                    //fix the xss issue
+                {!comments[post.id] && (
+                  <p className="text-xs text-muted-foreground">Loading comments...</p>
+                )}
+                {(comments[post.id] || []).map((comment: any) => (
+                  <div key={comment.id} className="p-2 bg-muted/50 rounded text-xs">
                     <strong>{comment.name}</strong>{' '}
                     <span className="text-muted-foreground">({comment.email})</span>
                     <p className="mt-1 text-muted-foreground">{comment.body}</p>
                   </div>
                 ))}
-                <form onSubmit={(e) => handleCommentSubmit(e, post.id)} className="flex gap-2 mt-2">
+                <form
+                  onSubmit={(e) => handleCommentSubmit(e, post.id)}
+                  className="flex gap-2 mt-2"
+                >
                   <Input
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
+                    value={commentDrafts[post.id] || ''}
+                    onChange={(e) =>
+                      setCommentDrafts((prev) => ({ ...prev, [post.id]: e.target.value }))
+                    }
                     placeholder="Add a comment..."
                     className="h-7 text-xs"
                   />
@@ -106,7 +141,7 @@ const PostsFeed = ({ theme, counter, posts, comments, onPostClick }: PostsFeedPr
         </Card>
       ))}
     </div>
-  );
-};
+  )
+}
 
-export default PostsFeed;
+export default PostsFeed

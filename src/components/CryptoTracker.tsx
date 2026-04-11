@@ -6,6 +6,7 @@ import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { Star, TrendingUp, TrendingDown } from 'lucide-react';
+import { API_ENDPOINTS } from '../utils/constants';
 
 interface CryptoTrackerProps {
   theme: string;
@@ -15,10 +16,20 @@ interface CryptoTrackerProps {
 }
 
 const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) => {
+  const [coins, setCoins] = useState<any[]>(data || []);  // <- added
   const [sortBy, setSortBy] = useState('market_cap');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [search, setSearch] = useState('');
   const [favorites, setFavorites] = useState<string[]>([]);
+
+  // fetch only when no data passed in                     // <- added
+  useEffect(() => {
+    if (data && data.length > 0) return;
+    fetch(`${API_ENDPOINTS.crypto}?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false`)
+      .then((r) => r.json())
+      .then((d) => { if (Array.isArray(d)) setCoins(d); })
+      .catch(() => {});
+  }, []);
 
   const toggleFavorite = (coin: any) => {
     setFavorites((prev) =>
@@ -27,7 +38,7 @@ const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) =
   };
 
   const sortedPrices = _.orderBy(
-    (data || []).filter((p: any) => p.name?.toLowerCase().includes(search.toLowerCase())),
+    (coins || []).filter((p: any) => p.name?.toLowerCase().includes(search.toLowerCase())),
     [sortBy],
     [sortDir],
   );

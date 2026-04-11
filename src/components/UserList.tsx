@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Users, Mail, Building, Phone, Globe, Info } from 'lucide-react';
+import { API_ENDPOINTS } from '../utils/constants';
 
 interface UserListProps {
   theme: string;
@@ -14,24 +15,41 @@ interface UserListProps {
 }
 
 const UserList = ({
-  theme,
-  counter,
-  users,
-  posts,
+  users: propUsers,
+  posts: propPosts,
   globalSearchQuery,
   onUserClick,
 }: UserListProps) => {
+  const [users, setUsers] = useState<any[]>(propUsers || []);
+  const [posts, setPosts] = useState<any[]>(propPosts || []);
   const [sortField, setSortField] = useState('name');
 
   // ISSUE-056 fix: use stable item id instead of array index
   const [selectedId, setSelectedId] = useState<number | null>(null);
 
-  const [hoveredTooltipIndex, setHoveredTooltipIndex] = useState<number | null>(null);
+
+  const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState({ top: 0, left: 0 });
 
-  const displayUsers = users || [];
+  // fetch users if none passed in
+  useEffect(() => {
+    if (propUsers && propUsers.length > 0) return;
+    fetch(API_ENDPOINTS.users)
+      .then((r) => r.json())
+      .then((data) => setUsers(data))
+      .catch(() => { });
+  }, []);
 
-  const filteredUsers = displayUsers.filter((u: any) => {
+  // fetch posts if none passed in
+  useEffect(() => {
+    if (propPosts && propPosts.length > 0) return;
+    fetch(API_ENDPOINTS.posts)
+      .then((r) => r.json())
+      .then((data) => setPosts(data))
+      .catch(() => { });
+  }, []);
+
+  const filteredUsers = users.filter((u: any) => {
     if (!globalSearchQuery) return true;
     return (
       u.name.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
@@ -42,8 +60,11 @@ const UserList = ({
 
   const sorted = _.sortBy(filteredUsers, [sortField]);
 
-  // ISSUE-056 fix: look up selected user by id after every sort/filter
+
   const selectedUser = sorted.find((u: any) => u.id === selectedId) ?? null;
+
+  
+  const tooltipRoot = document.getElementById('tooltip-root') || document.body;
 
   return (
     <Card>
@@ -67,15 +88,13 @@ const UserList = ({
       </CardHeader>
       <CardContent>
         <div className="max-h-[400px] overflow-auto space-y-2">
-          {sorted.map((user: any, index: number) => (
+          {sorted.map((user: any) => (
             <button
               key={user.id}
-              // ISSUE-056 fix: highlight keyed to stable user.id, not array index
-              className={`relative p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
-                selectedId === user.id
+              className={`relative w-full text-left p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md ${selectedId === user.id
                   ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20'
                   : 'hover:bg-muted/50'
-              }`}
+                }`}
               onClick={() => {
                 setSelectedId(user.id);
                 onUserClick && onUserClick(user);
@@ -126,13 +145,13 @@ const UserList = ({
                     }
                     const left = rect.left + window.scrollX + rect.width / 2;
                     setTooltip({ top, left });
-                    setHoveredTooltipIndex(index);
+                    setHoveredUserId(user.id);
                   }}
-                  onMouseLeave={() => setHoveredTooltipIndex(null)}
+                  onMouseLeave={() => setHoveredUserId(null)}
                   onClick={(e) => e.stopPropagation()}
                 >
                   <Info className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
-                  {hoveredTooltipIndex === index &&
+                  {hoveredUserId === user.id &&
                     ReactDOM.createPortal(
                       <div
                         className="absolute z-50 bg-popover border rounded-md shadow-lg p-2 text-xs w-[200px]"
@@ -149,7 +168,7 @@ const UserList = ({
                           lat {user.address?.geo?.lat}, lng {user.address?.geo?.lng}
                         </p>
                       </div>,
-                      document.getElementById('tooltip-root')!,
+                      tooltipRoot,
                     )}
                 </div>
               </div>
@@ -157,17 +176,16 @@ const UserList = ({
           ))}
         </div>
 
-        {/* ISSUE-056 fix: detail panel uses selectedUser looked up by id */}
         {selectedUser && (
           <div className="mt-4 p-3 bg-muted/50 rounded-lg">
             <h4 className="font-semibold text-sm mb-2">
               {selectedUser.name}'s Posts (
-              {(posts || []).filter((p: any) => p.userId === selectedUser.id).length})
+              {posts.filter((p: any) => p.userId === selectedUser.id).length})
             </h4>
-            {(posts || [])
+            {posts
               .filter((p: any) => p.userId === selectedUser.id)
-              .map((post: any, i: number) => (
-                <div key={i} className="py-1.5 border-b border-gray-200 last:border-0">
+              .map((post: any) => (
+                <div key={post.id} className="py-1.5 border-b border-gray-200 last:border-0">
                   <strong className="text-xs">{post.title}</strong>
                   <p className="text-[11px] text-muted-foreground mt-0.5">
                     {post.body.slice(0, 100)}...

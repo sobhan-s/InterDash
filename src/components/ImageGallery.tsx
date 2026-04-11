@@ -1,36 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ImageIcon } from 'lucide-react';
-import { Grid } from 'react-window';
+import React, { useState, useEffect } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { ImageIcon } from 'lucide-react'
 
-interface ImageGalleryProps {
-  photos: any[];
-  theme: string;
-  counter: number;
+interface Photo {
+  id: number
+  thumbnailUrl: string
+  url: string
+  title: string
 }
 
-const Cell = ({ columnIndex, rowIndex, style, photos, columns, setSelectedPhoto }: any) => {
-  const index = rowIndex * columns + columnIndex;
-  const photo = photos[index];
+interface ImageGalleryProps {
+  photos?: any[]
+  theme: string
+  counter: number
+}
 
-  if (!photo) return null;
+// picsum.photos gives real images — jsonplaceholder URLs point to
+// via.placeholder.com which is frequently blocked/broken
+const generatePhotos = (count: number): Photo[] =>
+  Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    title: `Photo ${i + 1}`,
+    thumbnailUrl: `https://picsum.photos/seed/${i + 1}/110/110`,
+    url: `https://picsum.photos/seed/${i + 1}/800/600`,
+  }))
 
-  return (
-    <button style={style} className="p-1 cursor-pointer" onClick={() => setSelectedPhoto(photo)} aria-label={`View image ${photo.title}`}>
-      <img
-        src={photo.thumbnailUrl}
-        alt="photo"
-        loading="lazy"
-        className="w-full h-[100px] object-cover rounded"
-      />
-    </button>
-  );
-};
+const ImageGallery = ({ photos: propPhotos }: ImageGalleryProps) => {
+  const [photos, setPhotos] = useState<Photo[]>([])
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
+  const [columns, setColumns] = useState(5)
+  const [loading, setLoading] = useState(true)
 
-const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
-  const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
-  const [columns, setColumns] = useState(5);
-  const [loadedImages, setLoadedImages] = useState<string[]>([]);
+  useEffect(() => {
+    if (propPhotos && propPhotos.length > 0) {
+      setPhotos(propPhotos)
+      setLoading(false)
+      return
+    }
+    // generate 100 photo entries using picsum
+    setPhotos(generatePhotos(100))
+    setLoading(false)
+  }, [])
 
   return (
     <Card>
@@ -38,7 +48,7 @@ const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <ImageIcon className="h-4 w-4" />
-            Photo Gallery ({photos?.length || 0} photos)
+            Photo Gallery ({photos.length} photos)
           </CardTitle>
           <div className="flex items-center gap-2 text-sm">
             <span>Columns:</span>
@@ -55,24 +65,38 @@ const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="max-h-[500px] overflow-auto">
-          <Grid
-            columnCount={columns}
-            rowCount={Math.ceil((photos?.length || 0) / columns)}
-            columnWidth={110}
-            rowHeight={110}
-            cellComponent={Cell}
-            cellProps={{
-              photos,
-              columns,
-              setSelectedPhoto,
-            }}
-            style={{
-              height: 500,
-              width: columns * 110,
-            }}
-          />
-        </div>
+        {loading && (
+          <p className="text-sm text-muted-foreground py-4 text-center">Loading photos...</p>
+        )}
+
+        {!loading && photos.length > 0 && (
+          <div className="overflow-auto max-h-[500px]">
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${columns}, 110px)`,
+                gap: '4px',
+              }}
+            >
+              {photos.map((photo) => (
+                <button
+                  key={photo.id}
+                  className="cursor-pointer p-0 border-0 bg-transparent"
+                  onClick={() => setSelectedPhoto(photo)}
+                  aria-label={`View image: ${photo.title}`}
+                >
+                  <img
+                    src={photo.thumbnailUrl}
+                    alt={photo.title}
+                    loading="lazy"
+                    className="w-[110px] h-[110px] object-cover rounded"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {selectedPhoto && (
           <div
             className="fixed inset-0 bg-black/80 flex items-center justify-center z-[2000]"
@@ -81,17 +105,16 @@ const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
             <div className="text-center text-white" onClick={(e) => e.stopPropagation()}>
               <img
                 src={selectedPhoto.url}
-                alt="photo"
+                alt={selectedPhoto.title}
                 className="max-w-[80vw] max-h-[80vh] rounded-lg"
               />
-              //fix the xss issue
               <p className="mt-3 text-sm">{selectedPhoto.title}</p>
             </div>
           </div>
         )}
       </CardContent>
     </Card>
-  );
-};
+  )
+}
 
-export default ImageGallery;
+export default ImageGallery
