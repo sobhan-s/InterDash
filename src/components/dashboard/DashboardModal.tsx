@@ -1,16 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card, CardContent } from '../ui/card';
 
 import { DashboardModalProps } from '../../lib/types';
 
 const DashboardModal = ({ open, content, onClose }: DashboardModalProps) => {
+
+  useEffect(() => {
+  const handleKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') onClose()
+  }
+
+  document.addEventListener('keydown', handleKey)
+  return () => document.removeEventListener('keydown', handleKey)
+}, [])
+
   if (!open) {
     return null;
   }
 
   return (
     <div
+      role="dialog" 
+      aria-modal="true"
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
       onClick={onClose}
     >

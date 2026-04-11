@@ -37,6 +37,8 @@ const DraggableList = ({
             <div
               key={index}
               draggable
+              role='button'
+              tabIndex={0}
               onDragStart={() => {
                 setDraggedIndex(index);
               }}

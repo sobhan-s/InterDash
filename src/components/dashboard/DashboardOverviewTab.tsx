@@ -1,27 +1,29 @@
-import React from 'react';
-import _ from 'lodash';
-import CryptoTracker from '../CryptoTracker';
+import React, { Suspense, useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import groupBy from 'lodash/groupBy';
+
 import WeatherWidget from '../WeatherWidget';
 import UserList from '../UserList';
 import PostsFeed from '../PostsFeed';
 import TodoList from '../TodoList';
-import DataChart from '../DataChart';
-import ImageGallery from '../ImageGallery';
-import MarkdownEditor from '../MarkdownEditor';
-import Analytics from '../Analytics';
-import SearchFilter from '../SearchFilter';
-import ThreeScene from '../ThreeScene';
-import ReportGenerator from '../ReportGenerator';
-import D3Visualization from '../D3Visualization';
-import MathPlayground from '../MathPlayground';
 import DraggableList from '../DraggableList';
 import CustomTabPanel from '../CustomTabPanel';
 import VirtualizedFeed from '../VirtualizedFeed';
 import DashboardProfileForm from './DashboardProfileForm';
 
+const CryptoTracker = React.lazy(() => import('../CryptoTracker'));
+const DataChart = React.lazy(() => import('../DataChart'));
+const ImageGallery = React.lazy(() => import('../ImageGallery'));
+const MarkdownEditor = React.lazy(() => import('../MarkdownEditor'));
+const Analytics = React.lazy(() => import('../Analytics'));
+const SearchFilter = React.lazy(() => import('../SearchFilter'));
+const ThreeScene = React.lazy(() => import('../ThreeScene'));
+const ReportGenerator = React.lazy(() => import('../ReportGenerator'));
+const D3Visualization = React.lazy(() => import('../D3Visualization'));
+const MathPlayground = React.lazy(() => import('../MathPlayground'));
+
 import { DashboardOverviewTabProps } from '../../lib/types';
 
-const DashboardOverviewTab = ({
+const DashboardOverviewTab = React.memo(({
   theme,
   counter,
   globalSearchQuery,
@@ -46,116 +48,213 @@ const DashboardOverviewTab = ({
   onProfileSave,
   getSortedAndFilteredPosts,
 }: DashboardOverviewTabProps) => {
+  const shimmerRef = useRef<HTMLDivElement | null>(null);
+  const [isShimmerInView, setIsShimmerInView] = useState(true);
+
+  useEffect(() => {
+    const shimmerElement = shimmerRef.current;
+    if (!shimmerElement || typeof IntersectionObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsShimmerInView(entry.isIntersecting);
+      },
+      { threshold: 0.01 },
+    );
+
+    observer.observe(shimmerElement);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
+  
+  const commentsByPostId = useMemo(() => groupBy(comments, 'postId'), [comments]);
+
+  const sortedAndFilteredPosts = useMemo(
+    () => getSortedAndFilteredPosts(),
+    [getSortedAndFilteredPosts],
+  );
+
+  
+  const searchFilterData = useMemo(
+    () => [...posts, ...users, ...todos],
+    [posts, users, todos],
+  );
+
+  
+  const handleSelectItem = useCallback(
+    (...args: Parameters<typeof onSelectItem>) => onSelectItem(...args),
+    [onSelectItem],
+  );
+
+  const handleOpenModal = useCallback(
+    (...args: Parameters<typeof onOpenModal>) => onOpenModal(...args),
+    [onOpenModal],
+  );
+
+  const handleAddTodo = useCallback(
+    (...args: Parameters<typeof onAddTodo>) => onAddTodo(...args),
+    [onAddTodo],
+  );
+
+  const handleDeleteTodo = useCallback(
+    (...args: Parameters<typeof onDeleteTodo>) => onDeleteTodo(...args),
+    [onDeleteTodo],
+  );
+
+  const handleToggleTodo = useCallback(
+    (...args: Parameters<typeof onToggleTodo>) => onToggleTodo(...args),
+    [onToggleTodo],
+  );
+
+  const handleEditTodo = useCallback(
+    (...args: Parameters<typeof onEditTodo>) => onEditTodo(...args),
+    [onEditTodo],
+  );
+
+  const handleProfileFieldChange = useCallback(
+    (...args: Parameters<typeof onProfileFieldChange>) => onProfileFieldChange(...args),
+    [onProfileFieldChange],
+  );
+
+  const handleProfileSave = useCallback(
+    (...args: Parameters<typeof onProfileSave>) => onProfileSave(...args),
+    [onProfileSave],
+  );
+
+  // Memoize the CustomTabPanel tabs array so it isn't recreated each render.
+  const quickStatsTabs = useMemo(
+    () => [
+      {
+        label: 'Posts',
+        content: <p className="text-sm text-muted-foreground">Total posts: {posts.length}</p>,
+      },
+      {
+        label: 'Users',
+        content: <p className="text-sm text-muted-foreground">Total users: {users.length}</p>,
+      },
+      {
+        label: 'Todos',
+        content: <p className="text-sm text-muted-foreground">Total todos: {todos.length}</p>,
+      },
+      {
+        label: 'Comments',
+        content: (
+          <p className="text-sm text-muted-foreground">Total comments: {comments.length}</p>
+        ),
+      },
+    ],
+    [posts.length, users.length, todos.length, comments.length],
+  );
+
   return (
-    <div className="space-y-5">
-      <h2 className="text-lg font-semibold">Overview - Last updated: {lastUpdated}</h2>
+    <Suspense
+      fallback={
+        <div className="h-96 flex items-center justify-center text-muted-foreground border rounded bg-muted/20 animate-pulse">
+          Loading dashboard analytical modules...
+        </div>
+      }
+    >
+      <div className="space-y-5">
+        <h2 className="text-lg font-semibold">Overview - Last updated: {lastUpdated}</h2>
 
-      <div className="loading-shimmer h-1 w-full mb-1 rounded" />
-
-      <div className="grid grid-cols-2 gap-5" style={{ width: '1100px', minWidth: '1100px' }}>
-        <CryptoTracker
-          theme={theme}
-          counter={counter}
-          data={cryptoData}
-          onSelect={onSelectItem}
+        <div
+          ref={shimmerRef}
+          className={`loading-shimmer h-1 w-full mb-1 rounded ${isShimmerInView ? 'shimmer-running' : 'shimmer-paused'}`}
         />
-        <WeatherWidget theme={theme} counter={counter} data={weatherData} onCityClick={onOpenModal} />
-        <UserList
+
+        <div className="grid grid-cols-2 gap-5" style={{ width: '1100px', minWidth: '1100px' }}>
+          <CryptoTracker
+            theme={theme}
+            counter={counter}
+            data={cryptoData}
+            onSelect={handleSelectItem}
+          />
+          <WeatherWidget
+            theme={theme}
+            counter={counter}
+            data={weatherData}
+            onCityClick={handleOpenModal}
+          />
+          <UserList
+            theme={theme}
+            counter={counter}
+            users={users}
+            posts={posts}
+            globalSearchQuery={globalSearchQuery}
+            onUserClick={handleOpenModal}
+          />
+          <PostsFeed
+            theme={theme}
+            counter={counter}
+            posts={sortedAndFilteredPosts}
+            comments={commentsByPostId}
+            onPostClick={handleOpenModal}
+          />
+        </div>
+
+        <TodoList
+          todos={todos}
+          onAdd={handleAddTodo}
+          onDelete={handleDeleteTodo}
+          onToggle={handleToggleTodo}
+          onEdit={handleEditTodo}
           theme={theme}
           counter={counter}
-          users={users}
+        />
+
+        <DataChart
           posts={posts}
-          globalSearchQuery={globalSearchQuery}
-          onUserClick={onOpenModal}
-        />
-        <PostsFeed
+          users={users}
+          todos={todos}
+          comments={comments}
           theme={theme}
           counter={counter}
-          posts={getSortedAndFilteredPosts()}
-          comments={_.groupBy(comments, 'postId')}
-          onPostClick={onOpenModal}
+        />
+
+        <ThreeScene counter={counter} theme={theme} />
+        <D3Visualization data={posts} counter={counter} theme={theme} />
+        <MathPlayground counter={counter} theme={theme} />
+        <ReportGenerator posts={posts} users={users} counter={counter} theme={theme} />
+        <ImageGallery theme={theme} counter={counter} />
+        <MarkdownEditor theme={theme} counter={counter} />
+
+        <Analytics
+          posts={posts}
+          users={users}
+          todos={todos}
+          comments={comments}
+          albums={albums}
+          photos={photos}
+          theme={theme}
+          counter={counter}
+        />
+
+        <SearchFilter data={searchFilterData} theme={theme} counter={counter} />
+
+        <DraggableList />
+        <VirtualizedFeed items={posts} counter={counter} />
+
+        <CustomTabPanel
+          title="Quick Stats"
+          tabs={quickStatsTabs}
+        />
+
+        <DashboardProfileForm
+          formData={formData}
+          validationErrors={validationErrors}
+          onFieldChange={handleProfileFieldChange}
+          onSave={handleProfileSave}
         />
       </div>
-
-      <TodoList
-        todos={todos}
-        onAdd={onAddTodo}
-        onDelete={onDeleteTodo}
-        onToggle={onToggleTodo}
-        onEdit={onEditTodo}
-        theme={theme}
-        counter={counter}
-      />
-
-      <DataChart
-        posts={posts}
-        users={users}
-        todos={todos}
-        comments={comments}
-        theme={theme}
-        counter={counter}
-      />
-
-      <ThreeScene counter={counter} theme={theme} />
-      <D3Visualization data={posts} counter={counter} theme={theme} />
-      <MathPlayground counter={counter} theme={theme} />
-      <ReportGenerator posts={posts} users={users} counter={counter} theme={theme} />
-      <ImageGallery photos={photos} theme={theme} counter={counter} />
-      <MarkdownEditor theme={theme} counter={counter} />
-
-      <Analytics
-        posts={posts}
-        users={users}
-        todos={todos}
-        comments={comments}
-        albums={albums}
-        photos={photos}
-        theme={theme}
-        counter={counter}
-      />
-
-      <SearchFilter
-        data={[...posts, ...users, ...todos]}
-        onFilter={(result) => console.log('filtered:', result)}
-        theme={theme}
-        counter={counter}
-      />
-
-      <DraggableList />
-      <VirtualizedFeed items={posts} counter={counter} />
-
-      <CustomTabPanel
-        title="Quick Stats"
-        tabs={[
-          {
-            label: 'Posts',
-            content: <p className="text-sm text-muted-foreground">Total posts: {posts.length}</p>,
-          },
-          {
-            label: 'Users',
-            content: <p className="text-sm text-muted-foreground">Total users: {users.length}</p>,
-          },
-          {
-            label: 'Todos',
-            content: <p className="text-sm text-muted-foreground">Total todos: {todos.length}</p>,
-          },
-          {
-            label: 'Comments',
-            content: (
-              <p className="text-sm text-muted-foreground">Total comments: {comments.length}</p>
-            ),
-          },
-        ]}
-      />
-
-      <DashboardProfileForm
-        formData={formData}
-        validationErrors={validationErrors}
-        onFieldChange={onProfileFieldChange}
-        onSave={onProfileSave}
-      />
-    </div>
+    </Suspense>
   );
-};
+});
+
+DashboardOverviewTab.displayName = 'DashboardOverviewTab';
 
 export default DashboardOverviewTab;

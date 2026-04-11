@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react'
-import moment from 'moment'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
-import { Badge } from './ui/badge'
-import { Bell, Menu, Moon, Sun, Search } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react';
+import moment from 'moment';
+import { Input } from './ui/input';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+import { Bell, Menu, Moon, Sun, Search } from 'lucide-react';
 
 interface HeaderProps {
   theme: string;
@@ -37,10 +37,11 @@ const Header = ({
   // ISSUE-051: showSettingsMenu toggled by button click only.
   // There is no document.addEventListener('mousedown', ...) to close this
   // dropdown when the user clicks anywhere outside it.
-  const [showSettingsMenu, setShowSettingsMenu] = useState(false)
-  const searchContainerRef = useRef<HTMLDivElement | null>(null)
-  const notificationsRef = useRef<HTMLDivElement | null>(null)
-  const settingsRef = useRef<HTMLDivElement | null>(null)
+  const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement | null>(null);
+  const notificationsRef = useRef<HTMLDivElement | null>(null);
+  const settingsRef = useRef<HTMLDivElement | null>(null);
+  const [debouncedQuery, setDebouncedQuery] = useState(globalSearchQuery)
 
   useEffect(() => {
     const intervalId = setInterval(() => {
@@ -51,40 +52,57 @@ const Header = ({
     };
   }, []);
 
+   useEffect(() => {
+  const handler = setTimeout(() => {
+    setDebouncedQuery(globalSearchQuery)
+  }, 300)
+
+  return () => clearTimeout(handler)
+}, [globalSearchQuery])
+
+
   useEffect(() => {
-    if (globalSearchQuery.length > 0) {
-      fetch(`https://jsonplaceholder.typicode.com/posts?q=${globalSearchQuery}`)
+    if (debouncedQuery.length > 0) {
+      fetch(`https://jsonplaceholder.typicode.com/posts?q=${debouncedQuery}`)
         .then((res) => res.json())
         .then((data) => {
           setSearchResults(data);
           setShowDropdown(true);
         });
     }
-  }, [globalSearchQuery]);
+  }, [debouncedQuery]);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
-      const target = event.target as Node
+      const target = event.target as Node;
 
-      if (showDropdown && searchContainerRef.current && !searchContainerRef.current.contains(target)) {
-        setShowDropdown(false)
+      if (
+        showDropdown &&
+        searchContainerRef.current &&
+        !searchContainerRef.current.contains(target)
+      ) {
+        setShowDropdown(false);
       }
 
-      if (showNotifPanel && notificationsRef.current && !notificationsRef.current.contains(target)) {
-        setShowNotifPanel(false)
+      if (
+        showNotifPanel &&
+        notificationsRef.current &&
+        !notificationsRef.current.contains(target)
+      ) {
+        setShowNotifPanel(false);
       }
 
       if (showSettingsMenu && settingsRef.current && !settingsRef.current.contains(target)) {
-        setShowSettingsMenu(false)
+        setShowSettingsMenu(false);
       }
-    }
+    };
 
-    document.addEventListener('mousedown', handlePointerDown)
+    document.addEventListener('mousedown', handlePointerDown);
 
     return () => {
-      document.removeEventListener('mousedown', handlePointerDown)
-    }
-  }, [showDropdown, showNotifPanel, showSettingsMenu])
+      document.removeEventListener('mousedown', handlePointerDown);
+    };
+  }, [showDropdown, showNotifPanel, showSettingsMenu]);
 
   useEffect(() => {
     if (searchResults.length > 0) {
@@ -92,18 +110,15 @@ const Header = ({
       const existing = JSON.parse(localStorage.getItem('searchCache') || '[]');
       existing.push({ query: globalSearchQuery, results: searchResults, time: Date.now() });
       localStorage.setItem('searchCache', JSON.stringify(existing.slice(-MAX_HISTORY)));
-      //console.log('Search cache size:', JSON.stringify(existing).length, 'bytes')
     }
   }, [searchResults]);
-
-  console.log('Header rendering', counter);
 
   return (
     <header
       className={`flex justify-between items-center px-5 py-2.5 border-b h-[60px] ${theme === 'dark' ? 'bg-gray-800 text-white border-gray-700' : 'bg-white text-gray-800 border-gray-200'}`}
     >
       <div className="flex items-center gap-2.5">
-        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)}>
+        <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)} aria-label='Toggle sidebar'>
           <Menu className="h-5 w-5" />
         </Button>
         <h1 className="m-0 text-lg font-bold">InternDash</h1>
@@ -124,27 +139,27 @@ const Header = ({
         {showDropdown && searchResults.length > 0 && (
           <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 max-h-[200px] overflow-auto z-100 rounded-md shadow-lg">
             {searchResults.map((result: any, idx: number) => (
-              <div
+              <button
                 key={idx}
                 className="p-2 cursor-pointer hover:bg-gray-50 border-b border-gray-100 text-sm"
                 onClick={() => {
-                  console.log(result);
                   setShowDropdown(false);
                 }}
+                aria-label={`Search result ${result.title}`}
               >
                 {result.title}
-              </div>
+              </button>
             ))}
           </div>
         )}
       </div>
 
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onThemeToggle}>
+        <Button variant="ghost" size="icon" onClick={onThemeToggle} aria-label='Toggle theme'>
           {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
         </Button>
         <div className="relative" ref={notificationsRef}>
-          <div className="cursor-pointer" onClick={() => setShowNotifPanel(!showNotifPanel)}>
+          <button className="cursor-pointer" onClick={() => setShowNotifPanel(!showNotifPanel)} aria-label='Open notifications'>
             <Bell className="h-5 w-5" />
             <Badge
               className="absolute -top-2 -right-2 h-4 w-4 flex items-center justify-center text-[10px] p-0"
@@ -152,7 +167,7 @@ const Header = ({
             >
               {notifications.length}
             </Badge>
-          </div>
+          </button>
           {showNotifPanel && (
             <div
               className={`absolute top-full right-0 z-50 mt-2 max-h-75 w-75 overflow-auto rounded-md border shadow-lg ${
@@ -169,7 +184,7 @@ const Header = ({
                 Notifications ({notifications.length})
               </div>
               {notifications.map((notif, i: number) => (
-                <div
+                <button
                   key={i}
                   className={`cursor-pointer p-2 text-xs border-b ${
                     theme === 'dark'
@@ -179,19 +194,12 @@ const Header = ({
                 >
                   <div>{notif.body?.slice(0, 80)}</div>
                   {/* ISSUE-052: #aaa on #fff ≈ 2.3:1 contrast — fails WCAG AA */}
-                  <div className="mt-1 text-foreground bg-muted">
-                    {notif.email}
-                  </div>
-                  <div className='text-[10px] text-muted-foreground bg-muted'>just now</div>
-                </div>
+                  <div className="mt-1 text-foreground bg-muted">{notif.email}</div>
+                  <div className="text-[10px] text-muted-foreground bg-muted">just now</div>
+                </button>
               ))}
               <div className="p-2 text-center">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs"
-                  onClick={() => console.log('TODO: mark read')}
-                >
+                <Button variant="ghost" size="sm" className="text-xs">
                   Mark all as read
                 </Button>
               </div>
@@ -209,8 +217,7 @@ const Header = ({
             ⚙ Settings
           </button>
           {showSettingsMenu && (
-            <div
-              className="absolute top-full right-0 mt-1 w-[180px] rounded-md shadow-lg border z-50 bg-popover">
+            <div className="absolute top-full right-0 mt-1 w-[180px] rounded-md shadow-lg border z-50 bg-popover">
               {[
                 { label: 'Account', status: 'Active' },
                 { label: 'Preferences', status: 'Default' },
@@ -218,21 +225,19 @@ const Header = ({
                 { label: 'Billing', status: 'Free tier' },
                 { label: 'Sign out', status: '' },
               ].map((item) => (
-                <div
+                <button
                   key={item.label}
                   className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b last:border-0"
                   onClick={() => {
-                    console.log(item.label);
                     setShowSettingsMenu(false);
                   }}
+                  aria-label={item.label}
                 >
-                  <div className='text-[13px] text-foreground bg-background'>{item.label}</div>
+                  <div className="text-[13px] text-foreground bg-background">{item.label}</div>
                   {item.status && (
-                    <div className='text-[11px] text-muted-foreground bg-muted'>
-                      {item.status}
-                    </div>
+                    <div className="text-[11px] text-muted-foreground bg-muted">{item.status}</div>
                   )}
-                </div>
+                </button>
               ))}
             </div>
           )}

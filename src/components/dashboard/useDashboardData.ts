@@ -112,20 +112,6 @@ export const useDashboardData = ({
     };
   }, [theme, refreshCount, fetchAllData]);
 
-  useEffect(() => {
-    const pollTimer = window.setInterval(async () => {
-      try {
-        await fetch('https://jsonplaceholder.typicode.com/posts?_limit=1');
-      } catch (_error) {
-        // Keep existing silent polling behavior.
-      }
-    }, 3000);
-
-    return () => {
-      window.clearInterval(pollTimer);
-    };
-  }, []);
-
   return {
     cryptoData,
     weatherData,

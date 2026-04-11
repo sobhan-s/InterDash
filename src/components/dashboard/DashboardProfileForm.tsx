@@ -17,8 +17,9 @@ const DashboardProfileForm = ({
         <h3 className="font-semibold text-sm mb-3">Edit Profile</h3>
         <div className="space-y-2">
           <div>
-            <label className="text-xs font-medium">Display Name</label>
+            <label htmlFor="profileName" className="text-xs font-medium">Display Name</label>
             <Input
+              id='profileName'
               value={(formData.profileName as string) || ''}
               onChange={(e) => onFieldChange('profileName', e.target.value)}
               placeholder="Your name"
@@ -30,8 +31,9 @@ const DashboardProfileForm = ({
           </div>
 
           <div>
-            <label className="text-xs font-medium">Email</label>
+            <label htmlFor="profileEmail" className="text-xs font-medium">Email</label>
             <Input
+              id='profileEmail'
               value={(formData.profileEmail as string) || ''}
               onChange={(e) => onFieldChange('profileEmail', e.target.value)}
               placeholder="your@email.com"
@@ -43,8 +45,9 @@ const DashboardProfileForm = ({
           </div>
 
           <div>
-            <label className="text-xs font-medium">Bio</label>
+            <label htmlFor='profileBio' className="text-xs font-medium">Bio</label>
             <Input
+              id='profileBio'
               value={(formData.profileBio as string) || ''}
               onChange={(e) => onFieldChange('profileBio', e.target.value)}
               placeholder="Tell us about yourself..."

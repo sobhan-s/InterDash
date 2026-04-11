@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import _ from 'lodash';
 import type { SortOrder, UseDashboardStateOptions } from '../../lib/types';
 
@@ -26,31 +26,31 @@ export const useDashboardState = ({
   const toggleTimeoutsRef = useRef<number[]>([]);
   const itemsPerPage = 10;
 
-  const openModal = (content: any) => {
+  const openModal = useCallback((content: any) => {
     setModalContent(content);
     setModalOpen(true);
-  };
+  }, []); // setters from useState are stable — no deps needed
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setModalOpen(false);
-  };
+  }, []);
 
-  const handleAddTodo = (text: string) => {
+  const handleAddTodo = useCallback((text: string) => {
     const newTodo = { id: todos.length + 1, title: text, completed: false, userId: 1 };
     setTodos((currentTodos) => [...currentTodos, newTodo]);
-  };
+  }, [todos.length, setTodos]);
 
-  const handleEditTodo = (id: number, text: string) => {
+  const handleEditTodo = useCallback((id: number, text: string) => {
     setTodos((currentTodos) =>
       currentTodos.map((todo) => (todo.id === id ? { ...todo, title: text } : todo)),
     );
-  };
+  }, [setTodos]);
 
-  const handleDeleteTodo = (id: number) => {
+  const handleDeleteTodo = useCallback((id: number) => {
     setTodos((currentTodos) => currentTodos.filter((todo) => todo.id !== id));
-  };
+  }, [setTodos]);
 
-  const handleToggleTodo = (id: number) => {
+  const handleToggleTodo = useCallback((id: number) => {
     const timeoutId = window.setTimeout(() => {
       setTodos((currentTodos) =>
         currentTodos.map((todo) =>
@@ -60,13 +60,16 @@ export const useDashboardState = ({
     }, 500);
 
     toggleTimeoutsRef.current.push(timeoutId);
-  };
+  }, [setTodos]);
 
-  const handleSelectItem = (item: any) => {
+  const handleSelectItem = useCallback((item: any) => {
     setSelectedItems((currentItems) => [...currentItems.slice(-50), item]);
-  };
+  }, []);
 
-  const getSortedAndFilteredPosts = () => {
+  // Stable across renders as long as posts/filterText/sortOrder don't change.
+  // Callers (e.g. DashboardOverviewTab) should wrap the call in useMemo keyed
+  // on this function reference to avoid redundant recomputations.
+  const getSortedAndFilteredPosts = useCallback(() => {
     let filteredPosts = posts;
 
     if (filterText) {
@@ -79,45 +82,53 @@ export const useDashboardState = ({
     }
 
     return _.orderBy(filteredPosts, ['id'], [sortOrder]);
-  };
+  }, [posts, filterText, sortOrder]);
 
-  const getPaginatedData = (data: any[]) => {
+  const getPaginatedData = useCallback((data: any[]) => {
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
     return data.slice(start, end);
-  };
+  }, [page, itemsPerPage]);
 
-  const totalPages = (data: any[]) => {
+  const totalPages = useCallback((data: any[]) => {
     return Math.ceil(data.length / itemsPerPage);
-  };
+  }, [itemsPerPage]);
 
-  const handleFormChange = (field: string, value: any) => {
+  const handleFormChange = useCallback((field: string, value: any) => {
     setFormData((currentFormData) => ({
       ...currentFormData,
       [field]: value,
     }));
-  };
+  }, []);
 
-  const validateForm = () => {
+  // Keep a ref to formData so validateForm/handleProfileSave can read the
+  // latest value without being re-created every time formData changes.
+  const formDataRef = useRef(formData);
+  useEffect(() => {
+    formDataRef.current = formData;
+  }, [formData]);
+
+  const validateForm = useCallback(() => {
+    const currentFormData = formDataRef.current;
     const errors: Record<string, string> = {};
 
-    if (!formData.profileName || formData.profileName.trim().length < 2) {
+    if (!currentFormData.profileName || currentFormData.profileName.trim().length < 2) {
       errors.profileName = 'Name must be at least 2 characters';
     }
 
-    if (!formData.profileEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.profileEmail)) {
+    if (!currentFormData.profileEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentFormData.profileEmail)) {
       errors.profileEmail = 'Enter a valid email address';
     }
 
-    if (!formData.profileBio || formData.profileBio.length > 200) {
+    if (!currentFormData.profileBio || currentFormData.profileBio.length > 200) {
       errors.profileBio = 'Bio must be between 1 and 200 characters';
     }
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  };
+  }, []); // stable: reads via ref, writes only to setValidationErrors (stable setter)
 
-  const handleProfileSave = () => {
+  const handleProfileSave = useCallback(() => {
     const isValid = validateForm();
 
     if (isValid) {
@@ -126,7 +137,7 @@ export const useDashboardState = ({
     }
 
     addToast('Please fix the errors', 'error');
-  };
+  }, [validateForm, addToast]);
 
   useEffect(() => {
     return () => {

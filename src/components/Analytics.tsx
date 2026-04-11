@@ -1,85 +1,131 @@
-import React, { useState, useEffect } from 'react'
-import _ from 'lodash'
-import moment from 'moment'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Badge } from './ui/badge'
-import { Activity, BarChart, Users, FileText, CheckSquare, Image } from 'lucide-react'
+import React, { useMemo } from 'react';
+import _ from 'lodash';
+import moment from 'moment';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Badge } from './ui/badge';
+import { Activity, BarChart, Users, FileText, CheckSquare, Image } from 'lucide-react';
 
-import { BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts'
+import {
+  BarChart as ReBarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  AreaChart,
+  Area,
+} from 'recharts';
 
 interface AnalyticsProps {
-  posts: any[]
-  users: any[]
-  todos: any[]
-  comments: any[]
-  albums: any[]
-  photos: any[]
-  theme: string
-  counter: number
+  posts: any[];
+  users: any[];
+  todos: any[];
+  comments: any[];
+  albums: any[];
+  photos: any[];
+  theme: string;
+  counter: number;
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#8DD1E1', '#A4DE6C', '#D0ED57']
+const COLORS = [
+  '#0088FE',
+  '#00C49F',
+  '#FFBB28',
+  '#FF8042',
+  '#8884D8',
+  '#82CA9D',
+  '#FFC658',
+  '#8DD1E1',
+  '#A4DE6C',
+  '#D0ED57',
+];
 
-const Analytics = ({ posts, users, todos, comments, albums, photos, theme, counter }: AnalyticsProps) => {
-  const [stats, setStats] = useState<any>({})
-  const [calculating, setCalculating] = useState(false)
+const Analytics = React.memo(({
+  posts,
+  users,
+  todos,
+  comments,
+  albums,
+  photos,
+  theme,
+  counter,
+}: AnalyticsProps) => {
+  // Replaces useState+useEffect+setCalculating pattern: useMemo recomputes only
+  // when the actual data deps change, never because counter ticked.
+  const stats = useMemo(() => {
+    const result: any = {};
 
-  console.log('Analytics render', counter)
+    result.postsPerUser = _.countBy(posts, 'userId');
+    result.commentsPerPost = _.countBy(comments, 'postId');
+    result.avgWordCount = _.meanBy(posts, (p: any) => p.body?.split(' ').length || 0);
 
-  useEffect(() => {
-    setCalculating(true)
+    const postsByUser = _.groupBy(posts, 'userId');
+    const todosByUser = _.groupBy(todos, 'userId');
+    const albumsByUser = _.groupBy(albums, 'userId');
 
-    const calculateStats = () => {
-      const result: any = {}
+    result.completionRates = {} as Record<string, string>;
+    Object.entries(todosByUser).forEach(([userId, userTodos]: [string, any[]]) => {
+      const completed = userTodos.filter((t: any) => t.completed).length;
+      result.completionRates[userId] = ((completed / userTodos.length) * 100).toFixed(1);
+    });
 
-      result.postsPerUser = _.countBy(posts, 'userId')
-      result.commentsPerPost = _.countBy(comments, 'postId')
-      result.avgWordCount = _.meanBy(posts, (p: any) => p.body?.split(' ').length || 0)
+    result.userActivity = users.map((user) => {
+      const userPosts = postsByUser[user.id] || [];
+      const userTodos = todosByUser[user.id] || [];
+      const userAlbums = albumsByUser[user.id] || [];
 
-      const todosByUser = _.groupBy(todos, 'userId')
-      result.completionRates = {} as Record<string, string>
-      Object.entries(todosByUser).forEach(([userId, userTodos]: [string, any[]]) => {
-        const completed = userTodos.filter((t: any) => t.completed).length
-        result.completionRates[userId] = ((completed / userTodos.length) * 100).toFixed(1)
-      })
-
-      result.userActivity = users.map((user: any) => ({
+      return {
         ...user,
-        postCount: posts.filter((p: any) => p.userId === user.id).length,
-        todoCount: todos.filter((t: any) => t.userId === user.id).length,
-        albumCount: albums.filter((a: any) => a.userId === user.id).length,
-      }))
+        postCount: userPosts.length,
+        todoCount: userTodos.length,
+        albumCount: userAlbums.length,
+      };
+    });
 
-      result.commentAuthors = comments.map((comment: any) => {
-        const post = posts.find((p: any) => p.id === comment.postId)
-        const user = users.find((u: any) => u.id === post?.userId)
-        return { ...comment, postAuthor: user?.name, postTitle: post?.title }
-      })
+    const postMap = new Map(posts.map((p) => [p.id, p]));
+    const userMap = new Map(users.map((u) => [u.id, u]));
 
-      for (let i = 0; i < 1000000; i++) {
-        Math.sqrt(i) * Math.random()
-      }
+    result.commentAuthors = comments.map((comment) => {
+      const post = postMap.get(comment.postId);
+      const user = userMap.get(post?.userId);
 
-      // Prepare recharts data
-      result.postsChartData = Object.entries(result.postsPerUser).map(([userId, count]) => ({
-        name: `User ${userId}`,
-        posts: count,
-      }))
+      return {
+        ...comment,
+        postAuthor: user?.name,
+        postTitle: post?.title,
+      };
+    });
 
-      result.todoChartData = [
-        { name: 'Completed', value: todos.filter((t: any) => t.completed).length },
-        { name: 'Pending', value: todos.filter((t: any) => !t.completed).length },
-      ]
+    // Prepare recharts data
+    result.postsChartData = Object.entries(result.postsPerUser).map(([userId, count]) => ({
+      name: `User ${userId}`,
+      posts: count,
+    }));
 
-      return result
+    let completed = 0;
+    let pending = 0;
+
+    for (const t of todos) {
+      if (t.completed) completed++;
+      else pending++;
     }
 
-    const result = calculateStats()
-    setStats(result)
-    setCalculating(false)
-  }, [posts, users, todos, comments, albums, photos, counter])
+    result.todoChartData = [
+      { name: 'Completed', value: completed },
+      { name: 'Pending', value: pending },
+    ];
 
-  if (calculating) return <p className="text-sm text-muted-foreground">Calculating analytics...</p>
+    // Capture timestamp at the moment stats are (re)calculated, not on every render
+    result.calculationTimestamp = moment().format('HH:mm:ss.SSS');
+
+    return result;
+  }, [posts, users, todos, comments, albums, photos]);
 
   return (
     <Card>
@@ -104,7 +150,9 @@ const Analytics = ({ posts, users, todos, comments, albums, photos, theme, count
           </div>
           <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-center">
             <CheckSquare className="h-5 w-5 mx-auto text-orange-600 mb-1" />
-            <div className="text-2xl font-bold">{todos?.filter((t: any) => t.completed).length || 0}</div>
+            <div className="text-2xl font-bold">
+              {todos?.filter((t: any) => t.completed).length || 0}
+            </div>
             <div className="text-xs text-muted-foreground">Completed Todos</div>
           </div>
           <div className="p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg text-center">
@@ -132,9 +180,16 @@ const Analytics = ({ posts, users, todos, comments, albums, photos, theme, count
             <h4 className="text-sm font-medium mb-2">Todo Status</h4>
             <ResponsiveContainer width="100%" height={200}>
               <PieChart>
-                <Pie data={stats.todoChartData || []} cx="50%" cy="50%" outerRadius={70} dataKey="value" label>
+                <Pie
+                  data={stats.todoChartData || []}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={70}
+                  dataKey="value"
+                  label
+                >
                   {(stats.todoChartData || []).map((_: any, index: number) => (
-                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -164,7 +219,11 @@ const Analytics = ({ posts, users, todos, comments, albums, photos, theme, count
                   <td className="p-2 text-center">{user.todoCount}</td>
                   <td className="p-2 text-center">{user.albumCount}</td>
                   <td className="p-2 text-center">
-                    <Badge variant={Number(stats.completionRates?.[user.id]) > 50 ? 'default' : 'destructive'}>
+                    <Badge
+                      variant={
+                        Number(stats.completionRates?.[user.id]) > 50 ? 'default' : 'destructive'
+                      }
+                    >
                       {stats.completionRates?.[user.id] || 0}%
                     </Badge>
                   </td>
@@ -178,11 +237,13 @@ const Analytics = ({ posts, users, todos, comments, albums, photos, theme, count
           <p>Average words per post: {stats.avgWordCount?.toFixed(1)}</p>
           <p>Total comments: {comments?.length}</p>
           <p>Total albums: {albums?.length}</p>
-          <p>Calculation timestamp: {moment().format('HH:mm:ss.SSS')}</p>
+          <p>Calculation timestamp: {stats.calculationTimestamp}</p>
         </div>
       </CardContent>
     </Card>
-  )
-}
+  );
+});
 
-export default Analytics
+Analytics.displayName = 'Analytics';
+
+export default Analytics;

@@ -1,8 +1,7 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react'
+import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react'
 import * as d3 from 'd3'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { GitBranch } from 'lucide-react'
-
 
 interface D3VisualizationProps {
   data: any[]
@@ -10,12 +9,18 @@ interface D3VisualizationProps {
   theme: string
 }
 
-const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
+// Custom comparator: only re-render when data length or theme changes.
+// counter is intentionally excluded — it never affects the graph output.
+const arePropsEqual = (prev: D3VisualizationProps, next: D3VisualizationProps) =>
+  prev.data.length === next.data.length && prev.theme === next.theme;
+
+const D3Visualization = React.memo(({ data, counter, theme }: D3VisualizationProps) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dimensions] = useState({ width: 600, height: 300 })
 
-
-
+  // Stable graph structure: deterministic source/target indices, no Math.random().
+  // Previously Math.random() inside the useEffect meant every counter tick
+  // produced a completely different graph layout.
   const graph = useMemo(() => {
     const nodes = data.slice(0, 50).map((d: any, i: number) => ({
       id: d.id || i,
@@ -31,8 +36,10 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
     return { nodes, links }
   }, [data])
 
+  // Effect now depends on the stable `graph` object from useMemo, not on `data`
+  // or `counter` directly — so D3 only re-simulates when the graph data changes.
   useEffect(() => {
-    if (!svgRef.current || !data || data.length === 0) return
+    if (!svgRef.current || graph.nodes.length === 0) return
 
     const svg = d3.select(svgRef.current)
     svg.selectAll('*').remove()
@@ -43,17 +50,8 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
 
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
 
-
-    const nodes = data.slice(0, 50).map((d: any, i: number) => ({
-      id: d.id || i,
-      name: d.title || d.name || `Item ${i}`,
-      value: Math.random() * 100,
-    }))
-
-    const links = nodes.slice(1).map((node: any, i: number) => ({
-      source: nodes[Math.floor(Math.random() * Math.min(i, nodes.length))],
-      target: node,
-    }))
+    // Use the memoized stable nodes/links — no Math.random(), no re-layout on counter tick
+    const { nodes, links } = graph
 
     const simulation = d3.forceSimulation(nodes as any)
       .force('link', d3.forceLink(links as any).id((d: any) => d.id).distance(50))
@@ -80,7 +78,6 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
 
     node.append('title').text((d: any) => d.name)
 
-
     simulation.on('tick', () => {
       link
         .attr('x1', (d: any) => d.source.x)
@@ -93,7 +90,9 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
         .attr('cy', (d: any) => d.y)
     })
 
-  }, [data, counter, dimensions])
+    // Stop simulation on cleanup to prevent tick callbacks firing after unmount
+    return () => { simulation.stop() }
+  }, [graph, dimensions])
 
   return (
     <Card>
@@ -113,6 +112,8 @@ const D3Visualization = ({ data, counter, theme }: D3VisualizationProps) => {
       </CardContent>
     </Card>
   )
-}
+}, arePropsEqual)
+
+D3Visualization.displayName = 'D3Visualization'
 
 export default D3Visualization

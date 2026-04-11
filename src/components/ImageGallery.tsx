@@ -1,35 +1,70 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ImageIcon } from 'lucide-react';
-import { Grid } from 'react-window';
+import { API_ENDPOINTS } from '../utils/constants';
+
+interface Photo {
+  id: number;
+  thumbnailUrl: string;
+  url: string;
+  title: string;
+}
 
 interface ImageGalleryProps {
-  photos: any[];
+  photos?: Photo[];
   theme: string;
   counter: number;
 }
 
-const Cell = ({ columnIndex, rowIndex, style, photos, columns, setSelectedPhoto }: any) => {
-  const index = rowIndex * columns + columnIndex;
-  const photo = photos[index];
-
-  if (!photo) return null;
-
-  return (
-    <div style={style} className="p-1 cursor-pointer" onClick={() => setSelectedPhoto(photo)}>
-      <img
-        src={photo.thumbnailUrl}
-        loading="lazy"
-        className="w-full h-[100px] object-cover rounded"
-      />
-    </div>
-  );
-};
-
-const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
-  const [selectedPhoto, setSelectedPhoto] = useState<any>(null);
+const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [columns, setColumns] = useState(5);
-  const [loadedImages, setLoadedImages] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchPhotos = async () => {
+      setLoading(true);
+      try {
+        if (propPhotos?.length) {
+          if (isMounted) setPhotos(propPhotos);
+        } else {
+          const res = await fetch(`${API_ENDPOINTS.photos}?_limit=100`);
+          const data = await res.json();
+          if (isMounted) setPhotos(data);
+        }
+      } catch (e) {
+        console.error('Failed to fetch photos');
+        if (isMounted) setPhotos([]);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchPhotos();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [propPhotos]);
+
+  const handleSelectPhoto = useCallback((photo: Photo) => {
+    setSelectedPhoto(photo);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedPhoto(null);
+  }, []);
+
+  const handleStopPropagation = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
+
+  const handleColumnChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setColumns(Number(e.target.value));
+  }, []);
 
   return (
     <Card>
@@ -37,8 +72,9 @@ const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <ImageIcon className="h-4 w-4" />
-            Photo Gallery ({photos?.length || 0} photos)
+            Photo Gallery ({photos.length} photos)
           </CardTitle>
+
           <div className="flex items-center gap-2 text-sm">
             <span>Columns:</span>
             <input
@@ -46,45 +82,62 @@ const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
               min="2"
               max="8"
               value={columns}
-              onChange={(e) => setColumns(Number(e.target.value))}
+              onChange={handleColumnChange}
               className="w-20"
             />
             <span className="text-muted-foreground">{columns}</span>
           </div>
         </div>
       </CardHeader>
+
       <CardContent>
-        <div className="max-h-[500px] overflow-auto">
-          <Grid
-            columnCount={columns}
-            rowCount={Math.ceil((photos?.length || 0) / columns)}
-            columnWidth={110}
-            rowHeight={110}
-            cellComponent={Cell}
-            cellProps={{
-              photos,
-              columns,
-              setSelectedPhoto,
-            }}
-            style={{
-              height: 500,
-              width: columns * 110,
-            }}
-          />
-        </div>
+        {loading && (
+          <p className="text-sm text-muted-foreground py-4 text-center">Loading photos...</p>
+        )}
+
+        {!loading && photos.length === 0 && (
+          <p className="text-sm text-muted-foreground py-4 text-center">No photos available</p>
+        )}
+
+        {!loading && photos.length > 0 && (
+          <div className="overflow-auto max-h-[500px]">
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${columns}, 110px)`,
+                gap: '4px',
+              }}
+            >
+              {photos.map((photo) => (
+                <button
+                  key={photo.id}
+                  className="cursor-pointer p-0 border-0 bg-transparent"
+                  onClick={() => handleSelectPhoto(photo)}
+                >
+                  <img
+                    src={photo.thumbnailUrl}
+                    alt={photo.title}
+                    loading="lazy"
+                    className="w-[110px] h-[110px] object-cover rounded"
+                  />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {selectedPhoto && (
           <div
             className="fixed inset-0 bg-black/80 flex items-center justify-center z-[2000]"
-            onClick={() => setSelectedPhoto(null)}
+            onClick={handleCloseModal}
           >
-            <div className="text-center text-white" onClick={(e) => e.stopPropagation()}>
+            <div onClick={handleStopPropagation}>
               <img
                 src={selectedPhoto.url}
-                alt="photo"
+                alt={selectedPhoto.title}
                 className="max-w-[80vw] max-h-[80vh] rounded-lg"
               />
-              //fix the xss issue
-              <p className="mt-3 text-sm">{selectedPhoto.title}</p>
+              <p className="mt-3 text-sm text-white text-center">{selectedPhoto.title}</p>
             </div>
           </div>
         )}
@@ -93,4 +146,4 @@ const ImageGallery = ({ photos, theme, counter }: ImageGalleryProps) => {
   );
 };
 
-export default ImageGallery;
+export default React.memo(ImageGalleryComponent);
