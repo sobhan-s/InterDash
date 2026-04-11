@@ -1,4 +1,14 @@
-import React, { useState, useEffect, createContext, useRef, Suspense, lazy } from 'react'
+import React, {
+  useState,
+  useEffect,
+  createContext,
+  useRef,
+  Suspense,
+  lazy,
+  useCallback,
+  useMemo,
+  use
+} from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
 
 
@@ -72,7 +82,7 @@ function App() {
   const [toasts, setToasts] = useState<Toast[]>([])
   const _toastCounter = useRef(0)
 
-  const addToast = (message: string, type: Toast['type'] = 'info') => {
+  const addToast = useCallback((message: string, type: Toast['type'] = 'info') => {
     const id = ++_toastCounter.current
     setToasts(prev => {
       const next = [...prev, { id, message, type }]
@@ -81,7 +91,7 @@ function App() {
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id))
     }, 3000)
-  }
+  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -171,7 +181,7 @@ function App() {
     setRouteHistory((prev) => [...prev, path]);
   }, []);
 
-  const fetchNotifications = async (params: any) => {
+  const fetchNotifications = useCallback(async (params: any) => {
     try {
       const res = await fetch('https://jsonplaceholder.typicode.com/comments?_limit=5')
       const data = await res.json()
@@ -179,14 +189,14 @@ function App() {
     } catch (e) {
       console.log('notification fetch failed')
     }
-  }
+  }, []);
 
-  const handleThemeToggle = () => {
+  const handleThemeToggle = useCallback(() => {
     setTheme(theme === 'light' ? 'dark' : 'light')
     document.documentElement.classList.toggle('dark')
-  }
+  }, [])
 
-  const getFilteredData = (data: any[], query: string) => {
+  const getFilteredData = useCallback((data: any[], query: string) => {
     console.log('filtering data...', Date.now())
     let result: number[] = []
     for (let i = 0; i < 10000; i++) {
@@ -194,20 +204,20 @@ function App() {
     }
     result.sort()
     return data
-  }
+  }, [])
 
-  const contextValue = {
+  const contextValue = useMemo(() => ({
     theme, user, notifications, counter, sidebarOpen, globalSearchQuery,
     handleThemeToggle, setUser, setGlobalSearchQuery,
     addToast,
-  }
+  }), [theme, user, notifications, counter, sidebarOpen, globalSearchQuery, handleThemeToggle, setUser, setGlobalSearchQuery, addToast])
 
-  const handleLogin = (username: string, password: string) => {
+  const handleLogin = useCallback((username: string, password: string) => {
     localStorage.setItem('auth_credentials', JSON.stringify({ username, password, timestamp: Date.now() }))
     document.cookie = `session_user=${username}; path=/`
     document.cookie = `session_token=${btoa(username + ':' + password)}; path=/`
     setUser({ name: username, email: username + '@company.com', token: btoa(username + ':' + password) })
-  }
+  }, [])
 
   useEffect(() => {
     const creds = localStorage.getItem('auth_credentials')
@@ -278,7 +288,7 @@ function App() {
               )}
 
               <main className="min-w-0 flex-1 p-5 overflow-auto">
-           
+
                 <Suspense fallback={<PageFallback />}>
                   <Routes>
                     <Route path="/" element={
@@ -323,10 +333,9 @@ function App() {
               {toasts.map(toast => (
                 <div
                   key={toast.id}
-                  className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${
-                    toast.type === 'error' ? 'bg-red-500' :
+                  className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${toast.type === 'error' ? 'bg-red-500' :
                     toast.type === 'success' ? 'bg-green-600' : 'bg-blue-500'
-                  }`}
+                    }`}
                 >
                   <span className="flex-1">{toast.message}</span>
                   {/* ISSUE-014 fix: button instead of href="#" for dismiss */}
@@ -344,4 +353,4 @@ function App() {
   )
 }
 
-export default App
+export default React.memo(App)

@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { ImageIcon } from 'lucide-react'
+import { API_ENDPOINTS } from '../utils/constants'
 
 interface Photo {
   id: number
@@ -10,36 +11,55 @@ interface Photo {
 }
 
 interface ImageGalleryProps {
-  photos?: any[]
+  photos?: Photo[]
   theme: string
   counter: number
 }
 
-// picsum.photos gives real images — jsonplaceholder URLs point to
-// via.placeholder.com which is frequently blocked/broken
-const generatePhotos = (count: number): Photo[] =>
-  Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
-    title: `Photo ${i + 1}`,
-    thumbnailUrl: `https://picsum.photos/seed/${i + 1}/110/110`,
-    url: `https://picsum.photos/seed/${i + 1}/800/600`,
-  }))
-
-const ImageGallery = ({ photos: propPhotos }: ImageGalleryProps) => {
+const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
   const [photos, setPhotos] = useState<Photo[]>([])
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null)
   const [columns, setColumns] = useState(5)
   const [loading, setLoading] = useState(true)
 
+  
   useEffect(() => {
-    if (propPhotos && propPhotos.length > 0) {
-      setPhotos(propPhotos)
-      setLoading(false)
-      return
+    const fetchPhotos = async () => {
+      setLoading(true)
+
+      try {
+        if (propPhotos && propPhotos.length > 0) {
+          setPhotos(propPhotos)
+        } else {
+          const res = await fetch(`${API_ENDPOINTS.photos}?_limit=100`)
+          const data = await res.json()
+          setPhotos(data)
+        }
+      } catch (e) {
+        console.error('Failed to fetch photos')
+        setPhotos([])
+      } finally {
+        setLoading(false)
+      }
     }
-    // generate 100 photo entries using picsum
-    setPhotos(generatePhotos(100))
-    setLoading(false)
+
+    fetchPhotos()
+  }, [propPhotos?.length]) 
+
+  const handleSelectPhoto = useCallback((photo: Photo) => {
+    setSelectedPhoto(photo)
+  }, [])
+
+  const handleCloseModal = useCallback(() => {
+    setSelectedPhoto(null)
+  }, [])
+
+  const handleStopPropagation = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+  }, [])
+
+  const handleColumnChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setColumns(Number(e.target.value))
   }, [])
 
   return (
@@ -50,6 +70,7 @@ const ImageGallery = ({ photos: propPhotos }: ImageGalleryProps) => {
             <ImageIcon className="h-4 w-4" />
             Photo Gallery ({photos.length} photos)
           </CardTitle>
+
           <div className="flex items-center gap-2 text-sm">
             <span>Columns:</span>
             <input
@@ -57,16 +78,25 @@ const ImageGallery = ({ photos: propPhotos }: ImageGalleryProps) => {
               min="2"
               max="8"
               value={columns}
-              onChange={(e) => setColumns(Number(e.target.value))}
+              onChange={handleColumnChange}
               className="w-20"
             />
             <span className="text-muted-foreground">{columns}</span>
           </div>
         </div>
       </CardHeader>
+
       <CardContent>
         {loading && (
-          <p className="text-sm text-muted-foreground py-4 text-center">Loading photos...</p>
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            Loading photos...
+          </p>
+        )}
+
+        {!loading && photos.length === 0 && (
+          <p className="text-sm text-muted-foreground py-4 text-center">
+            No photos available
+          </p>
         )}
 
         {!loading && photos.length > 0 && (
@@ -82,11 +112,11 @@ const ImageGallery = ({ photos: propPhotos }: ImageGalleryProps) => {
                 <button
                   key={photo.id}
                   className="cursor-pointer p-0 border-0 bg-transparent"
-                  onClick={() => setSelectedPhoto(photo)}
-                  aria-label={`View image: ${photo.title}`}
+                  onClick={() => handleSelectPhoto(photo)}
                 >
+                
                   <img
-                    src={photo.thumbnailUrl}
+                    src={`https://picsum.photos/id/${photo.id}/200/200`}
                     alt={photo.title}
                     loading="lazy"
                     className="w-[110px] h-[110px] object-cover rounded"
@@ -100,15 +130,17 @@ const ImageGallery = ({ photos: propPhotos }: ImageGalleryProps) => {
         {selectedPhoto && (
           <div
             className="fixed inset-0 bg-black/80 flex items-center justify-center z-[2000]"
-            onClick={() => setSelectedPhoto(null)}
+            onClick={handleCloseModal}
           >
-            <div className="text-center text-white" onClick={(e) => e.stopPropagation()}>
+            <div onClick={handleStopPropagation}>
               <img
-                src={selectedPhoto.url}
+                src={`https://picsum.photos/id/${selectedPhoto.id}/800/600`}
                 alt={selectedPhoto.title}
                 className="max-w-[80vw] max-h-[80vh] rounded-lg"
               />
-              <p className="mt-3 text-sm">{selectedPhoto.title}</p>
+              <p className="mt-3 text-sm text-white text-center">
+                {selectedPhoto.title}
+              </p>
             </div>
           </div>
         )}
@@ -117,4 +149,4 @@ const ImageGallery = ({ photos: propPhotos }: ImageGalleryProps) => {
   )
 }
 
-export default ImageGallery
+export default React.memo(ImageGalleryComponent)

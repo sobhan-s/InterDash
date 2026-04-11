@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import _ from 'lodash';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Input } from './ui/input';
@@ -12,67 +12,98 @@ interface SearchFilterProps {
   counter: number;
 }
 
-const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => {
+const SearchFilterComponent = ({ data, onFilter, theme, counter }: SearchFilterProps) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [searchHistory, setSearchHistory] = useState<any[]>([]);
-  const [recentSearches, setRecentSearches] = useState<string[]>([]);
-
-  // ISSUE-058: displayValue controls the input's visible text.
-  // The onChange handler updates it immediately, then a setTimeout fires and
-  // calls setDisplayValue a second time with the same value. That second
-  // setState schedules a fresh render; React re-applies the controlled value
-  // prop to the DOM input element, which resets the cursor to the end of the
-  // string — even if the user was typing in the middle of the text.
   const [displayValue, setDisplayValue] = useState('');
-  const regexHelper=(str:string)=>{
+
+  
+  const regexHelper = useCallback((str: string) => {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  }
+  }, []);
+
+  
   useEffect(() => {
     const handler = setTimeout(() => {
-      setQuery(displayValue) 
-    }, 300) 
+      setQuery(displayValue.trim());
+    }, 300);
 
-    return () => clearTimeout(handler) 
-  }, [displayValue])
+    return () => clearTimeout(handler);
+  }, [displayValue]);
 
+  
   useEffect(() => {
     if (query) {
+      const lower = query.toLowerCase();
+
       const filtered = (data || []).filter((item: any) => {
         const str = JSON.stringify(item).toLowerCase();
-        return str.includes(query.toLowerCase());
+        return str.includes(lower);
       });
-      setResults(filtered);
-      onFilter && onFilter(filtered);
 
-      setSearchHistory((prev) => [
-        ...prev,
-        { query, resultCount: filtered.length, time: Date.now() },
-      ]);
-      const MAX_HISTORY = 50; //added the search history for last 50 entries
+      setResults(filtered);
+
+      if (onFilter) onFilter(filtered);
+
+      const entry = { query, resultCount: filtered.length, time: Date.now() };
+
+      setSearchHistory((prev) => [...prev, entry]);
+
+      const MAX_HISTORY = 50;
       const saved = JSON.parse(localStorage.getItem('searchHistory') || '[]');
-      const next = [...saved, { query, resultCount: filtered.length, time: Date.now() }];
+      const next = [...saved, entry];
       localStorage.setItem('searchHistory', JSON.stringify(next.slice(-MAX_HISTORY)));
     } else {
       setResults([]);
     }
-  }, [query, data]);
+  }, [query, data, onFilter]);
 
-  const regexSearch = (q: string) => {
-    try {
-      const safeQuery=regexHelper(q);
-      const regex = new RegExp(safeQuery, 'i');
-      return (data || []).filter((item: any) => regex.test(JSON.stringify(item)));
-    } catch (e) {
-      return [];
-    }
-  };
+  const regexSearch = useCallback(
+    (q: string) => {
+      try {
+        const safeQuery = regexHelper(q);
+        const regex = new RegExp(safeQuery, 'i');
+
+        return (data || []).filter((item: any) =>
+          regex.test(JSON.stringify(item))
+        );
+      } catch {
+        return [];
+      }
+    },
+    [data, regexHelper]
+  );
 
   useEffect(() => {
     if (query.length > 2) {
-      const regexResults = regexSearch(query);
+      regexSearch(query);
     }
-  }, [query, counter]);
+  }, [query, counter, regexSearch]);
+
+  
+  const highlightText = useCallback(
+    (text: string) => {
+      if (!query) return text;
+
+      const safe = regexHelper(query);
+      const regex = new RegExp(`(${safe})`, 'gi');
+
+      const parts = text.split(regex);
+
+      return parts.map((part, i) =>
+        regex.test(part) ? <mark key={i}>{part}</mark> : part
+      );
+    },
+    [query, regexHelper]
+  );
+
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setDisplayValue(e.target.value);
+    },
+    []
+  );
 
   return (
     <Card>
@@ -82,44 +113,50 @@ const SearchFilter = ({ data, onFilter, theme, counter }: SearchFilterProps) => 
           Search & Filter
         </CardTitle>
       </CardHeader>
+
       <CardContent>
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+
           <Input
             type="text"
             value={displayValue}
-            onChange={(e) => setDisplayValue(e.target.value)}
+            onChange={handleChange}
             placeholder="Search across all data..."
             className="pl-9 text-base"
           />
         </div>
+
         <div className="flex gap-2 mt-2 text-xs text-muted-foreground">
           {query && <Badge variant="outline">Found {results.length} results</Badge>}
           {searchHistory.length > 0 && (
-            <Badge variant="secondary">History: {searchHistory.length} queries</Badge>
+            <Badge variant="secondary">
+              History: {searchHistory.length} queries
+            </Badge>
           )}
         </div>
+
         <div className="max-h-[300px] overflow-auto mt-2">
-          {results.slice(0, 50).map((item: any, index: number) => (
-            <div
-              key={index}
-              className="px-2 py-1.5 border-b border-gray-100 text-xs hover:bg-muted/50"
-            >
-              //fix the xss issue
-              <span>
-                {item.title ||
-                  item.name ||
-                  item.body ||
-                  JSON.stringify(item)
-                    .slice(0, 100)
-                    .replace(new RegExp(`(${query})`, 'gi'), '<mark>$1</mark>')}
-              </span>
-            </div>
-          ))}
+          {results.slice(0, 50).map((item: any, index: number) => {
+            const text =
+              item.title ||
+              item.name ||
+              item.body ||
+              JSON.stringify(item).slice(0, 100);
+
+            return (
+              <div
+                key={index}
+                className="px-2 py-1.5 border-b border-gray-100 text-xs hover:bg-muted/50"
+              >
+                {highlightText(text)}
+              </div>
+            );
+          })}
         </div>
       </CardContent>
     </Card>
   );
 };
 
-export default SearchFilter;
+export default React.memo(SearchFilterComponent);

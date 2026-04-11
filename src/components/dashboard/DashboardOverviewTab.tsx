@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useRef, useState } from 'react';
+import React, { Suspense, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import groupBy from 'lodash/groupBy';
 
 import WeatherWidget from '../WeatherWidget';
@@ -23,7 +23,7 @@ const MathPlayground = React.lazy(() => import('../MathPlayground'));
 
 import { DashboardOverviewTabProps } from '../../lib/types';
 
-const DashboardOverviewTab = ({
+const DashboardOverviewTab = React.memo(({
   theme,
   counter,
   globalSearchQuery,
@@ -71,6 +71,86 @@ const DashboardOverviewTab = ({
     };
   }, []);
 
+  
+  const commentsByPostId = useMemo(() => groupBy(comments, 'postId'), [comments]);
+
+  const sortedAndFilteredPosts = useMemo(
+    () => getSortedAndFilteredPosts(),
+    [getSortedAndFilteredPosts],
+  );
+
+  
+  const searchFilterData = useMemo(
+    () => [...posts, ...users, ...todos],
+    [posts, users, todos],
+  );
+
+  
+  const handleSelectItem = useCallback(
+    (...args: Parameters<typeof onSelectItem>) => onSelectItem(...args),
+    [onSelectItem],
+  );
+
+  const handleOpenModal = useCallback(
+    (...args: Parameters<typeof onOpenModal>) => onOpenModal(...args),
+    [onOpenModal],
+  );
+
+  const handleAddTodo = useCallback(
+    (...args: Parameters<typeof onAddTodo>) => onAddTodo(...args),
+    [onAddTodo],
+  );
+
+  const handleDeleteTodo = useCallback(
+    (...args: Parameters<typeof onDeleteTodo>) => onDeleteTodo(...args),
+    [onDeleteTodo],
+  );
+
+  const handleToggleTodo = useCallback(
+    (...args: Parameters<typeof onToggleTodo>) => onToggleTodo(...args),
+    [onToggleTodo],
+  );
+
+  const handleEditTodo = useCallback(
+    (...args: Parameters<typeof onEditTodo>) => onEditTodo(...args),
+    [onEditTodo],
+  );
+
+  const handleProfileFieldChange = useCallback(
+    (...args: Parameters<typeof onProfileFieldChange>) => onProfileFieldChange(...args),
+    [onProfileFieldChange],
+  );
+
+  const handleProfileSave = useCallback(
+    (...args: Parameters<typeof onProfileSave>) => onProfileSave(...args),
+    [onProfileSave],
+  );
+
+  // Memoize the CustomTabPanel tabs array so it isn't recreated each render.
+  const quickStatsTabs = useMemo(
+    () => [
+      {
+        label: 'Posts',
+        content: <p className="text-sm text-muted-foreground">Total posts: {posts.length}</p>,
+      },
+      {
+        label: 'Users',
+        content: <p className="text-sm text-muted-foreground">Total users: {users.length}</p>,
+      },
+      {
+        label: 'Todos',
+        content: <p className="text-sm text-muted-foreground">Total todos: {todos.length}</p>,
+      },
+      {
+        label: 'Comments',
+        content: (
+          <p className="text-sm text-muted-foreground">Total comments: {comments.length}</p>
+        ),
+      },
+    ],
+    [posts.length, users.length, todos.length, comments.length],
+  );
+
   return (
     <Suspense
       fallback={
@@ -92,13 +172,13 @@ const DashboardOverviewTab = ({
             theme={theme}
             counter={counter}
             data={cryptoData}
-            onSelect={onSelectItem}
+            onSelect={handleSelectItem}
           />
           <WeatherWidget
             theme={theme}
             counter={counter}
             data={weatherData}
-            onCityClick={onOpenModal}
+            onCityClick={handleOpenModal}
           />
           <UserList
             theme={theme}
@@ -106,23 +186,23 @@ const DashboardOverviewTab = ({
             users={users}
             posts={posts}
             globalSearchQuery={globalSearchQuery}
-            onUserClick={onOpenModal}
+            onUserClick={handleOpenModal}
           />
           <PostsFeed
             theme={theme}
             counter={counter}
-            posts={getSortedAndFilteredPosts()}
-            comments={groupBy(comments, 'postId')}
-            onPostClick={onOpenModal}
+            posts={sortedAndFilteredPosts}
+            comments={commentsByPostId}
+            onPostClick={handleOpenModal}
           />
         </div>
 
         <TodoList
           todos={todos}
-          onAdd={onAddTodo}
-          onDelete={onDeleteTodo}
-          onToggle={onToggleTodo}
-          onEdit={onEditTodo}
+          onAdd={handleAddTodo}
+          onDelete={handleDeleteTodo}
+          onToggle={handleToggleTodo}
+          onEdit={handleEditTodo}
           theme={theme}
           counter={counter}
         />
@@ -140,7 +220,7 @@ const DashboardOverviewTab = ({
         <D3Visualization data={posts} counter={counter} theme={theme} />
         <MathPlayground counter={counter} theme={theme} />
         <ReportGenerator posts={posts} users={users} counter={counter} theme={theme} />
-        <ImageGallery photos={photos} theme={theme} counter={counter} />
+        <ImageGallery theme={theme} counter={counter} />
         <MarkdownEditor theme={theme} counter={counter} />
 
         <Analytics
@@ -154,44 +234,27 @@ const DashboardOverviewTab = ({
           counter={counter}
         />
 
-        <SearchFilter data={[...posts, ...users, ...todos]} theme={theme} counter={counter} />
+        <SearchFilter data={searchFilterData} theme={theme} counter={counter} />
 
         <DraggableList />
         <VirtualizedFeed items={posts} counter={counter} />
 
         <CustomTabPanel
           title="Quick Stats"
-          tabs={[
-            {
-              label: 'Posts',
-              content: <p className="text-sm text-muted-foreground">Total posts: {posts.length}</p>,
-            },
-            {
-              label: 'Users',
-              content: <p className="text-sm text-muted-foreground">Total users: {users.length}</p>,
-            },
-            {
-              label: 'Todos',
-              content: <p className="text-sm text-muted-foreground">Total todos: {todos.length}</p>,
-            },
-            {
-              label: 'Comments',
-              content: (
-                <p className="text-sm text-muted-foreground">Total comments: {comments.length}</p>
-              ),
-            },
-          ]}
+          tabs={quickStatsTabs}
         />
 
         <DashboardProfileForm
           formData={formData}
           validationErrors={validationErrors}
-          onFieldChange={onProfileFieldChange}
-          onSave={onProfileSave}
+          onFieldChange={handleProfileFieldChange}
+          onSave={handleProfileSave}
         />
       </div>
     </Suspense>
   );
-};
+});
+
+DashboardOverviewTab.displayName = 'DashboardOverviewTab';
 
 export default DashboardOverviewTab;

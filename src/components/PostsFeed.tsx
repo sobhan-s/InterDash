@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import moment from 'moment'
 import { Card, CardContent } from './ui/card'
 import { Button } from './ui/button'
@@ -15,7 +15,11 @@ interface PostsFeedProps {
   onPostClick?: (post: any) => void
 }
 
-const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: PostsFeedProps) => {
+const PostsFeedComponent = ({
+  posts: propPosts,
+  comments: propComments,
+  onPostClick,
+}: PostsFeedProps) => {
   const [posts, setPosts] = useState<any[]>(propPosts || [])
   const [comments, setComments] = useState<Record<number, any[]>>(propComments || {})
   const [expandedPost, setExpandedPost] = useState<number | null>(null)
@@ -23,7 +27,6 @@ const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: Po
   const [commentDrafts, setCommentDrafts] = useState<Record<number, string>>({})
   const [loading, setLoading] = useState(false)
 
-  
   useEffect(() => {
     if (propPosts && propPosts.length > 0) return
     setLoading(true)
@@ -32,33 +35,57 @@ const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: Po
       .then((data) => setPosts(data))
       .catch(() => {})
       .finally(() => setLoading(false))
+  }, [propPosts])
+
+
+  const handleExpand = useCallback(
+    (postId: number) => {
+      const isClosing = expandedPost === postId
+      setExpandedPost(isClosing ? null : postId)
+
+      if (!isClosing && !comments[postId]) {
+        fetch(`${API_ENDPOINTS.comments}?postId=${postId}`)
+          .then((r) => r.json())
+          .then((data) =>
+            setComments((prev) => ({ ...prev, [postId]: data }))
+          )
+          .catch(() => {})
+      }
+    },
+    [expandedPost, comments]
+  )
+
+  const handleLike = useCallback((postId: number) => {
+    setLikedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }))
   }, [])
 
-  
-  const handleExpand = (postId: number) => {
-    const isClosing = expandedPost === postId
-    setExpandedPost(isClosing ? null : postId)
+  const handleCommentSubmit = useCallback(
+    (e: React.FormEvent, postId: number) => {
+      e.preventDefault()
+      setCommentDrafts((prev) => ({ ...prev, [postId]: '' }))
+    },
+    []
+  )
 
-    if (!isClosing && !comments[postId]) {
-      fetch(`${API_ENDPOINTS.comments}?postId=${postId}`)
-        .then((r) => r.json())
-        .then((data) => setComments((prev) => ({ ...prev, [postId]: data })))
-        .catch(() => {})
-    }
-  }
+  const handleCommentChange = useCallback(
+    (postId: number, value: string) => {
+      setCommentDrafts((prev) => ({ ...prev, [postId]: value }))
+    },
+    []
+  )
 
-  const handleLike = (postId: number) => {
-    setLikedPosts((prev) => ({ ...prev, [postId]: !prev[postId] }))
-  }
-
-  const handleCommentSubmit = (e: React.FormEvent, postId: number) => {
-    e.preventDefault()
-    setCommentDrafts((prev) => ({ ...prev, [postId]: '' }))
-  }
+  const handlePostClick = useCallback(
+    (post: any) => {
+      if (onPostClick) onPostClick(post)
+    },
+    [onPostClick]
+  )
 
   if (loading) {
     return (
-      <p className="text-sm text-muted-foreground py-4 text-center">Loading posts...</p>
+      <p className="text-sm text-muted-foreground py-4 text-center">
+        Loading posts...
+      </p>
     )
   }
 
@@ -73,7 +100,9 @@ const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: Po
                 {moment().subtract(post.id, 'hours').fromNow()}
               </Badge>
             </div>
+
             <p className="text-sm text-muted-foreground mt-2">{post.body}</p>
+
             <div className="flex gap-2 mt-3">
               <Button
                 variant="ghost"
@@ -82,10 +111,13 @@ const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: Po
                 onClick={() => handleLike(post.id)}
               >
                 <Heart
-                  className={`h-3 w-3 mr-1 ${likedPosts[post.id] ? 'fill-red-500 text-red-500' : ''}`}
+                  className={`h-3 w-3 mr-1 ${
+                    likedPosts[post.id] ? 'fill-red-500 text-red-500' : ''
+                  }`}
                 />
                 {likedPosts[post.id] ? 'Liked' : 'Like'}
               </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
@@ -95,11 +127,12 @@ const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: Po
                 <MessageCircle className="h-3 w-3 mr-1" />
                 Comments
               </Button>
+
               <Button
                 variant="ghost"
                 size="sm"
                 className="h-7 text-xs"
-                onClick={() => onPostClick && onPostClick(post)}
+                onClick={() => handlePostClick(post)}
               >
                 <Eye className="h-3 w-3 mr-1" />
                 View
@@ -109,16 +142,23 @@ const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: Po
             {expandedPost === post.id && (
               <div className="mt-3 pt-3 border-t space-y-2">
                 <h5 className="text-xs font-semibold">Comments</h5>
+
                 {!comments[post.id] && (
-                  <p className="text-xs text-muted-foreground">Loading comments...</p>
+                  <p className="text-xs text-muted-foreground">
+                    Loading comments...
+                  </p>
                 )}
+
                 {(comments[post.id] || []).map((comment: any) => (
                   <div key={comment.id} className="p-2 bg-muted/50 rounded text-xs">
                     <strong>{comment.name}</strong>{' '}
-                    <span className="text-muted-foreground">({comment.email})</span>
+                    <span className="text-muted-foreground">
+                      ({comment.email})
+                    </span>
                     <p className="mt-1 text-muted-foreground">{comment.body}</p>
                   </div>
                 ))}
+
                 <form
                   onSubmit={(e) => handleCommentSubmit(e, post.id)}
                   className="flex gap-2 mt-2"
@@ -126,11 +166,12 @@ const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: Po
                   <Input
                     value={commentDrafts[post.id] || ''}
                     onChange={(e) =>
-                      setCommentDrafts((prev) => ({ ...prev, [post.id]: e.target.value }))
+                      handleCommentChange(post.id, e.target.value)
                     }
                     placeholder="Add a comment..."
                     className="h-7 text-xs"
                   />
+
                   <Button type="submit" size="sm" className="h-7 text-xs">
                     Post
                   </Button>
@@ -144,4 +185,4 @@ const PostsFeed = ({ posts: propPosts, comments: propComments, onPostClick }: Po
   )
 }
 
-export default PostsFeed
+export default React.memo(PostsFeedComponent)

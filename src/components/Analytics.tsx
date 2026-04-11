@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import _ from 'lodash';
 import moment from 'moment';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -46,7 +46,7 @@ const COLORS = [
   '#D0ED57',
 ];
 
-const Analytics = ({
+const Analytics = React.memo(({
   posts,
   users,
   todos,
@@ -56,86 +56,76 @@ const Analytics = ({
   theme,
   counter,
 }: AnalyticsProps) => {
-  const [stats, setStats] = useState<any>({});
-  const [calculating, setCalculating] = useState(false);
+  // Replaces useState+useEffect+setCalculating pattern: useMemo recomputes only
+  // when the actual data deps change, never because counter ticked.
+  const stats = useMemo(() => {
+    const result: any = {};
 
-  useEffect(() => {
-    setCalculating(true);
+    result.postsPerUser = _.countBy(posts, 'userId');
+    result.commentsPerPost = _.countBy(comments, 'postId');
+    result.avgWordCount = _.meanBy(posts, (p: any) => p.body?.split(' ').length || 0);
 
-    const calculateStats = () => {
-      const result: any = {};
+    const postsByUser = _.groupBy(posts, 'userId');
+    const todosByUser = _.groupBy(todos, 'userId');
+    const albumsByUser = _.groupBy(albums, 'userId');
 
-      result.postsPerUser = _.countBy(posts, 'userId');
-      result.commentsPerPost = _.countBy(comments, 'postId');
-      result.avgWordCount = _.meanBy(posts, (p: any) => p.body?.split(' ').length || 0);
+    result.completionRates = {} as Record<string, string>;
+    Object.entries(todosByUser).forEach(([userId, userTodos]: [string, any[]]) => {
+      const completed = userTodos.filter((t: any) => t.completed).length;
+      result.completionRates[userId] = ((completed / userTodos.length) * 100).toFixed(1);
+    });
 
-      const postsByUser = _.groupBy(posts, 'userId');
-      const todosByUser = _.groupBy(todos, 'userId');
-      const albumsByUser = _.groupBy(albums, 'userId');
+    result.userActivity = users.map((user) => {
+      const userPosts = postsByUser[user.id] || [];
+      const userTodos = todosByUser[user.id] || [];
+      const userAlbums = albumsByUser[user.id] || [];
 
-      result.completionRates = {} as Record<string, string>;
-      Object.entries(todosByUser).forEach(([userId, userTodos]: [string, any[]]) => {
-        const completed = userTodos.filter((t: any) => t.completed).length;
-        result.completionRates[userId] = ((completed / userTodos.length) * 100).toFixed(1);
-      });
+      return {
+        ...user,
+        postCount: userPosts.length,
+        todoCount: userTodos.length,
+        albumCount: userAlbums.length,
+      };
+    });
 
-      result.userActivity = users.map((user) => {
-        const userPosts = postsByUser[user.id] || [];
-        const userTodos = todosByUser[user.id] || [];
-        const userAlbums = albumsByUser[user.id] || [];
+    const postMap = new Map(posts.map((p) => [p.id, p]));
+    const userMap = new Map(users.map((u) => [u.id, u]));
 
-        return {
-          ...user,
-          postCount: userPosts.length,
-          todoCount: userTodos.length,
-          albumCount: userAlbums.length,
-        };
-      });
-      const postMap = new Map(posts.map((p) => [p.id, p]));
-      const userMap = new Map(users.map((u) => [u.id, u]));
+    result.commentAuthors = comments.map((comment) => {
+      const post = postMap.get(comment.postId);
+      const user = userMap.get(post?.userId);
 
-      result.commentAuthors = comments.map((comment) => {
-        const post = postMap.get(comment.postId);
-        const user = userMap.get(post?.userId);
+      return {
+        ...comment,
+        postAuthor: user?.name,
+        postTitle: post?.title,
+      };
+    });
 
-        return {
-          ...comment,
-          postAuthor: user?.name,
-          postTitle: post?.title,
-        };
-      });
+    // Prepare recharts data
+    result.postsChartData = Object.entries(result.postsPerUser).map(([userId, count]) => ({
+      name: `User ${userId}`,
+      posts: count,
+    }));
 
-    
+    let completed = 0;
+    let pending = 0;
 
-      // Prepare recharts data
-      result.postsChartData = Object.entries(result.postsPerUser).map(([userId, count]) => ({
-        name: `User ${userId}`,
-        posts: count,
-      }));
+    for (const t of todos) {
+      if (t.completed) completed++;
+      else pending++;
+    }
 
-      let completed = 0;
-      let pending = 0;
+    result.todoChartData = [
+      { name: 'Completed', value: completed },
+      { name: 'Pending', value: pending },
+    ];
 
-      for (const t of todos) {
-        if (t.completed) completed++;
-        else pending++;
-      }
+    // Capture timestamp at the moment stats are (re)calculated, not on every render
+    result.calculationTimestamp = moment().format('HH:mm:ss.SSS');
 
-      result.todoChartData = [
-        { name: 'Completed', value: completed },
-        { name: 'Pending', value: pending },
-      ];
-
-      return result;
-    };
-
-    
-    const result = calculateStats();
-    setStats(result);
-    setCalculating(false);
+    return result;
   }, [posts, users, todos, comments, albums, photos]);
-
-  if (calculating) return <p className="text-sm text-muted-foreground">Calculating analytics...</p>;
 
   return (
     <Card>
@@ -199,7 +189,7 @@ const Analytics = ({
                   label
                 >
                   {(stats.todoChartData || []).map((_: any, index: number) => (
-                    <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
                 <Tooltip />
@@ -247,11 +237,13 @@ const Analytics = ({
           <p>Average words per post: {stats.avgWordCount?.toFixed(1)}</p>
           <p>Total comments: {comments?.length}</p>
           <p>Total albums: {albums?.length}</p>
-          <p>Calculation timestamp: {moment().format('HH:mm:ss.SSS')}</p>
+          <p>Calculation timestamp: {stats.calculationTimestamp}</p>
         </div>
       </CardContent>
     </Card>
   );
-};
+});
+
+Analytics.displayName = 'Analytics';
 
 export default Analytics;

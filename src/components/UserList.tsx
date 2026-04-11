@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -14,7 +14,7 @@ interface UserListProps {
   onUserClick?: (user: any) => void;
 }
 
-const UserList = ({
+const UserListComponent = ({
   users: propUsers,
   posts: propPosts,
   globalSearchQuery,
@@ -23,48 +23,92 @@ const UserList = ({
   const [users, setUsers] = useState<any[]>(propUsers || []);
   const [posts, setPosts] = useState<any[]>(propPosts || []);
   const [sortField, setSortField] = useState('name');
-
-  // ISSUE-056 fix: use stable item id instead of array index
   const [selectedId, setSelectedId] = useState<number | null>(null);
-
-
   const [hoveredUserId, setHoveredUserId] = useState<number | null>(null);
   const [tooltip, setTooltip] = useState({ top: 0, left: 0 });
 
-  // fetch users if none passed in
   useEffect(() => {
     if (propUsers && propUsers.length > 0) return;
     fetch(API_ENDPOINTS.users)
       .then((r) => r.json())
       .then((data) => setUsers(data))
-      .catch(() => { });
-  }, []);
+      .catch(() => {});
+  }, [propUsers]);
 
-  // fetch posts if none passed in
   useEffect(() => {
     if (propPosts && propPosts.length > 0) return;
     fetch(API_ENDPOINTS.posts)
       .then((r) => r.json())
       .then((data) => setPosts(data))
-      .catch(() => { });
-  }, []);
-
-  const filteredUsers = users.filter((u: any) => {
-    if (!globalSearchQuery) return true;
-    return (
-      u.name.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
-      u.email.toLowerCase().includes(globalSearchQuery.toLowerCase()) ||
-      u.company?.name?.toLowerCase().includes(globalSearchQuery.toLowerCase())
-    );
-  });
-
-  const sorted = _.sortBy(filteredUsers, [sortField]);
-
-
-  const selectedUser = sorted.find((u: any) => u.id === selectedId) ?? null;
+      .catch(() => {});
+  }, [propPosts]);
 
   
+  const filteredUsers = useMemo(() => {
+    if (!globalSearchQuery) return users;
+    const q = globalSearchQuery.toLowerCase();
+
+    return users.filter((u: any) =>
+      u.name.toLowerCase().includes(q) ||
+      u.email.toLowerCase().includes(q) ||
+      u.company?.name?.toLowerCase().includes(q)
+    );
+  }, [users, globalSearchQuery]);
+
+  const sorted = useMemo(() => _.sortBy(filteredUsers, [sortField]), [filteredUsers, sortField]);
+
+  const selectedUser = useMemo(
+    () => sorted.find((u: any) => u.id === selectedId) ?? null,
+    [sorted, selectedId]
+  );
+
   const tooltipRoot = document.getElementById('tooltip-root') || document.body;
+
+  
+  const handleSortChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortField(e.target.value);
+  }, []);
+
+  const handleUserClick = useCallback((user: any) => {
+    setSelectedId(user.id);
+    if (onUserClick) onUserClick(user);
+  }, [onUserClick]);
+
+  const handleUserKeyDown = useCallback((e: React.KeyboardEvent, user: any) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      setSelectedId(user.id);
+      if (onUserClick) onUserClick(user);
+    }
+  }, [onUserClick]);
+
+  const handleInfoKeyDown = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+    }
+  }, []);
+
+  const handleMouseEnter = useCallback((e: React.MouseEvent, user: any) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    let top = rect.bottom + window.scrollY + 6;
+
+    if (rect.bottom + 100 > window.innerHeight) {
+      top = rect.top + window.scrollY - 6;
+    }
+
+    const left = rect.left + window.scrollX + rect.width / 2;
+
+    setTooltip({ top, left });
+    setHoveredUserId(user.id);
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setHoveredUserId(null);
+  }, []);
+
+  const handleStopPropagation = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+  }, []);
 
   return (
     <Card>
@@ -74,11 +118,11 @@ const UserList = ({
             <Users className="h-4 w-4" />
             Users ({sorted.length})
           </CardTitle>
+
           <select
             value={sortField}
-            onChange={(e) => setSortField(e.target.value)}
+            onChange={handleSortChange}
             className="text-sm border rounded px-2 py-1 bg-background"
-            aria-label='Sort Users'
           >
             <option value="name">Name</option>
             <option value="email">Email</option>
@@ -86,117 +130,72 @@ const UserList = ({
           </select>
         </div>
       </CardHeader>
+
       <CardContent>
         <div className="max-h-[400px] overflow-auto space-y-2">
           {sorted.map((user: any) => (
             <button
               key={user.id}
-              className={`relative w-full text-left p-3 border rounded-lg cursor-pointer transition-all hover:shadow-md ${selectedId === user.id
+              className={`relative w-full text-left p-3 border rounded-lg ${
+                selectedId === user.id
                   ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20'
                   : 'hover:bg-muted/50'
-                }`}
-              onClick={() => {
-                setSelectedId(user.id);
-                onUserClick && onUserClick(user);
-              }}
-              aria-label={`Select user ${user.name}`}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  setSelectedId(user.id);
-                  onUserClick && onUserClick(user);
-                }
-              }}
+              }`}
+              onClick={() => handleUserClick(user)}
+              onKeyDown={(e) => handleUserKeyDown(e, user)}
             >
               <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
+                <div className="flex-1">
                   <div className="font-semibold text-sm">{user.name}</div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+
+                  <div className="text-xs text-muted-foreground flex gap-1 mt-0.5">
                     <Mail className="h-3 w-3" /> {user.email}
                   </div>
-                  <div className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+
+                  <div className="text-xs text-muted-foreground flex gap-1 mt-0.5">
                     <Building className="h-3 w-3" /> {user.company?.name} | {user.address?.city}
                   </div>
-                  <div className="text-[11px] text-muted-foreground flex items-center gap-3 mt-0.5">
-                    <span className="flex items-center gap-1">
+
+                  <div className="text-[11px] text-muted-foreground flex gap-3 mt-0.5">
+                    <span className="flex gap-1">
                       <Phone className="h-3 w-3" /> {user.phone}
                     </span>
-                    <span className="flex items-center gap-1">
+                    <span className="flex gap-1">
                       <Globe className="h-3 w-3" /> {user.website}
                     </span>
                   </div>
                 </div>
 
                 <div
-                  className="relative shrink-0"
-                  role="button"
-                  tabIndex={0}
-                  aria-label="View user details"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                    }
-                  }}
-                  onMouseEnter={(e) => {
-                    const rect = e.currentTarget.getBoundingClientRect();
-                    let top = rect.bottom + window.scrollY + 6;
-                    if (rect.bottom + 100 > window.innerHeight) {
-                      top = rect.top + window.scrollY - 6;
-                    }
-                    const left = rect.left + window.scrollX + rect.width / 2;
-                    setTooltip({ top, left });
-                    setHoveredUserId(user.id);
-                  }}
-                  onMouseLeave={() => setHoveredUserId(null)}
-                  onClick={(e) => e.stopPropagation()}
+                  className="relative"
+                  onMouseEnter={(e) => handleMouseEnter(e, user)}
+                  onMouseLeave={handleMouseLeave}
+                  onClick={handleStopPropagation}
+                  onKeyDown={handleInfoKeyDown}
                 >
-                  <Info className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
+                  <Info className="h-3.5 w-3.5 text-muted-foreground" />
+
                   {hoveredUserId === user.id &&
                     ReactDOM.createPortal(
                       <div
                         className="absolute z-50 bg-popover border rounded-md shadow-lg p-2 text-xs w-[200px]"
-                        style={{ top: tooltip.top, left: tooltip.left, marginTop: '4px' }}
+                        style={{ top: tooltip.top, left: tooltip.left }}
                       >
                         <p className="font-medium mb-1">{user.name}</p>
-                        <p>
-                          {user.address?.street}, {user.address?.suite}
-                        </p>
-                        <p>
-                          {user.address?.city}, {user.address?.zipcode}
-                        </p>
-                        <p className="mt-1 text-muted-foreground">
-                          lat {user.address?.geo?.lat}, lng {user.address?.geo?.lng}
-                        </p>
+                        <p>{user.address?.street}, {user.address?.suite}</p>
+                        <p>{user.address?.city}, {user.address?.zipcode}</p>
                       </div>,
-                      tooltipRoot,
+                      tooltipRoot
                     )}
                 </div>
               </div>
             </button>
           ))}
         </div>
-
-        {selectedUser && (
-          <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-            <h4 className="font-semibold text-sm mb-2">
-              {selectedUser.name}'s Posts (
-              {posts.filter((p: any) => p.userId === selectedUser.id).length})
-            </h4>
-            {posts
-              .filter((p: any) => p.userId === selectedUser.id)
-              .map((post: any) => (
-                <div key={post.id} className="py-1.5 border-b border-gray-200 last:border-0">
-                  <strong className="text-xs">{post.title}</strong>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">
-                    {post.body.slice(0, 100)}...
-                  </p>
-                </div>
-              ))}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
 };
 
-export default UserList;
+
+export default React.memo(UserListComponent);

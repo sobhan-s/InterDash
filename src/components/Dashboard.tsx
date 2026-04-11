@@ -1,4 +1,4 @@
-import React, { memo, useContext, useState } from 'react';
+import React, { memo, useCallback, useContext, useState } from 'react';
 import { RefreshCw, LayoutDashboard, FileText, CheckSquare, Image, Loader2 } from 'lucide-react';
 import { AppContext } from '../App';
 import { Badge } from './ui/badge';
@@ -73,10 +73,11 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
     addToast,
   });
 
-  const handleRefresh = () => {
+  // Stabilise so the Refresh button's onClick reference doesn't change each render
+  const handleRefresh = useCallback(() => {
     setRefreshCount((count) => count + 1);
     addToast('Dashboard refreshed', 'success');
-  };
+  }, [addToast]);
 
   if (loading) {
     return (
@@ -181,7 +182,7 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
           <TabsContent value="gallery">
             <div className="space-y-3">
               <h2 className="text-lg font-semibold">Gallery</h2>
-              <ImageGallery photos={photos} theme={theme} counter={DASHBOARD_COUNTER} />
+              <ImageGallery theme={theme} counter={DASHBOARD_COUNTER} />
             </div>
           </TabsContent>
         </Tabs>

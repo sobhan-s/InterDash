@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import * as mathjs from 'mathjs';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
@@ -9,7 +9,7 @@ interface MathPlaygroundProps {
   theme: string;
 }
 
-const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
+const MathPlaygroundComponent = ({ counter, theme }: MathPlaygroundProps) => {
   const [matrix, setMatrix] = useState<number[][]>([]);
 
   const results = useMemo(() => {
@@ -25,11 +25,11 @@ const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
       Array.from({ length: size }, () => Math.random() * 20 - 10),
     );
 
-    // Matrix operations
+  
     r.matrixProduct = mathjs.multiply(A, B);
     r.determinant = mathjs.det(A);
 
-    // Statistics (reduced size for performance)
+    
     const bigDataset = Array.from({ length: 20000 }, () => Math.random() * 1000);
 
     r.mean = mathjs.mean(bigDataset);
@@ -37,7 +37,7 @@ const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
     r.median = mathjs.median(bigDataset);
     r.variance = mathjs.variance(bigDataset);
 
-    // Expressions (fast)
+    // Expressions
     r.expr1 = Math.sin(Math.PI / 4) * Math.cos(Math.PI / 3);
     r.expr2 = Math.sqrt(2) + Math.exp(2);
     r.expr3 = Math.log10(1000);
@@ -48,7 +48,6 @@ const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
     }
     r.fib = fib;
 
-    // Store small matrix preview
     setMatrix(A.slice(0, 5).map((row) => row.slice(0, 5)));
 
     return r;
@@ -65,7 +64,7 @@ const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
 
       <CardContent>
         <div className="grid grid-cols-2 gap-4 text-sm">
-          {/* Statistics */}
+          
           <div>
             <h4 className="font-medium text-xs mb-2">Statistics</h4>
             <div className="space-y-1 text-xs">
@@ -88,7 +87,6 @@ const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
             </div>
           </div>
 
-          {/* Expressions */}
           <div>
             <h4 className="font-medium text-xs mb-2">Expressions</h4>
             <div className="space-y-1 text-xs font-mono">
@@ -100,7 +98,7 @@ const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
           </div>
         </div>
 
-        {/* Matrix */}
+        
         <div className="mt-3">
           <h4 className="font-medium text-xs mb-2">5×5 Matrix Preview</h4>
           <div className="overflow-auto">
@@ -132,10 +130,12 @@ const MathPlayground = ({ counter, theme }: MathPlaygroundProps) => {
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground mt-2">Render count: {counter}</p>
+        <p className="text-xs text-muted-foreground mt-2">
+          Render count: {counter}
+        </p>
       </CardContent>
     </Card>
   );
 };
 
-export default MathPlayground;
+export default React.memo(MathPlaygroundComponent);
