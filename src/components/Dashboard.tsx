@@ -7,15 +7,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import DashboardModal from './dashboard/DashboardModal';
 import DashboardOverviewTab from './dashboard/DashboardOverviewTab';
 import DashboardPostsTab from './dashboard/DashboardPostsTab';
+import { type DashboardProps } from '../lib/types';
 import { useDashboardData } from './dashboard/useDashboardData';
 import { useDashboardState } from './dashboard/useDashboardState';
 import TodoList from './TodoList';
 import ImageGallery from './ImageGallery';
 
+const DASHBOARD_COUNTER = 0;
 
-
-const Dashboard = () => {
-  const { addToast,theme,globalSearchQuery ,counter} = useContext(AppContext);
+const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
+  const { addToast } = useContext(AppContext);
   const [refreshCount, setRefreshCount] = useState(0);
 
   const {
@@ -72,7 +73,7 @@ const Dashboard = () => {
     addToast,
   });
 
-  // Stabilise so the Refresh button's onClick reference doesn't change each render
+ 
   const handleRefresh = useCallback(() => {
     setRefreshCount((count) => count + 1);
     addToast('Dashboard refreshed', 'success');
@@ -123,6 +124,9 @@ const Dashboard = () => {
 
           <TabsContent value="overview">
             <DashboardOverviewTab
+              theme={theme}
+              counter={DASHBOARD_COUNTER}
+              globalSearchQuery={globalSearchQuery}
               lastUpdated={lastUpdated}
               cryptoData={cryptoData}
               weatherData={weatherData}
@@ -170,7 +174,7 @@ const Dashboard = () => {
                 onToggle={handleToggleTodo}
                 onEdit={handleEditTodo}
                 theme={theme}
-                counter={counter}
+                counter={DASHBOARD_COUNTER}
               />
             </div>
           </TabsContent>
@@ -178,7 +182,7 @@ const Dashboard = () => {
           <TabsContent value="gallery">
             <div className="space-y-3">
               <h2 className="text-lg font-semibold">Gallery</h2>
-              <ImageGallery theme={theme} counter={counter} />
+              <ImageGallery theme={theme} counter={DASHBOARD_COUNTER} />
             </div>
           </TabsContent>
         </Tabs>
@@ -190,4 +194,3 @@ const Dashboard = () => {
 };
 
 export default memo(Dashboard);
-
