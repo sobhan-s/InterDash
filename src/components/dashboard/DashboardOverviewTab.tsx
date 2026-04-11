@@ -125,7 +125,7 @@ const DashboardOverviewTab = React.memo(({
     [onProfileSave],
   );
 
-  // Memoize the CustomTabPanel tabs array so it isn't recreated each render.
+  
   const quickStatsTabs = useMemo(
     () => [
       {
@@ -149,6 +149,8 @@ const DashboardOverviewTab = React.memo(({
     ],
     [posts.length, users.length, todos.length, comments.length],
   );
+
+  
 
   return (
     <Suspense

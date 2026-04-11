@@ -332,21 +332,22 @@ export interface WeatherData {
   name: string;
   lat: number;
   lon: number;
-  weather: unknown;
+  weather: WeatherCurrent;
+  [key: string]: unknown;
 }
 
 export interface DashboardProps {
-  theme: string;
+  theme?: string;
   user: AppUser | null;
   notifications: unknown[];
-  globalSearchQuery: string;
-  setGlobalSearchQuery: (q: string) => void;
+  globalSearchQuery?: string;
+  setGlobalSearchQuery?: (q: string) => void;
   sidebarOpen: boolean;
   getFilteredData: (data: unknown[], query: string) => unknown[];
   appData: unknown;
   setAppData: (data: unknown) => void;
-  handleThemeToggle: () => void;
-  counter: number;
+  handleThemeToggle?: () => void;
+  counter?: number;
 }
 
 export interface DashboardModalProps {

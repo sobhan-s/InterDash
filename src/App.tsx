@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useRef, Suspense, lazy, useCallback, useMemo, use } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import type { AppContextValue, AppDataShape, AppNotification, AppUser, ErrorLogEntry, NotificationFetchParams, Toast } from './lib/types'
+import type { AppContextValue, AppDataShape, AppNotification, AppUser, ErrorLogEntry, NotificationFetchParams, Toast, Post, Todo, Comment, Album, Photo, User } from './lib/types'
 
 
 const Dashboard = lazy(() => import('./components/Dashboard'))
@@ -76,6 +76,12 @@ function App() {
   const [counter, setCounter] = useState(0);
   const [routeHistory, setRouteHistory] = useState<string[]>([]);
   const [debugMode, setDebugMode] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   const MAX_TOASTS = 5;
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -90,6 +96,23 @@ function App() {
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
+  }, []);
+  useEffect(() => {
+    Promise.all([
+      fetch('https://jsonplaceholder.typicode.com/posts').then(r => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/users').then(r => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/todos').then(r => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/comments').then(r => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/albums').then(r => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/photos?_limit=50').then(r => r.json()),
+    ]).then(([p, u, t, c, al, ph]: [Post[], User[], Todo[], Comment[], Album[], Photo[]]) => {
+      setPosts(p);
+      setUsers(u);
+      setTodos(t);
+      setComments(c);
+      setAlbums(al);
+      setPhotos(ph);
+    }).catch(e => console.error('Failed to fetch app data:', e));
   }, []);
 
   useEffect(() => {
@@ -127,8 +150,8 @@ function App() {
     const BLOCKED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
     const safeMerge = (target: any, source: any): any => {
-      for (const key of Object.keys(source)) { 
-        if (BLOCKED_KEYS.has(key)) continue;   
+      for (const key of Object.keys(source)) {
+        if (BLOCKED_KEYS.has(key)) continue;
         const val = source[key];
         if (val && typeof val === 'object' && !Array.isArray(val)) {
           target[key] = safeMerge(
@@ -273,6 +296,7 @@ function App() {
       } catch (e) { }
     }
   }, []);
+
 
   return (
     <ErrorBoundary>
@@ -423,7 +447,7 @@ function App() {
                           sidebarOpen={sidebarOpen}
                           getFilteredData={getFilteredData}
                           appData={appData}
-                          setAppData={setAppData}                       />
+                          setAppData={setAppData} />
                       }
                     />
                     <Route
@@ -484,12 +508,12 @@ function App() {
                       path="/analytics"
                       element={
                         <Analytics
-                          posts={[]}
-                          users={[]}
-                          todos={[]}
-                          comments={[]}
-                          albums={[]}
-                          photos={[]}
+                          posts={posts}
+                          users={users}
+                          todos={todos}
+                          comments={comments}
+                          albums={albums}
+                          photos={photos}
                           theme={theme}
                           counter={counter}
                         />
@@ -531,10 +555,10 @@ function App() {
                 <div
                   key={toast.id}
                   className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${toast.type === 'error'
-                      ? 'bg-red-500'
-                      : toast.type === 'success'
-                        ? 'bg-green-600'
-                        : 'bg-blue-500'
+                    ? 'bg-red-500'
+                    : toast.type === 'success'
+                      ? 'bg-green-600'
+                      : 'bg-blue-500'
                     }`}
                 >
                   <span className="flex-1">{toast.message}</span>
