@@ -108,24 +108,19 @@ const ReportGeneratorComponent = ({ posts, users, counter, theme }: ReportGenera
           color: rgb(0.4, 0.4, 0.4),
         });
 
-        page.drawText(
-          `${fakeData[i].jobTitle} - $${fakeData[i].salary.toLocaleString()}`,
-          {
-            x: 50,
-            y: y - 22,
-            size: 8,
-            font,
-            color: rgb(0.6, 0.6, 0.6),
-          }
-        );
+        page.drawText(`${fakeData[i].jobTitle} - $${fakeData[i].salary.toLocaleString()}`, {
+          x: 50,
+          y: y - 22,
+          size: 8,
+          font,
+          color: rgb(0.6, 0.6, 0.6),
+        });
       }
 
       const pdfBytes = await pdfDoc.save();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
       saveAs(blob, 'interndash-report.pdf');
-    } catch (e) {
-      console.error('PDF generation failed:', e);
-    }
+    } catch (e) {}
     setGenerating(false);
   }, [fakeData]);
 
@@ -238,9 +233,7 @@ const ReportGeneratorComponent = ({ posts, users, counter, theme }: ReportGenera
                   </td>
                   <td className="p-1.5 text-muted-foreground">{d.email}</td>
                   <td className="p-1.5">{d.company}</td>
-                  <td className="p-1.5 text-right font-mono">
-                    ${d.salary.toLocaleString()}
-                  </td>
+                  <td className="p-1.5 text-right font-mono">${d.salary.toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>
@@ -250,6 +243,5 @@ const ReportGeneratorComponent = ({ posts, users, counter, theme }: ReportGenera
     </Card>
   );
 };
-
 
 export default React.memo(ReportGeneratorComponent);

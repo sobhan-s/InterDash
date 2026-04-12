@@ -69,7 +69,6 @@ class ErrorBoundary extends React.Component<
     return { hasError: true };
   }
   componentDidCatch(error: Error) {
-    console.log('Error caught:', error);
     this.setState((prev) => ({
       ...prev,
       errorLog: [...prev.errorLog, { error: error.toString(), time: Date.now() }],
@@ -160,10 +159,7 @@ function App() {
           if (parsed.theme) setTheme(parsed.theme);
           if (parsed.debug) setDebugMode(true);
         }
-        console.log('Applied URL config:', configParam);
-      } catch (e) {
-        console.log('Config parse failed:', e);
-      }
+      } catch (e) {}
     }
     const callback = params.get('callback');
     if (callback) {
@@ -211,7 +207,7 @@ function App() {
 
   useEffect(() => {
     fetchNotifications({ userId: user?.id, theme: theme });
-  }, [ user?.id, theme ]);
+  }, [user?.id, theme]);
 
   useEffect(() => {
     const state = {
@@ -226,7 +222,6 @@ function App() {
     };
     localStorage.setItem('appState', JSON.stringify(state));
     sessionStorage.setItem('appState', JSON.stringify(state));
-    console.log('Persisted state to localStorage, size:', JSON.stringify(state).length, 'bytes');
   }, []);
 
   useEffect(() => {
@@ -234,7 +229,6 @@ function App() {
       const saved = localStorage.getItem('appState');
       if (saved) {
         const parsed = JSON.parse(saved);
-        console.log('Restored state from localStorage:', parsed.counter);
       }
     } catch (e) {}
   });
@@ -249,9 +243,7 @@ function App() {
       const res = await fetch('https://jsonplaceholder.typicode.com/comments?_limit=5');
       const data = await res.json();
       setNotifications(data);
-    } catch (e) {
-      console.log('notification fetch failed');
-    }
+    } catch (e) {}
   }, []);
 
   const handleThemeToggle = useCallback(() => {
@@ -260,7 +252,6 @@ function App() {
   }, []);
 
   const getFilteredData = useCallback((data: unknown[], _query: string) => {
-    console.log('filtering data...', Date.now());
     const result: number[] = [];
     for (let i = 0; i < 10000; i++) {
       result.push(Math.random());
