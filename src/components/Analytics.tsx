@@ -39,7 +39,7 @@ const Analytics = React.memo(({
   albums,
   photos,
   theme,
-  counter,
+  
 }: AnalyticsProps) => {
 
   const stats = useMemo(() => {
@@ -236,4 +236,4 @@ const Analytics = React.memo(({
 
 Analytics.displayName = 'Analytics';
 
-export default Analytics;
+export default React.memo(Analytics);

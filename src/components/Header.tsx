@@ -208,7 +208,7 @@ const Header = ({
           </button>
           {showNotifPanel && (
             <div
-              className={`absolute top-full right-0 z-50 mt-2 max-h-75 w-75 overflow-auto rounded-md border shadow-lg ${theme === 'dark'
+              className={`absolute top-full right-0 z-200 mt-2 max-h-75 w-75 overflow-auto rounded-md border shadow-lg ${theme === 'dark'
                 ? 'border-gray-700 bg-gray-800 text-gray-100'
                 : 'border-gray-200 bg-white text-gray-900'
                 }`}
@@ -283,7 +283,7 @@ const Header = ({
           )}
         </div>
 
-        <span className="text-xs text-muted-foreground">Counter: {counter}</span>
+        <span className="text-xs text-muted-foreground">Uptime: {counter}s</span>
       </div>
     </header>
   );

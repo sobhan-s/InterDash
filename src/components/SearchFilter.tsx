@@ -5,7 +5,7 @@ import { Badge } from './ui/badge';
 import { Search } from 'lucide-react';
 import type { SearchFilterProps, SearchableItem, SearchHistoryEntry } from '@/lib/types';
 
-const SearchFilterComponent = ({ data, onFilter, theme, counter }: SearchFilterProps) => {
+const SearchFilterComponent = ({ data, onFilter, theme }: SearchFilterProps) => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchableItem[]>([]);
   const [searchHistory, setSearchHistory] = useState<SearchHistoryEntry[]>([]);

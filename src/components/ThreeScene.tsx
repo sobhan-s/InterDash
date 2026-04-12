@@ -95,16 +95,15 @@ const SpinningTorus = React.memo(SpinningTorusComponent);
 
 
 interface ThreeSceneProps {
-  counter: number;
   theme: string;
 }
 
-const ThreeSceneComponent = ({ counter, theme }: ThreeSceneProps) => {
+const ThreeSceneComponent = ({  theme }: ThreeSceneProps) => {
   const [rotationSpeed, setRotationSpeed] = useState(1);
 
   useEffect(() => {
-    setRotationSpeed(1 + Math.sin(counter * 0.1) * 0.5);
-  }, [counter]);
+    setRotationSpeed(1 + Math.sin(rotationSpeed * 0.1) * 0.5);
+  }, [rotationSpeed]);
 
   return (
     <Card>
@@ -135,7 +134,7 @@ const ThreeSceneComponent = ({ counter, theme }: ThreeSceneProps) => {
         </div>
 
         <p className="text-xs text-muted-foreground mt-2">
-          Rotation speed: {rotationSpeed.toFixed(2)} | Render #{counter}
+          Rotation speed: {rotationSpeed.toFixed(2)} 
         </p>
       </CardContent>
     </Card>

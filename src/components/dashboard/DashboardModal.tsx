@@ -25,7 +25,7 @@ const DashboardModal = ({ open, content, onClose }: DashboardModalProps) => {
       role="dialog" 
       aria-modal="true"
       aria-labelledby='modal-title'
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-300"
       onClick={onClose}
     >
       <Card

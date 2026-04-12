@@ -20,7 +20,6 @@ interface TodoListProps {
   onToggle?: (id: number) => void
   onEdit?: (id: number, text: string) => void
   theme: string
-  counter: number
 }
 
 const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoListProps) => {

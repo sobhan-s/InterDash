@@ -11,10 +11,9 @@ import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 interface MarkdownEditorProps {
   theme: string;
-  counter: number;
 }
 
-const MarkdownEditorComponent = ({ theme, counter }: MarkdownEditorProps) => {
+const MarkdownEditorComponent = ({ theme}: MarkdownEditorProps) => {
   const [markdown, setMarkdown] = useState(`# Hello World  
 
 This is a **markdown** editor with _live preview_.  
@@ -56,7 +55,7 @@ function hello() {
     setWordCount(markdown.split(/\s+/).filter(Boolean).length);
 
     setHistory((prev) => [...prev.slice(-50), markdown]);
-  }, [markdown, counter]);
+  }, [markdown]);
 
 
   const handleUndo = useCallback(() => {

@@ -13,7 +13,6 @@ import { GitBranch } from 'lucide-react'
 
 interface D3VisualizationProps {
   data: any[]
-  counter: number
   theme: string
 }
 
@@ -22,7 +21,7 @@ interface D3VisualizationProps {
 const arePropsEqual = (prev: D3VisualizationProps, next: D3VisualizationProps) =>
   prev.data.length === next.data.length && prev.theme === next.theme;
 
-const D3Visualization = React.memo(({ data, counter, theme }: D3VisualizationProps) => {
+const D3Visualization = React.memo(({ data, theme }: D3VisualizationProps) => {
   const svgRef = useRef<SVGSVGElement>(null)
   const [dimensions] = useState({ width: 600, height: 300 })
 
@@ -58,7 +57,6 @@ const D3Visualization = React.memo(({ data, counter, theme }: D3VisualizationPro
 
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`)
 
-    // Use the memoized stable nodes/links — no Math.random(), no re-layout on counter tick
     const { nodes, links } = graph
 
     const simulation = forceSimulation(nodes as any)
@@ -98,7 +96,7 @@ const D3Visualization = React.memo(({ data, counter, theme }: D3VisualizationPro
         .attr('cy', (d: any) => d.y)
     })
 
-    // Stop simulation on cleanup to prevent tick callbacks firing after unmount
+    
     return () => { simulation.stop() }
   }, [graph, dimensions])
 
@@ -115,7 +113,7 @@ const D3Visualization = React.memo(({ data, counter, theme }: D3VisualizationPro
           <svg ref={svgRef} width={dimensions.width} height={dimensions.height} className="w-full" />
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Nodes: {Math.min(data?.length || 0, 50)} | Render #{counter}
+          Nodes: {Math.min(data?.length || 0, 50)} 
         </p>
       </CardContent>
     </Card>

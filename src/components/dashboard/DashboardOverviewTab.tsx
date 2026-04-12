@@ -45,7 +45,7 @@ const DashboardOverviewTab = React.memo(({
   onProfileSave,
   getSortedAndFilteredPosts,
 }: DashboardOverviewTabProps) => {
-  const { theme, counter, globalSearchQuery } = useContext(AppContext);
+  const { theme,  globalSearchQuery } = useContext(AppContext);
   const shimmerRef = useRef<HTMLDivElement | null>(null);
   const [isShimmerInView, setIsShimmerInView] = useState(true);
 
@@ -173,19 +173,16 @@ const DashboardOverviewTab = React.memo(({
         <div className="grid grid-cols-2 gap-5" style={{ width: '1100px', minWidth: '1100px' }}>
           <CryptoTracker
             theme={theme}
-            counter={counter}
             data={cryptoData}
             onSelect={handleSelectItem}
           />
           <WeatherWidget
             theme={theme}
-            counter={counter}
             data={weatherData}
             onCityClick={handleOpenModal}
           />
           <UserList
             theme={theme}
-            counter={counter}
             users={users}
             posts={posts}
             globalSearchQuery={globalSearchQuery}
@@ -193,7 +190,6 @@ const DashboardOverviewTab = React.memo(({
           />
           <PostsFeed
             theme={theme}
-            counter={counter}
             posts={sortedAndFilteredPosts}
             comments={commentsByPostId}
             onPostClick={handleOpenModal}
@@ -207,7 +203,6 @@ const DashboardOverviewTab = React.memo(({
           onToggle={handleToggleTodo}
           onEdit={handleEditTodo}
           theme={theme}
-          counter={counter}
         />
 
         <DataChart
@@ -216,15 +211,15 @@ const DashboardOverviewTab = React.memo(({
           todos={todos}
           comments={comments}
           theme={theme}
-          counter={counter}
+        
         />
 
-        <ThreeScene counter={counter} theme={theme} />
-        <D3Visualization data={posts} counter={counter} theme={theme} />
-        <MathPlayground counter={counter} theme={theme} />
-        <ReportGenerator posts={posts} users={users} counter={counter} theme={theme} />
-        <ImageGallery theme={theme} counter={counter} />
-        <MarkdownEditor theme={theme} counter={counter} />
+        <ThreeScene  theme={theme} />
+        <D3Visualization data={posts} theme={theme} />
+        <MathPlayground theme={theme} />
+        <ReportGenerator posts={posts} users={users} theme={theme} />
+        <ImageGallery theme={theme}  />
+        <MarkdownEditor theme={theme}  />
 
         <Analytics
           posts={posts}
@@ -234,13 +229,12 @@ const DashboardOverviewTab = React.memo(({
           albums={albums}
           photos={photos}
           theme={theme}
-          counter={counter}
         />
 
-        <SearchFilter data={searchFilterData} theme={theme} counter={counter} />
+        <SearchFilter data={searchFilterData} theme={theme}  />
 
         <DraggableList />
-        <VirtualizedFeed items={posts} counter={counter} />
+        <VirtualizedFeed items={posts}  />
 
         <CustomTabPanel
           title="Quick Stats"

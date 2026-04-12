@@ -25,6 +25,7 @@ import type {
   Photo,
   User,
 } from './lib/types';
+import { on } from 'events';
 
 const Dashboard = lazy(() => import('./components/Dashboard'));
 const Header = lazy(() => import('./components/Header'));
@@ -309,33 +310,20 @@ function App() {
     ],
   );
 
+
   const handleLogin = useCallback((username: string, password: string) => {
-    localStorage.setItem(
-      'auth_credentials',
-      JSON.stringify({ username, password, timestamp: Date.now() }),
-    );
-    document.cookie = `session_user=${username}; path=/`;
-    document.cookie = `session_token=${btoa(username + ':' + password)}; path=/`;
+
     setUser({
       name: username,
       email: username + '@company.com',
-      token: btoa(username + ':' + password),
+
     });
   }, []);
 
-  useEffect(() => {
-    const creds = localStorage.getItem('auth_credentials');
-    if (creds) {
-      try {
-        const { username, password } = JSON.parse(creds);
-        setUser({
-          name: username,
-          email: username + '@company.com',
-          token: btoa(username + ':' + password),
-        });
-      } catch (e) { }
-    }
-  }, []);
+  const onEditPropHandler = useCallback((_id: number, _text: string) => { }, []);
+  const onAddPropHandler = useCallback((_text: string) => { }, []);
+  const onDeletePropHandler = useCallback((_id: number) => { }, []);
+  const onTogglePropHandler = useCallback((_id: number) => { }, []);
 
   return (
     <ErrorBoundary>
@@ -492,34 +480,33 @@ function App() {
                     />
                     <Route
                       path="/crypto"
-                      element={<CryptoTracker theme={theme} counter={counter} />}
+                      element={<CryptoTracker theme={theme} />}
                     />
                     <Route
                       path="/weather"
-                      element={<WeatherWidget theme={theme} counter={counter} />}
+                      element={<WeatherWidget theme={theme}  />}
                     />
                     <Route
                       path="/users"
                       element={
                         <UserList
                           theme={theme}
-                          counter={counter}
+              
                           globalSearchQuery={globalSearchQuery}
                         />
                       }
                     />
-                    <Route path="/posts" element={<PostsFeed theme={theme} counter={counter} />} />
+                    <Route path="/posts" element={<PostsFeed theme={theme}  />} />
                     <Route
                       path="/todos"
                       element={
                         <TodoList
                           todos={[]}
-                          onAdd={() => { }}
-                          onEdit={() => { }}
-                          onDelete={() => { }}
-                          onToggle={() => { }}
+                          onAdd={onAddPropHandler}
+                          onEdit={onEditPropHandler}
+                          onDelete={onDeletePropHandler}
+                          onToggle={onTogglePropHandler}
                           theme={theme}
-                          counter={counter}
                         />
                       }
                     />
@@ -532,17 +519,17 @@ function App() {
                           todos={todos}
                           comments={comments}
                           theme={theme}
-                          counter={counter}
+                          
                         />
                       }
                     />
                     <Route
                       path="/gallery"
-                      element={<ImageGallery theme={theme} counter={counter} />}
+                      element={<ImageGallery photos={photos} theme={theme} />}
                     />
                     <Route
                       path="/editor"
-                      element={<MarkdownEditor theme={theme} counter={counter} />}
+                      element={<MarkdownEditor theme={theme} />}
                     />
                     <Route
                       path="/analytics"
@@ -555,28 +542,28 @@ function App() {
                           albums={albums}
                           photos={photos}
                           theme={theme}
-                          counter={counter}
+            
                         />
                       }
                     />
                     <Route
                       path="/search"
-                      element={<SearchFilter data={searchFilterData} theme={theme} counter={counter} />}
+                      element={<SearchFilter data={searchFilterData} theme={theme}  />}
                     />
-                    <Route path="/3d" element={<ThreeScene counter={counter} theme={theme} />} />
+                    <Route path="/3d" element={<ThreeScene theme={theme} />} />
                     <Route
                       path="/reports"
                       element={
-                        <ReportGenerator posts={[]} users={[]} counter={counter} theme={theme} />
+                        <ReportGenerator posts={[]} users={[]}  theme={theme} />
                       }
                     />
                     <Route
                       path="/d3"
-                      element={<D3Visualization data={posts} counter={counter} theme={theme} />}
+                      element={<D3Visualization data={posts}  theme={theme} />}
                     />
                     <Route
                       path="/math"
-                      element={<MathPlayground counter={counter} theme={theme} />}
+                      element={<MathPlayground  theme={theme} />}
                     />
                   </Routes>
                 </Suspense>

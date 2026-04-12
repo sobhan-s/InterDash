@@ -5,7 +5,6 @@ import type { VirtualizedFeedItem, VirtualizedFeedProps } from '@/lib/types'
 
 const VirtualizedFeedComponent = ({
   items,
-  counter,
   itemHeight = 56,
   visibleCount = 8,
 }: VirtualizedFeedProps) => {

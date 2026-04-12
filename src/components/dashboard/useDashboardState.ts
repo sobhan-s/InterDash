@@ -28,7 +28,7 @@ export const useDashboardState = ({
   const openModal = useCallback((content: unknown) => {
     setModalContent(content);
     setModalOpen(true);
-  }, []); // setters from useState are stable — no deps needed
+  }, []); 
 
   const closeModal = useCallback(() => {
     setModalOpen(false);

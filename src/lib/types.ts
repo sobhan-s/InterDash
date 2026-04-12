@@ -129,12 +129,10 @@ export interface SearchFilterProps {
   data: SearchableItem[];
   onFilter?: (result: SearchableItem[]) => void;
   theme: string;
-  counter: number;
 }
 
 export interface CryptoTrackerProps {
   theme: string;
-  counter: number;
   data?: CryptoData[];
   onSelect?: (item: CryptoData) => void;
 }
@@ -165,7 +163,6 @@ export interface WeatherCityData {
 
 export interface WeatherWidgetProps {
   theme: string;
-  counter: number;
   data?: WeatherCityData[];
   onCityClick?: (city: WeatherCityData) => void;
 }
@@ -198,7 +195,6 @@ export interface DetailedUser extends User {
 
 export interface UserListProps {
   theme: string;
-  counter: number;
   users?: DetailedUser[];
   posts?: Post[];
   globalSearchQuery?: string;
@@ -207,7 +203,6 @@ export interface UserListProps {
 
 export interface PostsFeedProps {
   theme: string;
-  counter: number;
   posts?: Post[];
   comments?: Record<number, Comment[]>;
   onPostClick?: (post: Post) => void;
@@ -216,7 +211,6 @@ export interface PostsFeedProps {
 export interface ImageGalleryProps {
   photos?: Photo[];
   theme: string;
-  counter: number;
 }
 
 export interface AnalyticsUserActivity extends DetailedUser {
@@ -245,7 +239,7 @@ export interface AnalyticsProps {
   albums: Album[];
   photos: Photo[];
   theme: string;
-  counter: number;
+  
 }
 
 export interface DataChartProps {
@@ -254,7 +248,6 @@ export interface DataChartProps {
   todos: Todo[];
   comments: Comment[];
   theme: string;
-  counter: number;
 }
 
 export interface FakeReportRecord {
@@ -277,7 +270,6 @@ export interface FakeReportRecord {
 export interface ReportGeneratorProps {
   posts: Post[];
   users: DetailedUser[];
-  counter: number;
   theme: string;
 }
 
@@ -293,13 +285,11 @@ export interface VirtualizedFeedItem {
 
 export interface VirtualizedFeedProps {
   items: VirtualizedFeedItem[];
-  counter: number;
   itemHeight?: number;
   visibleCount?: number;
 }
 
 export interface MathPlaygroundProps {
-  counter: number;
   theme: string;
 }
 
@@ -358,7 +348,6 @@ export interface DashboardModalProps {
 
 export interface DashboardOverviewTabProps {
   theme: string;
-  counter: number;
   globalSearchQuery: string;
   lastUpdated: string | null;
   cryptoData: CryptoData[];

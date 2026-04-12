@@ -5,7 +5,7 @@ import { Badge } from './ui/badge';
 import { Calculator } from 'lucide-react';
 import { MathPlaygroundProps } from '@/lib/types';
 
-const MathPlaygroundComponent = ({ counter, theme }: MathPlaygroundProps) => {
+const MathPlaygroundComponent = ({  theme }: MathPlaygroundProps) => {
   const [matrix, setMatrix] = useState<number[][]>([]);
 
   const results = useMemo(() => {
@@ -126,9 +126,6 @@ const MathPlaygroundComponent = ({ counter, theme }: MathPlaygroundProps) => {
           </div>
         </div>
 
-        <p className="text-xs text-muted-foreground mt-2">
-          Render count: {counter}
-        </p>
       </CardContent>
     </Card>
   );

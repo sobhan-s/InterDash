@@ -12,7 +12,7 @@ import { Badge } from './ui/badge';
 import { Download, FileSpreadsheet, FileText, Archive, Lock } from 'lucide-react';
 import type { FakeReportRecord, ReportGeneratorProps } from '@/lib/types';
 
-const ReportGeneratorComponent = ({ posts, users, counter, theme }: ReportGeneratorProps) => {
+const ReportGeneratorComponent = ({ posts, users,  theme }: ReportGeneratorProps) => {
   const [generating, setGenerating] = useState(false);
   const [fakeData, setFakeData] = useState<FakeReportRecord[]>([]);
   const [encryptedData, setEncryptedData] = useState('');

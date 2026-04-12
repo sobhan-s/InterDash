@@ -13,7 +13,7 @@ const arePropsEqual = (prev: DataChartProps, next: DataChartProps) =>
   prev.comments.length === next.comments.length &&
   prev.theme === next.theme;
 
-const DataChart = React.memo(({ posts, users, todos, comments, theme, counter }: DataChartProps) => {
+const DataChart = React.memo(({ posts, users, todos, comments, theme}: DataChartProps) => {
   const chartRef1 = useRef<HTMLCanvasElement>(null);
   const chartRef2 = useRef<HTMLCanvasElement>(null);
   const chartRef3 = useRef<HTMLCanvasElement>(null);

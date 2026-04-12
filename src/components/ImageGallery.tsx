@@ -123,7 +123,7 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
                   onClick={() => handleSelectPhoto(photo)}
                 >
                   <img
-                    src={photo.thumbnailUrl}
+                    src={photo.url}
                     alt={photo.title}
                     loading="lazy"
                     className="w-[110px] h-[110px] object-cover rounded"

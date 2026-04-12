@@ -8,7 +8,7 @@ import { Star, TrendingUp, TrendingDown } from 'lucide-react';
 import { API_ENDPOINTS } from '../utils/constants';
 import type { CryptoData, CryptoTrackerProps } from '@/lib/types';
 
-const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) => {
+const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
   const [coins, setCoins] = useState<CryptoData[]>(data || []);
   const [sortBy, setSortBy] = useState('market_cap');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -150,7 +150,7 @@ const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) =
           </table>
         </div>
         <p className="text-[11px] text-muted-foreground mt-2">
-          Last updated: {format(new Date(), 'HH:mm:ss')} | Render #{counter}
+          Last updated: {format(new Date(), 'HH:mm:ss')} 
         </p>
       </CardContent>
     </Card>
