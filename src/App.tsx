@@ -126,8 +126,8 @@ function App() {
     const BLOCKED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
     const safeMerge = (target: any, source: any): any => {
-      for (const key of Object.keys(source)) { // ✅ Object.keys = own props only
-        if (BLOCKED_KEYS.has(key)) continue;   // ✅ continue, not return
+      for (const key of Object.keys(source)) { 
+        if (BLOCKED_KEYS.has(key)) continue;   
         const val = source[key];
         if (val && typeof val === 'object' && !Array.isArray(val)) {
           target[key] = safeMerge(
@@ -160,7 +160,7 @@ function App() {
 
   useEffect(() => {
     fetchNotifications({ userId: user?.id, theme: theme });
-  }, [{ userId: user?.id, theme: theme }]);
+  }, [ user?.id, theme ]);
 
   useEffect(() => {
     const state = {
@@ -176,7 +176,7 @@ function App() {
     localStorage.setItem('appState', JSON.stringify(state));
     sessionStorage.setItem('appState', JSON.stringify(state));
     console.log('Persisted state to localStorage, size:', JSON.stringify(state).length, 'bytes');
-  }, [counter]);
+  }, []);
 
   useEffect(() => {
     try {

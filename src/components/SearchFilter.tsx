@@ -73,7 +73,7 @@ const SearchFilterComponent = ({ data, onFilter, theme, counter }: SearchFilterP
     if (query.length > 2) {
       regexSearch(query);
     }
-  }, [query, counter, regexSearch]);
+  }, [query, regexSearch]);
 
   
   const highlightText = useCallback(

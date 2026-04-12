@@ -11,6 +11,19 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+  const handleKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') setSelectedPhoto(null);
+  };
+
+  if (selectedPhoto) {
+    document.addEventListener('keydown', handleKey);
+  }
+
+  return () => document.removeEventListener('keydown', handleKey);
+}, [selectedPhoto]);
+
+
+  useEffect(() => {
     let isMounted = true;
 
     const fetchPhotos = async () => {
@@ -98,6 +111,7 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
             >
               {photos.map((photo) => (
                 <button
+                 aria-label='Image'
                   key={photo.id}
                   className="cursor-pointer p-0 border-0 bg-transparent"
                   onClick={() => handleSelectPhoto(photo)}
@@ -116,10 +130,15 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
 
         {selectedPhoto && (
           <div
+             role="dialog"
+            aria-modal="true"
+             aria-label="Image preview"
             className="fixed inset-0 bg-black/80 flex items-center justify-center z-[2000]"
             onClick={handleCloseModal}
           >
-            <div onClick={handleStopPropagation}>
+            <div 
+            tabIndex={0}
+            onClick={handleStopPropagation}>
               <img
                 src={selectedPhoto.url}
                 alt={selectedPhoto.title}

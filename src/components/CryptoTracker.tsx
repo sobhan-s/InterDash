@@ -72,6 +72,7 @@ const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) =
               <tr className="border-b">
                 <th>
                   <button
+                    aria-label='name'
                     className="text-left p-2 cursor-pointer"
                     onClick={() => {
                       setSortBy('name');
@@ -121,6 +122,7 @@ const CryptoTracker = ({ theme, counter, data, onSelect }: CryptoTrackerProps) =
                   </td>
                   <td className="p-2 text-center">
                     <Button
+                      aria-label='star'
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"

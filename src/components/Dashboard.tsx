@@ -113,7 +113,7 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
             </TabsList>
 
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={handleRefresh}>
+              <Button  variant="outline" size="sm" onClick={handleRefresh} aria-label='auto refresh'>
                 <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
               </Button>
               <Badge variant="secondary" className="text-xs">

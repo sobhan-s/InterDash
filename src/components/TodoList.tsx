@@ -177,6 +177,7 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
               key={todo.id}
               role="button"
               tabIndex={0}
+              aria-pressed={todo.completed}
               className={`flex justify-between items-center p-2 border rounded text-sm ${todo.completed ? 'bg-green-50 dark:bg-green-900/10' : 'bg-background'
                 }`}
               onDoubleClick={() => {
@@ -184,7 +185,8 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
                 setEditText(todo.title)
               }}
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' || e.key === '') {
+                  e.preventDefault();
                   setEditingId(todo.id)
                   setEditText(todo.title)
                 }
@@ -192,6 +194,7 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <Button
+                 aria-label='toggle'
                   variant="ghost"
                   size="icon"
                   className="h-5 w-5 shrink-0"
@@ -226,6 +229,7 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
               </div>
 
               <Button
+              aria-label='trash'
                 variant="ghost"
                 size="icon"
                 className="h-5 w-5 text-red-500 hover:text-red-700 shrink-0"

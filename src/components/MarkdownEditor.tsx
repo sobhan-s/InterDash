@@ -55,7 +55,7 @@ function hello() {
     setPreview(sanitized);
     setWordCount(markdown.split(/\s+/).filter(Boolean).length);
 
-    setHistory((prev) => [...prev, markdown]);
+    setHistory((prev) => [...prev.slice(-50), markdown]);
   }, [markdown, counter]);
 
 
@@ -92,6 +92,7 @@ function hello() {
             <Badge variant="outline">Chars: {markdown.length}</Badge>
 
             <Button
+              aria-label='Undo'
               variant="ghost"
               size="sm"
               className="h-7"
@@ -120,6 +121,7 @@ function hello() {
 
             <div
               className="h-[300px] overflow-auto p-3 border rounded-md bg-muted/30 prose prose-sm max-w-none"
+              aria-live='polite'
               dangerouslySetInnerHTML={{ __html: preview }}
             />
           </div>

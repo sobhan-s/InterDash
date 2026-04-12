@@ -58,7 +58,7 @@ const DashboardProfileForm = ({
             )}
           </div>
 
-          <Button size="sm" className="mt-1" onClick={onSave}>
+          <Button aria-label="profile" size="sm" className="mt-1" onClick={onSave}>
             Save Profile
           </Button>
         </div>

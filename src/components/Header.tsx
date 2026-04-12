@@ -3,7 +3,7 @@ import moment from 'moment';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { Bell, Menu, Moon, Sun, Search } from 'lucide-react';
+import { Bell, Menu, Moon, Sun, Search, Signal } from 'lucide-react';
 import { HeaderProps, HeaderSearchResult } from '@/lib/types';
 
 const Header = ({
@@ -50,15 +50,24 @@ const Header = ({
 
 
   useEffect(() => {
-    if (debouncedQuery.length > 0) {
-      fetch(`https://jsonplaceholder.typicode.com/posts?q=${debouncedQuery}`)
+      if (!debouncedQuery) return;
+    
+      const controller = new AbortController(); 
+    
+      fetch(`https://jsonplaceholder.typicode.com/posts?q=${debouncedQuery}`, {
+        signal: controller.signal, 
+      })
         .then((res) => res.json())
         .then((data) => {
           setSearchResults(data);
           setShowDropdown(true);
+        })
+        .catch((err) => {
+          if (err.name !== 'AbortError') console.error(err);
         });
-    }
-  }, [debouncedQuery]);
+    
+      return () => controller.abort(); 
+    }, [debouncedQuery]);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -94,7 +103,7 @@ const Header = ({
 
   useEffect(() => {
     if (searchResults.length > 0) {
-      const MAX_HISTORY = 50; //added the search cache for last 50 entries
+      const MAX_HISTORY = 50; 
       const existing = JSON.parse(localStorage.getItem('searchCache') || '[]');
       existing.push({ query: globalSearchQuery, results: searchResults, time: Date.now() });
       localStorage.setItem('searchCache', JSON.stringify(existing.slice(-MAX_HISTORY)));
@@ -120,15 +129,35 @@ const Header = ({
             type="text"
             value={globalSearchQuery}
             onChange={(e) => setGlobalSearchQuery(e.target.value)}
+             role="combobox"
+            aria-expanded={showDropdown}
+            aria-controls="search-listbox"
+            aria-autocomplete="list"
+
+            onKeyDown={(e) => {
+              const items = document.querySelectorAll('[role="option"]');
+
+              if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                (items[0] as HTMLElement)?.focus();
+              }
+            }}
             placeholder="Search everything..."
             className="pl-9 w-[300px]"
           />
         </div>
         {showDropdown && searchResults.length > 0 && (
-          <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 max-h-[200px] overflow-auto z-100 rounded-md shadow-lg">
+          <div id="search-listbox" role="listbox" className="absolute top-full left-0 right-0 bg-white border border-gray-200 max-h-[200px] overflow-auto z-100 rounded-md shadow-lg">
             {searchResults.map((result: HeaderSearchResult, idx: number) => (
               <button
                 key={idx}
+                role='option'
+                tabIndex={0}
+                onKeyDown={(e) => { 
+                  if (e.key === 'Enter') {
+                    setShowDropdown(false);
+                  }
+                }}
                 className="p-2 cursor-pointer hover:bg-gray-50 border-b border-gray-100 text-sm"
                 onClick={() => {
                   setShowDropdown(false);
@@ -147,7 +176,13 @@ const Header = ({
           {theme === 'light' ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
         </Button>
         <div className="relative" ref={notificationsRef}>
-          <button className="cursor-pointer" onClick={() => setShowNotifPanel(!showNotifPanel)} aria-label='Open notifications'>
+          <button 
+          className="cursor-pointer" 
+          onClick={() => setShowNotifPanel(!showNotifPanel)} 
+            aria-haspopup="true"
+            aria-expanded={showNotifPanel}
+            aria-label='Open notifications'
+            >
             <Bell className="h-5 w-5" />
             <Badge
               className="absolute -top-2 -right-2 h-4 w-4 flex items-center justify-center text-[10px] p-0"
@@ -198,11 +233,15 @@ const Header = ({
           <button
             onClick={() => setShowSettingsMenu(!showSettingsMenu)}
             className="text-xs px-2 py-1 rounded border hover:bg-muted transition-colors"
+            aria-haspopup="menu"
+            aria-expanded={showSettingsMenu}
           >
             ⚙ Settings
           </button>
           {showSettingsMenu && (
-            <div className="absolute top-full right-0 mt-1 w-[180px] rounded-md shadow-lg border z-50 bg-popover">
+            <div 
+            role='menu'
+            className="absolute top-full right-0 mt-1 w-[180px] rounded-md shadow-lg border z-50 bg-popover">
               {[
                 { label: 'Account', status: 'Active' },
                 { label: 'Preferences', status: 'Default' },
@@ -212,6 +251,7 @@ const Header = ({
               ].map((item) => (
                 <button
                   key={item.label}
+                  role='menuitem'
                   className="px-3 py-2 hover:bg-gray-50 cursor-pointer border-b last:border-0"
                   onClick={() => {
                     setShowSettingsMenu(false);

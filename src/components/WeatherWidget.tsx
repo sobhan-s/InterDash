@@ -11,6 +11,7 @@ const WeatherWidgetComponent = ({ theme, counter, data, onCityClick }: WeatherWi
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    
     const cities = [
       { name: 'London', lat: 51.5, lon: -0.12 },
       { name: 'New York', lat: 40.71, lon: -74.01 },
@@ -23,21 +24,32 @@ const WeatherWidgetComponent = ({ theme, counter, data, onCityClick }: WeatherWi
     ];
 
     const fetchAll = async () => {
-      const results: WeatherCityData[] = [];
-      for (const city of cities) {
         try {
-          const res = await fetch(
+          const results = await Promise.all(
+            cities.map(async (city) => {
+              try{
+            const res =  await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true&hourly=temperature_2m,relative_humidity_2m,wind_speed_10m`,
           );
           const data = await res.json();
-          results.push({ ...city, weather: data.current_weather, hourly: data.hourly });
-        } catch (e) { }
+          return {
+                ...city,
+                weather: data.current_weather,
+                hourly: data.hourly,
+              };
+            } catch {
+              return null;
+            }
+          })
+        );
+        setWeatherData(results.filter(Boolean) as WeatherCityData[]);
+      } catch (e) {
+        console.error('Weather fetch failed', e);
       }
-      setWeatherData(results);
     };
 
     fetchAll();
-  }, [counter]); 
+  }, []);
 
   
   const convertTemp = useCallback((celsius: number) => {
@@ -94,6 +106,7 @@ const WeatherWidgetComponent = ({ theme, counter, data, onCityClick }: WeatherWi
 
           <div className="flex gap-1">
             <Button
+              aria-label='celcius'
               variant={unit === 'celsius' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleUnitChange('celsius')}
@@ -102,6 +115,7 @@ const WeatherWidgetComponent = ({ theme, counter, data, onCityClick }: WeatherWi
             </Button>
 
             <Button
+              aria-label='fahrenite'
               variant={unit === 'fahrenheit' ? 'default' : 'outline'}
               size="sm"
               onClick={() => handleUnitChange('fahrenheit')}
@@ -116,6 +130,7 @@ const WeatherWidgetComponent = ({ theme, counter, data, onCityClick }: WeatherWi
         <div className="grid grid-cols-2 gap-3">
           {weatherData.map((city: WeatherCityData, idx: number) => (
             <button
+              aria-label='temprature'
               key={idx}
               className={`p-3 border rounded-lg ${
                 theme === 'dark' ? 'border-gray-600' : 'border-gray-200'
