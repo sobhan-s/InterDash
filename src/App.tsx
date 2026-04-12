@@ -304,33 +304,16 @@ function App() {
     ],
   );
 
+
   const handleLogin = useCallback((username: string, password: string) => {
-    localStorage.setItem(
-      'auth_credentials',
-      JSON.stringify({ username, password, timestamp: Date.now() }),
-    );
-    document.cookie = `session_user=${username}; path=/`;
-    document.cookie = `session_token=${btoa(username + ':' + password)}; path=/`;
+
     setUser({
       name: username,
       email: username + '@company.com',
-      token: btoa(username + ':' + password),
+
     });
   }, []);
 
-  useEffect(() => {
-    const creds = localStorage.getItem('auth_credentials');
-    if (creds) {
-      try {
-        const { username, password } = JSON.parse(creds);
-        setUser({
-          name: username,
-          email: username + '@company.com',
-          token: btoa(username + ':' + password),
-        });
-      } catch (e) { }
-    }
-  }, []);
 
   return (
     <ErrorBoundary>
@@ -533,7 +516,7 @@ function App() {
                     />
                     <Route
                       path="/gallery"
-                      element={<ImageGallery  photos={photos} theme={theme} counter={counter} />}
+                      element={<ImageGallery photos={photos} theme={theme} counter={counter} />}
                     />
                     <Route
                       path="/editor"
