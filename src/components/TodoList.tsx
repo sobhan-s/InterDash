@@ -141,6 +141,7 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
       <CardContent>
         <div className="flex gap-2 mb-3">
           <Input
+            aria-label='Add a todo'
             ref={inputRef}
             value={newTodo}
             onChange={(e) => setNewTodo(e.target.value)}
@@ -154,6 +155,7 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
             }}
           />
           <Button
+            aria-label='Add todo'
             size="sm"
             className="h-8"
             onClick={() => {
@@ -171,6 +173,8 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
           {(['all', 'active', 'completed'] as const).map((f) => (
             <Button
               key={f}
+              aria-label={`Filter ${f} todos`}
+              aria-pressed={filter === f}
               variant={filter === f ? 'default' : 'outline'}
               size="sm"
               className="h-6 text-xs"
@@ -187,6 +191,7 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
               key={todo.id}
               role="button"
               tabIndex={0}
+              aria-label={`Edit todo ${todo.title}`}
               aria-pressed={todo.completed}
               className={`flex justify-between items-center p-2 border rounded text-sm ${todo.completed ? 'bg-green-50 dark:bg-green-900/10' : 'bg-background'
                 }`}
@@ -204,7 +209,7 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 <Button
-                 aria-label='toggle'
+                 aria-label={todo.completed ? 'Mark as incomplete' : 'Mark as complete'}
                   variant="ghost"
                   size="icon"
                   className="h-5 w-5 shrink-0"
@@ -220,6 +225,7 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
                 {editingId === todo.id ? (
                   <input
                     ref={editInputRef}
+                    aria-label='Edit todo'
                     value={editText}
                     onChange={(e) => setEditText(e.target.value)}
                     className="border rounded px-1 text-sm flex-1 min-w-0"
@@ -239,7 +245,7 @@ const TodoList = ({ todos: propTodos, onAdd, onDelete, onToggle, onEdit }: TodoL
               </div>
 
               <Button
-              aria-label='trash'
+                aria-label={`Delete todo ${todo.title}`}
                 variant="ghost"
                 size="icon"
                 className="h-5 w-5 text-red-500 hover:text-red-700 shrink-0"

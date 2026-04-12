@@ -59,6 +59,7 @@ export const AppContext = createContext<AppContextValue>({
   addToast: () => { },
 });
 
+ const MAX_ERRORS = 20;
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean; errorLog: ErrorLogEntry[] }
@@ -73,7 +74,8 @@ class ErrorBoundary extends React.Component<
   componentDidCatch(error: Error) {
     this.setState((prev) => ({
       ...prev,
-      errorLog: [...prev.errorLog, { error: error.toString(), time: Date.now() }],
+      errorLog: [...prev.errorLog, { error: error.toString(), time: Date.now() }]
+      .slice(-MAX_ERRORS),
     }));
   }
   render() {
@@ -110,6 +112,7 @@ function App() {
   const [photos, setPhotos] = useState<Photo[]>([]);
 
   const MAX_TOASTS = 5;
+  const MAX_HISTORY = 50
   const [toasts, setToasts] = useState<Toast[]>([]);
   const _toastCounter = useRef(0);
 
@@ -222,8 +225,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    fetchNotifications({ userId: user?.id, theme: theme });
-  }, [user?.id, theme]);
+    fetchNotifications({ userId: user?.id, theme });
+  }, [user?.id]);
 
   useEffect(() => {
     const state = {
@@ -251,7 +254,7 @@ function App() {
 
   useEffect(() => {
     const path = window.location.pathname;
-    setRouteHistory((prev) => [...prev, path]);
+    setRouteHistory((prev) => [...prev, path].slice(-MAX_HISTORY));
   }, []);
 
   const fetchNotifications = useCallback(async (_params: NotificationFetchParams) => {

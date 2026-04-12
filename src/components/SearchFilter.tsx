@@ -40,10 +40,9 @@ const SearchFilterComponent = ({ data, onFilter, theme }: SearchFilterProps) => 
       if (onFilter) onFilter(filtered);
 
       const entry = { query, resultCount: filtered.length, time: Date.now() };
-
-      setSearchHistory((prev) => [...prev, entry]);
-
       const MAX_HISTORY = 50;
+      setSearchHistory((prev) => [...prev, entry].slice(-MAX_HISTORY));
+
       const saved = JSON.parse(localStorage.getItem('searchHistory') || '[]');
       const next = [...saved, entry];
       localStorage.setItem('searchHistory', JSON.stringify(next.slice(-MAX_HISTORY)));

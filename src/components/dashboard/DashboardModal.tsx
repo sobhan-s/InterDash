@@ -23,6 +23,10 @@ const DashboardModal = ({ open, content, onClose }: DashboardModalProps) => {
   return (
     <div
       role="dialog" 
+      tabIndex={-1}
+      onKeyDown={(e) => {
+        if(e.key === 'Escape') onClose();
+      }}
       aria-modal="true"
       aria-labelledby='modal-title'
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-300"
