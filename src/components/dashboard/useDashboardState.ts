@@ -133,6 +133,9 @@ export const useDashboardState = ({
 
     if (isValid) {
       addToast('Profile saved!', 'success');
+
+      setFormData({});
+      setValidationErrors({});
       return;
     }
 
