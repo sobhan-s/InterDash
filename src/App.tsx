@@ -1,25 +1,48 @@
-import React, { useState, useEffect, createContext, useRef, Suspense, lazy, useCallback, useMemo, use } from 'react'
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
-import type { AppContextValue, AppDataShape, AppNotification, AppUser, ErrorLogEntry, NotificationFetchParams, Toast } from './lib/types'
+import React, {
+  useState,
+  useEffect,
+  createContext,
+  useRef,
+  Suspense,
+  lazy,
+  useCallback,
+  useMemo,
+  use,
+} from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import type {
+  AppContextValue,
+  AppDataShape,
+  AppNotification,
+  AppUser,
+  ErrorLogEntry,
+  NotificationFetchParams,
+  Toast,
+  Post,
+  Todo,
+  Comment,
+  Album,
+  Photo,
+  User,
+} from './lib/types';
 
-
-const Dashboard = lazy(() => import('./components/Dashboard'))
-const Header = lazy(() => import('./components/Header'))
-const CryptoTracker = lazy(() => import('./components/CryptoTracker'))
-const WeatherWidget = lazy(() => import('./components/WeatherWidget'))
-const UserList = lazy(() => import('./components/UserList'))
-const PostsFeed = lazy(() => import('./components/PostsFeed'))
-const TodoList = lazy(() => import('./components/TodoList'))
-const DataChart = lazy(() => import('./components/DataChart'))
-const ImageGallery = lazy(() => import('./components/ImageGallery'))
-const MarkdownEditor = lazy(() => import('./components/MarkdownEditor'))
-const Analytics = lazy(() => import('./components/Analytics'))
-const SearchFilter = lazy(() => import('./components/SearchFilter'))
-const Footer = lazy(() => import('./components/Footer'))
-const ThreeScene = lazy(() => import('./components/ThreeScene'))
-const ReportGenerator = lazy(() => import('./components/ReportGenerator'))
-const D3Visualization = lazy(() => import('./components/D3Visualization'))
-const MathPlayground = lazy(() => import('./components/MathPlayground'))
+const Dashboard = lazy(() => import('./components/Dashboard'));
+const Header = lazy(() => import('./components/Header'));
+const CryptoTracker = lazy(() => import('./components/CryptoTracker'));
+const WeatherWidget = lazy(() => import('./components/WeatherWidget'));
+const UserList = lazy(() => import('./components/UserList'));
+const PostsFeed = lazy(() => import('./components/PostsFeed'));
+const TodoList = lazy(() => import('./components/TodoList'));
+const DataChart = lazy(() => import('./components/DataChart'));
+const ImageGallery = lazy(() => import('./components/ImageGallery'));
+const MarkdownEditor = lazy(() => import('./components/MarkdownEditor'));
+const Analytics = lazy(() => import('./components/Analytics'));
+const SearchFilter = lazy(() => import('./components/SearchFilter'));
+const Footer = lazy(() => import('./components/Footer'));
+const ThreeScene = lazy(() => import('./components/ThreeScene'));
+const ReportGenerator = lazy(() => import('./components/ReportGenerator'));
+const D3Visualization = lazy(() => import('./components/D3Visualization'));
+const MathPlayground = lazy(() => import('./components/MathPlayground'));
 
 export const AppContext = createContext<AppContextValue>({
   theme: 'light',
@@ -28,23 +51,26 @@ export const AppContext = createContext<AppContextValue>({
   counter: 0,
   sidebarOpen: true,
   globalSearchQuery: '',
-  handleThemeToggle: () => { },
-  setUser: () => { },
-  setGlobalSearchQuery: () => { },
-  addToast: () => { }
-})
+  handleThemeToggle: () => {},
+  setUser: () => {},
+  setGlobalSearchQuery: () => {},
+  addToast: () => {},
+});
 
-class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, errorLog: ErrorLogEntry[] }> {
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; errorLog: ErrorLogEntry[] }
+> {
   constructor(props: { children: React.ReactNode }) {
-    super(props)
-    this.state = { hasError: false, errorLog: [] }
+    super(props);
+    this.state = { hasError: false, errorLog: [] };
   }
   static getDerivedStateFromError() {
     return { hasError: true };
   }
   componentDidCatch(error: Error) {
-    console.log('Error caught:', error)
-    this.setState(prev => ({
+    console.log('Error caught:', error);
+    this.setState((prev) => ({
       ...prev,
       errorLog: [...prev.errorLog, { error: error.toString(), time: Date.now() }],
     }));
@@ -75,6 +101,12 @@ function App() {
   const [counter, setCounter] = useState(0);
   const [routeHistory, setRouteHistory] = useState<string[]>([]);
   const [debugMode, setDebugMode] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   const MAX_TOASTS = 5;
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -89,6 +121,25 @@ function App() {
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3000);
+  }, []);
+  useEffect(() => {
+    Promise.all([
+      fetch('https://jsonplaceholder.typicode.com/posts').then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/users').then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/todos').then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/comments').then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/albums').then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/photos?_limit=50').then((r) => r.json()),
+    ])
+      .then(([p, u, t, c, al, ph]: [Post[], User[], Todo[], Comment[], Album[], Photo[]]) => {
+        setPosts(p);
+        setUsers(u);
+        setTodos(t);
+        setComments(c);
+        setAlbums(al);
+        setPhotos(ph);
+      })
+      .catch((e) => console.error('Failed to fetch app data:', e));
   }, []);
 
   useEffect(() => {
@@ -126,8 +177,8 @@ function App() {
     const BLOCKED_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
 
     const safeMerge = (target: any, source: any): any => {
-      for (const key of Object.keys(source)) { 
-        if (BLOCKED_KEYS.has(key)) continue;   
+      for (const key of Object.keys(source)) {
+        if (BLOCKED_KEYS.has(key)) continue;
         const val = source[key];
         if (val && typeof val === 'object' && !Array.isArray(val)) {
           target[key] = safeMerge(
@@ -185,7 +236,7 @@ function App() {
         const parsed = JSON.parse(saved);
         console.log('Restored state from localStorage:', parsed.counter);
       }
-    } catch (e) { }
+    } catch (e) {}
   });
 
   useEffect(() => {
@@ -269,7 +320,7 @@ function App() {
           email: username + '@company.com',
           token: btoa(username + ':' + password),
         });
-      } catch (e) { }
+      } catch (e) {}
     }
   }, []);
 
@@ -417,17 +468,12 @@ function App() {
                       path="/"
                       element={
                         <Dashboard
-                          theme={theme}
                           user={user}
                           notifications={notifications}
-                          globalSearchQuery={globalSearchQuery}
-                          setGlobalSearchQuery={setGlobalSearchQuery}
-                          counter={counter}
                           sidebarOpen={sidebarOpen}
                           getFilteredData={getFilteredData}
                           appData={appData}
                           setAppData={setAppData}
-                          handleThemeToggle={handleThemeToggle}
                         />
                       }
                     />
@@ -455,10 +501,10 @@ function App() {
                       element={
                         <TodoList
                           todos={[]}
-                          onAdd={() => { }}
-                          onEdit={() => { }}
-                          onDelete={() => { }}
-                          onToggle={() => { }}
+                          onAdd={() => {}}
+                          onEdit={() => {}}
+                          onDelete={() => {}}
+                          onToggle={() => {}}
                           theme={theme}
                           counter={counter}
                         />
@@ -468,10 +514,10 @@ function App() {
                       path="/charts"
                       element={
                         <DataChart
-                          posts={[]}
-                          users={[]}
-                          todos={[]}
-                          comments={[]}
+                          posts={posts}
+                          users={users}
+                          todos={todos}
+                          comments={comments}
                           theme={theme}
                           counter={counter}
                         />
@@ -489,12 +535,12 @@ function App() {
                       path="/analytics"
                       element={
                         <Analytics
-                          posts={[]}
-                          users={[]}
-                          todos={[]}
-                          comments={[]}
-                          albums={[]}
-                          photos={[]}
+                          posts={posts}
+                          users={users}
+                          todos={todos}
+                          comments={comments}
+                          albums={albums}
+                          photos={photos}
                           theme={theme}
                           counter={counter}
                         />
@@ -535,15 +581,15 @@ function App() {
               {toasts.map((toast) => (
                 <div
                   key={toast.id}
-                  className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${toast.type === 'error'
+                  className={`px-4 py-3 rounded-lg shadow-lg text-sm text-white flex items-center gap-2 ${
+                    toast.type === 'error'
                       ? 'bg-red-500'
                       : toast.type === 'success'
                         ? 'bg-green-600'
                         : 'bg-blue-500'
-                    }`}
+                  }`}
                 >
                   <span className="flex-1">{toast.message}</span>
-                  {/* ISSUE-014 fix: button instead of href="#" for dismiss */}
                   <button
                     className="text-white/70 hover:text-white text-lg leading-none"
                     onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}

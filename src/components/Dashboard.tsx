@@ -73,7 +73,7 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
     addToast,
   });
 
-  // Stabilise so the Refresh button's onClick reference doesn't change each render
+ 
   const handleRefresh = useCallback(() => {
     setRefreshCount((count) => count + 1);
     addToast('Dashboard refreshed', 'success');
