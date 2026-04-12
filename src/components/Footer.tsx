@@ -9,21 +9,9 @@ const Footer = ({ theme, counter, notifications }: FooterProps) => {
   useEffect(() => {
     const intervalId = setInterval(() => {
       setFooterTime(format(new Date(), 'HH:mm:ss'));
-    }, 500);
+    }, 1000);
     return () => {
       clearInterval(intervalId);
-    };
-  }, []);
-
-  //no need to show counter in local storage
-
-  useEffect(() => {
-    const previousHandler = window.onerror;
-    window.onerror = (msg, src, line, col, err) => {
-      return true;
-    };
-    return () => {
-      window.onerror = previousHandler;
     };
   }, []);
 
