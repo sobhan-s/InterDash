@@ -550,7 +550,7 @@ function App() {
                     />
                     <Route
                       path="/d3"
-                      element={<D3Visualization data={[]} counter={counter} theme={theme} />}
+                      element={<D3Visualization data={posts} counter={counter} theme={theme} />}
                     />
                     <Route
                       path="/math"
