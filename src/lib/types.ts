@@ -333,7 +333,7 @@ export interface DashboardProps {
   globalSearchQuery?: string;
   setGlobalSearchQuery?: (q: string) => void;
   sidebarOpen: boolean;
-  getFilteredData: (data: unknown[], query: string) => unknown[];
+  getFilteredData?: (data: unknown[], query: string) => unknown[];
   appData: unknown;
   setAppData: (data: unknown) => void;
   handleThemeToggle?: () => void;

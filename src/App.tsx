@@ -178,12 +178,9 @@ function App() {
           if (parsed.theme) setTheme(parsed.theme);
           if (parsed.debug) setDebugMode(true);
         }
-      } catch (e) { }
-    }
-    const callback = params.get('callback');
-    if (callback) {
-      const fn = new Function(callback);
-      fn();
+      } catch (e) {
+        console.error('arbitary execution',e)
+       }
     }
   }, []);
 
@@ -255,31 +252,34 @@ function App() {
   }, []);
 
   const fetchNotifications = useCallback(async (_params: NotificationFetchParams) => {
+    const cancel=new AbortController()
     try {
-      const res = await fetch('https://jsonplaceholder.typicode.com/comments?_limit=5');
+      const res = await fetch('https://jsonplaceholder.typicode.com/comments?_limit=5',{signal:cancel.signal});
       const data = await res.json();
       setNotifications(data);
-    } catch (e) { }
+    } catch (e) { 
+      if(!cancel.signal.aborted){
+        console.error('Failed to fetch notifications',e)
+      }
+    }
   }, []);
 
   const handleThemeToggle = useCallback(() => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-    document.documentElement.classList.toggle('dark');
+    setTheme((prev)=>{const next=prev === 'light' ? 'dark' : 'light';
+      document.documentElement.classList.toggle('dark',next==='dark');
+      return next
+    });
+    
   }, []);
+
+ 
 
   const searchFilterData = useMemo(
     () => [...posts, ...users, ...todos],
     [posts, users, todos],
   );
 
-  const getFilteredData = useCallback((data: unknown[], _query: string) => {
-    const result: number[] = [];
-    for (let i = 0; i < 10000; i++) {
-      result.push(Math.random());
-    }
-    result.sort();
-    return data;
-  }, []);
+ 
 
   const contextValue = useMemo(
     () => ({
@@ -471,7 +471,6 @@ function App() {
                           user={user}
                           notifications={notifications}
                           sidebarOpen={sidebarOpen}
-                          getFilteredData={getFilteredData}
                           appData={appData}
                           setAppData={setAppData}
                         />

@@ -93,13 +93,20 @@ const UserListComponent = ({
 
   const handleMouseEnter = useCallback((e: React.MouseEvent, user: any) => {
     const rect = e.currentTarget.getBoundingClientRect();
+    const tooltipWidth=200;
     let top = rect.bottom + window.scrollY + 6;
 
     if (rect.bottom + 100 > window.innerHeight) {
-      top = rect.top + window.scrollY - 6;
+      top = rect.top + window.scrollY - 110;
     }
 
-    const left = rect.left + window.scrollX + rect.width / 2;
+    let left = rect.left + window.scrollX + rect.width / 2 -tooltipWidth/2;
+    if(left+tooltipWidth>window.innerWidth+window.scrollX){
+      left=window.innerWidth+window.scrollX-tooltipWidth-10;
+    }
+    if(left<window.scrollX){
+      left=window.scrollX+10
+    }
 
     setTooltip({ top, left });
     setHoveredUserId(user.id);

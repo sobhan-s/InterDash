@@ -40,8 +40,9 @@ const WeatherWidgetComponent = ({ theme, data, onCityClick }: WeatherWidgetProps
               };
             } catch(e) {
               if(e.name==='AbortError') {
-                console.error('abort error',e);
+                return null;
               }
+               console.error('abort error',e);
               return null;
             }
           })
@@ -53,9 +54,7 @@ const WeatherWidgetComponent = ({ theme, data, onCityClick }: WeatherWidgetProps
       } catch (e) {
         if(!cancel.signal.aborted){
           console.error('Weather fetch failed', e);
-
-        }
-        
+        } 
       }
     };
 
