@@ -54,7 +54,7 @@ const DashboardPostsTab = ({
         {paginatedPosts.map((post: Post) => (
           <Card key={post.id}>
             <CardContent className="p-3">
-              <h4 className="font-semibold text-sm">{post.title}</h4>
+              <div className="font-semibold text-sm">{post.title}</div>
               <p className="text-xs text-muted-foreground mt-1">{post.body}</p>
               <div className="text-[11px] text-muted-foreground mt-1">
                 Post ID: {post.id} | User: {post.userId}

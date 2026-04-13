@@ -39,7 +39,7 @@ const Analytics = React.memo(({
   albums,
   photos,
   theme,
-  
+
 }: AnalyticsProps) => {
 
   const stats = useMemo(() => {
@@ -156,7 +156,7 @@ const Analytics = React.memo(({
 
         <div className="grid grid-cols-2 gap-5 mb-5">
           <div>
-            <h4 className="text-sm font-medium mb-2">Posts per User</h4>
+            <div className="text-sm font-medium mb-2">Posts per User</div>
             <ResponsiveContainer width="100%" height={200}>
               <ReBarChart data={stats.postsChartData || []}>
                 <CartesianGrid strokeDasharray="3 3" />

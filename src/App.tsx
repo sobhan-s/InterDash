@@ -333,8 +333,6 @@ function App() {
           <div
             className={`min-h-screen ${theme === 'dark' ? 'dark bg-gray-900 text-white' : 'bg-white text-gray-900'}`}
           >
-            <input type="hidden" name="user_token" value={user?.token || ''} />
-            <input type="hidden" name="user_data" value={JSON.stringify(user || {})} />
 
             {/* ISSUE-014 fix: Header is lazy so must be inside Suspense */}
             <Suspense fallback={<PageFallback />}>
@@ -358,7 +356,7 @@ function App() {
                   className={`p-5 min-h-[calc(100vh-60px)] border-r flex-shrink-0 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'}`}
                   style={{ width: 'clamp(0px, 20vw, 250px)' }}
                 >
-                  <h3 className="font-semibold mb-3">Navigation</h3>
+                  <div className="font-semibold mb-3">Navigation</div>
                   <p className="text-xs text-muted-foreground mb-4">Uptime: {counter}s</p>
 
                   <nav className="space-y-1">
