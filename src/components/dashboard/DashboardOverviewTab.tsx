@@ -1,13 +1,14 @@
 import React, { Suspense, useEffect, useRef, useState, useCallback, useMemo, useContext } from 'react';
 
-import WeatherWidget from '../WeatherWidget';
-import UserList from '../UserList';
-import PostsFeed from '../PostsFeed';
-import TodoList from '../TodoList';
-import DraggableList from '../DraggableList';
-import CustomTabPanel from '../CustomTabPanel';
-import VirtualizedFeed from '../VirtualizedFeed';
-import DashboardProfileForm from './DashboardProfileForm';
+
+const WeatherWidget = React.lazy(() => import('../WeatherWidget'));
+const UserList = React.lazy(() => import('../UserList'));
+const PostsFeed = React.lazy(() => import('../PostsFeed'));
+const TodoList = React.lazy(() => import('../TodoList'));
+const DraggableList = React.lazy(() => import('../DraggableList'));
+const CustomTabPanel = React.lazy(() => import('../CustomTabPanel'));
+const VirtualizedFeed = React.lazy(() => import('../VirtualizedFeed'));
+const DashboardProfileForm = React.lazy(() => import('./DashboardProfileForm'));
 
 const CryptoTracker = React.lazy(() => import('../CryptoTracker'));
 const DataChart = React.lazy(() => import('../DataChart'));
@@ -22,6 +23,39 @@ const MathPlayground = React.lazy(() => import('../MathPlayground'));
 
 import { DashboardOverviewTabProps } from '../../lib/types';
 import { AppContext } from '@/App';
+
+const LazyScrollWrapper = ({ children, height = 400 }: { children: React.ReactNode; height?: number }) => {
+  const [isInView, setIsInView] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '300px' }
+    );
+
+    if (ref.current) {
+      observer.observe(ref.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} style={{ minHeight: isInView ? undefined : height }}>
+      {isInView ? (
+        <Suspense fallback={<div className="flex items-center justify-center text-muted-foreground border rounded bg-muted/20 animate-pulse" style={{ minHeight: height }}>Loading module...</div>}>
+          {children}
+        </Suspense>
+      ) : null}
+    </div>
+  );
+};
 
 const DashboardOverviewTab = React.memo(({
   lastUpdated,
@@ -196,57 +230,90 @@ const DashboardOverviewTab = React.memo(({
           />
         </div>
 
-        <TodoList
-          todos={todos}
-          onAdd={handleAddTodo}
-          onDelete={handleDeleteTodo}
-          onToggle={handleToggleTodo}
-          onEdit={handleEditTodo}
-          theme={theme}
-        />
+        <LazyScrollWrapper height={400}>
+          <TodoList
+            todos={todos}
+            onAdd={handleAddTodo}
+            onDelete={handleDeleteTodo}
+            onToggle={handleToggleTodo}
+            onEdit={handleEditTodo}
+            theme={theme}
+          />
+        </LazyScrollWrapper>
 
-        <DataChart
-          posts={posts}
-          users={users}
-          todos={todos}
-          comments={comments}
-          theme={theme}
-        
-        />
+        <LazyScrollWrapper height={400}>
+          <DataChart
+            posts={posts}
+            users={users}
+            todos={todos}
+            comments={comments}
+            theme={theme}
+          />
+        </LazyScrollWrapper>
 
-        <ThreeScene  theme={theme} />
-        <D3Visualization data={posts} theme={theme} />
-        <MathPlayground theme={theme} />
-        <ReportGenerator posts={posts} users={users} theme={theme} />
-        <ImageGallery theme={theme}  />
-        <MarkdownEditor theme={theme}  />
+        <LazyScrollWrapper height={400}>
+          <ThreeScene theme={theme} />
+        </LazyScrollWrapper>
 
-        <Analytics
-          posts={posts}
-          users={users}
-          todos={todos}
-          comments={comments}
-          albums={albums}
-          photos={photos}
-          theme={theme}
-        />
+        <LazyScrollWrapper height={400}>
+          <D3Visualization data={posts} theme={theme} />
+        </LazyScrollWrapper>
 
-        <SearchFilter data={searchFilterData} theme={theme}  />
+        <LazyScrollWrapper height={400}>
+          <MathPlayground theme={theme} />
+        </LazyScrollWrapper>
 
-        <DraggableList />
-        <VirtualizedFeed items={posts}  />
+        <LazyScrollWrapper height={400}>
+          <ReportGenerator posts={posts} users={users} theme={theme} />
+        </LazyScrollWrapper>
 
-        <CustomTabPanel
-          title="Quick Stats"
-          tabs={quickStatsTabs}
-        />
+        <LazyScrollWrapper height={400}>
+          <ImageGallery theme={theme} />
+        </LazyScrollWrapper>
 
-        <DashboardProfileForm
-          formData={formData}
-          validationErrors={validationErrors}
-          onFieldChange={handleProfileFieldChange}
-          onSave={handleProfileSave}
-        />
+        <LazyScrollWrapper height={400}>
+          <MarkdownEditor theme={theme} />
+        </LazyScrollWrapper>
+
+        <LazyScrollWrapper height={400}>
+          <Analytics
+            posts={posts}
+            users={users}
+            todos={todos}
+            comments={comments}
+            albums={albums}
+            photos={photos}
+            theme={theme}
+          />
+        </LazyScrollWrapper>
+
+        <LazyScrollWrapper height={400}>
+          <SearchFilter data={searchFilterData} theme={theme} />
+        </LazyScrollWrapper>
+
+        <LazyScrollWrapper height={400}>
+          <DraggableList />
+        </LazyScrollWrapper>
+
+        <LazyScrollWrapper height={400}>
+          <VirtualizedFeed items={posts} />
+        </LazyScrollWrapper>
+
+        <LazyScrollWrapper height={300}>
+          <CustomTabPanel
+            title="Quick Stats"
+            tabs={quickStatsTabs}
+          />
+        </LazyScrollWrapper>
+
+        <LazyScrollWrapper height={300}>
+          <DashboardProfileForm
+            formData={formData}
+            validationErrors={validationErrors}
+            onFieldChange={handleProfileFieldChange}
+            onSave={handleProfileSave}
+          />
+        </LazyScrollWrapper>
       </div>
     </Suspense>
   );

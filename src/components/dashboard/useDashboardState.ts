@@ -6,10 +6,7 @@ import type { SortOrder, UseDashboardStateOptions, Post } from '../../lib/types'
 export const useDashboardState = ({
   posts,
   todos,
-  users,
-  comments,
-  photos,
-  albums,
+  
   setTodos,
   addToast,
 }: UseDashboardStateOptions) => {
@@ -147,12 +144,6 @@ export const useDashboardState = ({
 
   useEffect(() => {
     const dashboardState = {
-      todos,
-      posts,
-      users,
-      comments,
-      photos,
-      albums,
       activeTab,
       page,
       filterText,
@@ -163,12 +154,6 @@ export const useDashboardState = ({
 
     localStorage.setItem('dashboardState', JSON.stringify(dashboardState));
   }, [
-    todos,
-    posts,
-    users,
-    comments,
-    photos,
-    albums,
     activeTab,
     page,
     filterText,
