@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
+import * as mathjs from 'mathjs';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Calculator } from 'lucide-react';
 import { MathPlaygroundProps, MathPlaygroundResult } from '@/lib/types';
-import { multiplyMatrices, getDeterminant, getStats } from '../utils/helpers';
 
 const MathPlaygroundComponent = ({ theme }: MathPlaygroundProps) => {
   const [matrix, setMatrix] = useState<number[][]>([]);
@@ -32,16 +32,17 @@ const MathPlaygroundComponent = ({ theme }: MathPlaygroundProps) => {
       Array.from({ length: size }, () => Math.random() * 20 - 10),
     );
 
-    r.matrixProduct = multiplyMatrices(A, B);
-    r.determinant = getDeterminant(A);
+
+    r.matrixProduct = mathjs.multiply(A, B);
+    r.determinant = mathjs.det(A);
+
 
     const bigDataset = Array.from({ length: 20000 }, () => Math.random() * 1000);
 
-    const stats = getStats(bigDataset);
-    r.mean = stats.mean;
-    r.std = stats.std;
-    r.median = stats.median;
-    r.variance = stats.variance;
+    r.mean = mathjs.mean(bigDataset);
+    r.std = mathjs.std(bigDataset) as unknown as number;
+    r.median = mathjs.median(bigDataset);
+    r.variance = mathjs.variance(bigDataset) as unknown as number;
 
     // Expressions
     r.expr1 = Math.sin(Math.PI / 4) * Math.cos(Math.PI / 3);
