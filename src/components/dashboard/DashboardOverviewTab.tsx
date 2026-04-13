@@ -1,14 +1,14 @@
 import React, { Suspense, useEffect, useRef, useState, useCallback, useMemo, useContext } from 'react';
 
-import WeatherWidget from '../WeatherWidget';
-import UserList from '../UserList';
-import PostsFeed from '../PostsFeed';
-import TodoList from '../TodoList';
-import DraggableList from '../DraggableList';
-import CustomTabPanel from '../CustomTabPanel';
-import VirtualizedFeed from '../VirtualizedFeed';
-import DashboardProfileForm from './DashboardProfileForm';
 
+const WeatherWidget=React.lazy(()=>import('../WeatherWidget'));
+const UserList=React.lazy(()=>import('../UserList'));
+const PostsFeed=React.lazy(()=>import('../PostsFeed'));
+const TodoList=React.lazy(()=>import('../TodoList'));
+const DraggableList=React.lazy(()=>import('../DraggableList'));
+const CustomTabPanel=React.lazy(()=>import('../CustomTabPanel'));
+const VirtualizedFeed=React.lazy(()=>import('../VirtualizedFeed'));
+const DashboardProfileForm=React.lazy(()=>import('./DashboardProfileForm'));
 const CryptoTracker = React.lazy(() => import('../CryptoTracker'));
 const DataChart = React.lazy(() => import('../DataChart'));
 const ImageGallery = React.lazy(() => import('../ImageGallery'));
