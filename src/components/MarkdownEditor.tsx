@@ -6,8 +6,6 @@ import { Button } from './ui/button';
 import { FileText, Undo2 } from 'lucide-react';
 import { Badge } from './ui/badge';
 
-import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
 
 interface MarkdownEditorProps {
   theme: string;

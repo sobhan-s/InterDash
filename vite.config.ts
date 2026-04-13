@@ -9,11 +9,11 @@ export default defineConfig(({ mode }) => ({
     react(),
     tailwindcss(),
     mode === 'analyze' &&
-      visualizer({
-        open: true,
-        gzipSize: true,
-        filename: 'stats.html',
-      }),
+    visualizer({
+      open: true,
+      gzipSize: true,
+      filename: 'stats.html',
+    }),
   ],
   resolve: {
     alias: {
@@ -21,6 +21,16 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 500,
+    rollupOptions: {
+      output: {
+        manualChunks: (id) => {
+          if (id.includes('node_modules/react-dom')) return 'react-dom';
+          if (id.includes('node_modules/react/')) return 'react';
+          if (id.includes('node_modules/recharts')) return 'recharts';
+          if (id.includes('node_modules/chart.js')) return 'chartjs';
+        },
+      },
+    },
   },
 }));

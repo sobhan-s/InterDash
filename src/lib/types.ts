@@ -390,7 +390,7 @@ export interface DashboardPostsTabProps {
 }
 
 export interface DashboardProfileFormProps {
-  formData: Record<string, unknown>;
+   formData: ProfileFormData;
   validationErrors: Record<string, string>;
   onFieldChange: (field: string, value: unknown) => void;
   onSave: () => void;

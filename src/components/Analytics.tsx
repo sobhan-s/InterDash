@@ -236,4 +236,4 @@ const Analytics = React.memo(({
 
 Analytics.displayName = 'Analytics';
 
-export default React.memo(Analytics);
+export default Analytics;

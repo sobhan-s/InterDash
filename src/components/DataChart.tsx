@@ -1,11 +1,23 @@
 import React, { useEffect, useRef } from 'react';
-import { Chart, registerables } from 'chart.js';
+import {
+  Chart,
+  BarElement, BarController,
+  ArcElement, DoughnutController,
+  LineElement, LineController, PointElement, Filler,
+  CategoryScale, LinearScale,
+  Tooltip, Legend,
+} from 'chart.js';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { BarChart3 } from 'lucide-react';
 import type { DataChartProps, Todo } from '@/lib/types';
 
-Chart.register(...registerables);
-
+Chart.register(
+  BarElement, BarController,
+  ArcElement, DoughnutController,
+  LineElement, LineController, PointElement, Filler,
+  CategoryScale, LinearScale,
+  Tooltip, Legend,
+);
 const arePropsEqual = (prev: DataChartProps, next: DataChartProps) =>
   prev.posts.length === next.posts.length &&
   prev.users.length === next.users.length &&

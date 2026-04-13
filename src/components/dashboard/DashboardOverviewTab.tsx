@@ -172,7 +172,7 @@ const DashboardOverviewTab = React.memo(({
           className={`loading-shimmer h-1 w-full mb-1 rounded ${isShimmerInView ? 'shimmer-running' : 'shimmer-paused'}`}
         />
 
-        <div className="grid grid-cols-2 gap-5" style={{ width: '1100px', minWidth: '1100px' }}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 w-full">
           <CryptoTracker
             theme={theme}
             data={cryptoData}
