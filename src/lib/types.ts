@@ -80,7 +80,7 @@ export interface AppContextValue {
   sidebarOpen: boolean;
   globalSearchQuery: string;
   handleThemeToggle: () => void;
-  setUser: React.Dispatch<React.SetStateAction<AppUser | null>>;
+  name: React.Dispatch<React.SetStateAction<AppUser | null>>;
   setGlobalSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   addToast: (message: string, type?: ToastType) => void;
 }

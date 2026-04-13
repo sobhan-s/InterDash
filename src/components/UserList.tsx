@@ -137,6 +137,7 @@ const UserListComponent = ({
             value={sortField}
             onChange={handleSortChange}
             className="text-sm border rounded px-2 py-1 bg-background"
+            aria-label='sort-user-select'
           >
             <option value="name">Name</option>
             <option value="email">Email</option>

@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useContext, useState } from 'react';
 import { RefreshCw, LayoutDashboard, FileText, CheckSquare, Image, Loader2 } from 'lucide-react';
-import { AppContext } from '../App';
+import { AppContext } from '@/core/AppContext';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
@@ -28,7 +28,6 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
     albums,
     photos,
     loading,
-    error,
     lastUpdated,
     setTodos,
   } = useDashboardData({
@@ -88,8 +87,7 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
     );
   }
 
-  if (error) {
-  }
+  
 
   return (
     <div>

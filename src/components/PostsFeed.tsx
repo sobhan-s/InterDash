@@ -116,7 +116,7 @@ const handleExpand = useCallback(
         <Card key={post.id} className="overflow-hidden">
           <CardContent className="p-4">
             <div className="flex justify-between items-start">
-              <h4 className="font-semibold text-sm flex-1">{post.title}</h4>
+              <div className="font-semibold text-sm flex-1">{post.title}</div>
               <Badge variant="outline" className="text-[10px] ml-2 shrink-0">
                {formatDistanceToNow(subHours(new Date(), post.id), { addSuffix: true })}
               </Badge>

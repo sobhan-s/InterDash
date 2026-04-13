@@ -1,24 +1,27 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { ImageIcon } from 'lucide-react';
 import { API_ENDPOINTS } from '../utils/constants';
 import { ImageGalleryProps, Photo } from '@/lib/types';
+
+const THUMB_SIZE = 110;
+const GAP = 4;
+const OVERSCAN = 2;
+const VIEWPORT_HEIGHT = 500;
 
 const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [columns, setColumns] = useState(5);
   const [loading, setLoading] = useState(true);
+  const [scrollTop, setScrollTop] = useState(0);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setSelectedPhoto(null);
     };
-
-    if (selectedPhoto) {
-      document.addEventListener('keydown', handleKey);
-    }
-
+    if (selectedPhoto) document.addEventListener('keydown', handleKey);
     return () => document.removeEventListener('keydown', handleKey);
   }, [selectedPhoto]);
 
@@ -31,36 +34,47 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
         if (propPhotos?.length) {
           setPhotos(propPhotos);
         } else {
-          const res = await fetch(`${API_ENDPOINTS.photos}?_limit=100`, { signal: cancel.signal });
+          const res = await fetch(`${API_ENDPOINTS.photos}?_limit=5000`, {
+            signal: cancel.signal,
+          });
           const data = await res.json();
-
-          if (!cancel.signal.aborted) {
-            setPhotos(data);
-          }
+          if (!cancel.signal.aborted) setPhotos(data);
         }
       } catch (e) {
-        if (e.name !== 'AbortError') {
-          setPhotos([]);
-        }
+        if ((e as Error).name !== 'AbortError') setPhotos([]);
       } finally {
-        if (!cancel.signal.aborted) {
-          setLoading(false);
-        }
+        if (!cancel.signal.aborted) setLoading(false);
       }
     };
 
     fetchPhotos();
-
     return () => cancel.abort();
   }, [propPhotos]);
+
+  useEffect(() => {
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+    setScrollTop(0);
+  }, [columns]);
+
+  const rowHeight = THUMB_SIZE + GAP;
+  const totalRows = Math.ceil(photos.length / columns);
+  const totalHeight = totalRows * rowHeight;
+
+  const startRow = Math.max(0, Math.floor(scrollTop / rowHeight) - OVERSCAN);
+  const endRow = Math.min(
+    totalRows - 1,
+    Math.ceil((scrollTop + VIEWPORT_HEIGHT) / rowHeight) + OVERSCAN,
+  );
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop(e.currentTarget.scrollTop);
+  }, []);
 
   const handleSelectPhoto = useCallback((photo: Photo) => {
     setSelectedPhoto(photo);
   }, []);
 
-  const handleCloseModal = useCallback(() => {
-    setSelectedPhoto(null);
-  }, []);
+  const handleCloseModal = useCallback(() => setSelectedPhoto(null), []);
 
   const handleStopPropagation = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -70,13 +84,18 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
     setColumns(Number(e.target.value));
   }, []);
 
+  const visibleRows = Array.from(
+    { length: Math.max(0, endRow - startRow + 1) },
+    (_, i) => startRow + i,
+  );
+
   return (
     <Card>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">
             <ImageIcon className="h-4 w-4" />
-            Photo Gallery ({photos.length} photos)
+            Photo Gallery ({photos.length.toLocaleString()} photos)
           </CardTitle>
 
           <div className="flex items-center gap-2 text-sm">
@@ -88,6 +107,7 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
               value={columns}
               onChange={handleColumnChange}
               className="w-20"
+              aria-label="columns-range-input"
             />
             <span className="text-muted-foreground">{columns}</span>
           </div>
@@ -104,34 +124,54 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
         )}
 
         {!loading && photos.length > 0 && (
-          <div className="overflow-auto max-h-[500px]">
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: `repeat(${columns}, 110px)`,
-                gap: '4px',
-              }}
-            >
-              {photos.map((photo) => (
-                <button
-                  aria-label="Image"
-                  key={photo.id}
-                  className="cursor-pointer p-0 border-0 bg-transparent"
-                  onClick={() => handleSelectPhoto(photo)}
+          <div
+            ref={scrollRef}
+            onScroll={handleScroll}
+            style={{ height: VIEWPORT_HEIGHT, overflowY: 'auto', position: 'relative' }}
+          >
+            <div style={{ height: totalHeight, width: '100%' }} />
+
+            {visibleRows.map((rowIdx) => {
+              const start = rowIdx * columns;
+              const rowPhotos = photos.slice(start, start + columns);
+
+              return (
+                <div
+                  key={rowIdx}
+                  style={{
+                    position: 'absolute',
+                    top: rowIdx * rowHeight,
+                    left: 0,
+                    display: 'flex',
+                    gap: GAP,
+                    padding: `0 ${GAP}px`,
+                  }}
                 >
-                  <img
-                    src={photo.url}
-                    alt={photo.title}
-                    loading="lazy"
-                    className="w-[110px] h-[110px] object-cover rounded"
-                    onError={(e) => {
-                      e.currentTarget.src = `https://picsum.photos/seed/${photo.id}/110/110`;
-                      e.currentTarget.onerror = null;
-                    }}
-                  />
-                </button>
-              ))}
-            </div>
+                  {rowPhotos.map((photo) => (
+                    <button
+                      key={photo.id}
+                      aria-label={photo.title}
+                      className="cursor-pointer p-0 border-0 bg-transparent"
+                      onClick={() => handleSelectPhoto(photo)}
+                    >
+                      <img
+                        src={photo.url}
+                        alt={photo.title}
+                        loading="lazy"
+                        width={THUMB_SIZE}
+                        height={THUMB_SIZE}
+                        className="object-cover rounded"
+                        style={{ width: THUMB_SIZE, height: THUMB_SIZE }}
+                        onError={(e) => {
+                          e.currentTarget.src = `https://picsum.photos/seed/${photo.id}/110/110`;
+                          e.currentTarget.onerror = null;
+                        }}
+                      />
+                    </button>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -153,8 +193,7 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
                   e.currentTarget.onerror = null;
                 }}
               />
-              That's the only two places. Nothing else in the file needs changing.Want to be
-              notified w<p className="mt-3 text-sm text-white text-center">{selectedPhoto.title}</p>
+              <p className="mt-3 text-sm text-white text-center">{selectedPhoto.title}</p>
             </div>
           </div>
         )}

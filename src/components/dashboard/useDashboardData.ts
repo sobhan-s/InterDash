@@ -25,25 +25,17 @@ export const useDashboardData = ({
     setError(null);
 
     try {
-      const [
-        usersRes,
-        postsRes,
-        todosRes,
-        commentsRes,
-        albumsRes,
-        photosRes,
-        cryptoRes,
-      ] = await Promise.all([
-        fetch('https://jsonplaceholder.typicode.com/users', { signal }),
-        fetch('https://jsonplaceholder.typicode.com/posts', { signal }),
-        fetch('https://jsonplaceholder.typicode.com/todos', { signal }),
-        fetch('https://jsonplaceholder.typicode.com/comments', { signal }),
-        fetch('https://jsonplaceholder.typicode.com/albums', { signal }),
-        fetch('https://jsonplaceholder.typicode.com/photos', { signal }),
+      const results = await Promise.allSettled([
+        fetch('https://jsonplaceholder.typicode.com/users', { signal }).then(res => res.json()),
+        fetch('https://jsonplaceholder.typicode.com/posts', { signal }).then(res => res.json()),
+        fetch('https://jsonplaceholder.typicode.com/todos', { signal }).then(res => res.json()),
+        fetch('https://jsonplaceholder.typicode.com/comments', { signal }).then(res => res.json()),
+        fetch('https://jsonplaceholder.typicode.com/albums', { signal }).then(res => res.json()),
+        fetch('https://jsonplaceholder.typicode.com/photos?_limit=120', { signal }).then(res => res.json()),
         fetch(
           'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=50&page=1',
           { signal },
-        ),
+        ).then(res => res.json()),
       ]);
 
       const [
@@ -54,15 +46,7 @@ export const useDashboardData = ({
         albumsData,
         photosData,
         cryptoJson,
-      ] = await Promise.all([
-        usersRes.json(),
-        postsRes.json(),
-        todosRes.json(),
-        commentsRes.json(),
-        albumsRes.json(),
-        photosRes.json(),
-        cryptoRes.json(),
-      ]);
+      ] = results.map(res => res.status === 'fulfilled' ? res.value : []);
 
       if (signal?.aborted) {
         return;
@@ -105,12 +89,15 @@ export const useDashboardData = ({
 
   useEffect(() => {
     const controller = new AbortController();
-    fetchAllData(controller.signal);
+    
+    (async () => {
+      await fetchAllData(controller.signal);
+    })();
 
     return () => {
       controller.abort();
     };
-  }, [theme, refreshCount, fetchAllData]);
+  }, [refreshCount,fetchAllData]);
 
   return {
     cryptoData,
