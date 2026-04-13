@@ -1,238 +1,237 @@
 import React, { useMemo } from 'react';
-import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Activity, Users, FileText, CheckSquare, Image } from 'lucide-react';
+import Activity from 'lucide-react/dist/esm/icons/activity';
+import FileText from 'lucide-react/dist/esm/icons/file-text';
+import Image from 'lucide-react/dist/esm/icons/image';
+import CheckSquare from 'lucide-react/dist/esm/icons/check-square';
+import Users from 'lucide-react/dist/esm/icons/users';
 import type { Album, AnalyticsProps, AnalyticsStats, Post, Todo } from '@/lib/types';
+import { BarChart as ReBarChart } from 'recharts/es6/chart/BarChart';
+import { Bar } from 'recharts/es6/cartesian/Bar';
+import { XAxis } from 'recharts/es6/cartesian/XAxis';
+import { YAxis } from 'recharts/es6/cartesian/YAxis';
+import { CartesianGrid } from 'recharts/es6/cartesian/CartesianGrid';
+import { Tooltip } from 'recharts/es6/component/Tooltip';
+import { ResponsiveContainer } from 'recharts/es6/component/ResponsiveContainer';
+import { PieChart } from 'recharts/es6/chart/PieChart';
+import { Pie } from 'recharts/es6/polar/Pie';
+import { Cell } from 'recharts/es6/component/Cell';
+import { COLORS } from '@/utils/constants';
 
-import {
-  BarChart as ReBarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-} from 'recharts';
+const Analytics = React.memo(
+  ({ posts, users, todos, comments, albums, photos, theme }: AnalyticsProps) => {
+    const stats = useMemo(() => {
+      const result: Partial<AnalyticsStats> = {};
 
-const COLORS = [
-  '#0088FE',
-  '#00C49F',
-  '#FFBB28',
-  '#FF8042',
-  '#8884D8',
-  '#82CA9D',
-  '#FFC658',
-  '#8DD1E1',
-  '#A4DE6C',
-  '#D0ED57',
-];
+      result.postsPerUser = posts.reduce(
+        (acc, p) => {
+          acc[p.userId] = (acc[p.userId] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
 
-const Analytics = React.memo(({
-  posts,
-  users,
-  todos,
-  comments,
-  albums,
-  photos,
-  theme,
+      result.commentsPerPost = comments.reduce(
+        (acc, c) => {
+          acc[c.postId] = (acc[c.postId] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
 
-}: AnalyticsProps) => {
+      const totalWords = posts.reduce((sum, p) => sum + (p.body?.split(' ').length || 0), 0);
+      result.avgWordCount = posts.length ? totalWords / posts.length : 0;
 
-  const stats = useMemo(() => {
-    const result: Partial<AnalyticsStats> = {};
+      const postsByUser = posts.reduce(
+        (acc, p) => {
+          (acc[p.userId] ??= []).push(p);
+          return acc;
+        },
+        {} as Record<string, Post[]>,
+      );
 
+      const todosByUser = todos.reduce(
+        (acc, t) => {
+          (acc[t.userId] ??= []).push(t);
+          return acc;
+        },
+        {} as Record<string, Todo[]>,
+      );
 
-    result.postsPerUser = posts.reduce((acc, p) => {
-      acc[p.userId] = (acc[p.userId] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+      const albumsByUser = albums.reduce(
+        (acc, a) => {
+          (acc[a.userId] ??= []).push(a);
+          return acc;
+        },
+        {} as Record<string, Album[]>,
+      );
 
-    result.commentsPerPost = comments.reduce((acc, c) => {
-      acc[c.postId] = (acc[c.postId] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+      result.completionRates = {} as Record<string, string>;
+      Object.entries(todosByUser).forEach(([userId, userTodos]: [string, Todo[]]) => {
+        const completed = userTodos.filter((t: Todo) => t.completed).length;
+        result.completionRates![userId] = ((completed / userTodos.length) * 100).toFixed(1);
+      });
 
+      result.userActivity = users.map((user) => ({
+        ...user,
+        postCount: (postsByUser[user.id] || []).length,
+        todoCount: (todosByUser[user.id] || []).length,
+        albumCount: (albumsByUser[user.id] || []).length,
+      }));
 
-    const totalWords = posts.reduce((sum, p) => sum + (p.body?.split(' ').length || 0), 0);
-    result.avgWordCount = posts.length ? totalWords / posts.length : 0;
+      const postMap = new Map(posts.map((p) => [p.id, p]));
+      const userMap = new Map(users.map((u) => [u.id, u]));
 
+      result.commentAuthors = comments.map((comment) => {
+        const post = postMap.get(comment.postId);
+        const user = userMap.get(post?.userId);
+        return { ...comment, postAuthor: user?.name, postTitle: post?.title };
+      });
 
-    const postsByUser = posts.reduce((acc, p) => {
-      (acc[p.userId] ??= []).push(p);
-      return acc;
-    }, {} as Record<string, Post[]>);
+      result.postsChartData = Object.entries(result.postsPerUser).map(([userId, count]) => ({
+        name: `User ${userId}`,
+        posts: count,
+      }));
 
-    const todosByUser = todos.reduce((acc, t) => {
-      (acc[t.userId] ??= []).push(t);
-      return acc;
-    }, {} as Record<string, Todo[]>);
+      let completed = 0;
+      let pending = 0;
+      for (const t of todos) {
+        if (t.completed) completed++;
+        else pending++;
+      }
 
-    const albumsByUser = albums.reduce((acc, a) => {
-      (acc[a.userId] ??= []).push(a);
-      return acc;
-    }, {} as Record<string, Album[]>);
+      result.todoChartData = [
+        { name: 'Completed', value: completed },
+        { name: 'Pending', value: pending },
+      ];
 
-    result.completionRates = {} as Record<string, string>;
-    Object.entries(todosByUser).forEach(([userId, userTodos]: [string, Todo[]]) => {
-      const completed = userTodos.filter((t: Todo) => t.completed).length;
-      result.completionRates![userId] = ((completed / userTodos.length) * 100).toFixed(1);
-    });
+      const timestamp = new Date()
+        .toLocaleTimeString('en-GB', {
+          hour12: false,
+          fractionalSecondDigits: 3,
+        })
+        .replace(',', '.');
 
-    result.userActivity = users.map((user) => ({
-      ...user,
-      postCount: (postsByUser[user.id] || []).length,
-      todoCount: (todosByUser[user.id] || []).length,
-      albumCount: (albumsByUser[user.id] || []).length,
-    }));
+      result.calculationTimestamp = timestamp;
 
-    const postMap = new Map(posts.map((p) => [p.id, p]));
-    const userMap = new Map(users.map((u) => [u.id, u]));
+      return result;
+    }, [posts, users, todos, comments, albums, photos]);
 
-    result.commentAuthors = comments.map((comment) => {
-      const post = postMap.get(comment.postId);
-      const user = userMap.get(post?.userId);
-      return { ...comment, postAuthor: user?.name, postTitle: post?.title };
-    });
-
-    result.postsChartData = Object.entries(result.postsPerUser).map(([userId, count]) => ({
-      name: `User ${userId}`,
-      posts: count,
-    }));
-
-    let completed = 0;
-    let pending = 0;
-    for (const t of todos) {
-      if (t.completed) completed++;
-      else pending++;
-    }
-
-    result.todoChartData = [
-      { name: 'Completed', value: completed },
-      { name: 'Pending', value: pending },
-    ];
-
-    result.calculationTimestamp = format(new Date(), 'HH:mm:ss.SSS');
-
-    return result;
-  }, [posts, users, todos, comments, albums, photos]);
-
-  return (
-    <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-base flex items-center gap-2">
-          <Activity className="h-4 w-4" />
-          Analytics Dashboard
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-4 gap-3 mb-5">
-          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
-            <FileText className="h-5 w-5 mx-auto text-blue-600 mb-1" />
-            <div className="text-2xl font-bold">{posts?.length || 0}</div>
-            <div className="text-xs text-muted-foreground">Total Posts</div>
-          </div>
-          <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
-            <Users className="h-5 w-5 mx-auto text-green-600 mb-1" />
-            <div className="text-2xl font-bold">{users?.length || 0}</div>
-            <div className="text-xs text-muted-foreground">Users</div>
-          </div>
-          <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-center">
-            <CheckSquare className="h-5 w-5 mx-auto text-orange-600 mb-1" />
-            <div className="text-2xl font-bold">
-              {todos?.filter((t: Todo) => t.completed).length || 0}
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Activity className="h-4 w-4" />
+            Analytics Dashboard
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-4 gap-3 mb-5">
+            <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-center">
+              <FileText className="h-5 w-5 mx-auto text-blue-600 mb-1" />
+              <div className="text-2xl font-bold">{posts?.length || 0}</div>
+              <div className="text-xs text-muted-foreground">Total Posts</div>
             </div>
-            <div className="text-xs text-muted-foreground">Completed Todos</div>
+            <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg text-center">
+              <Users className="h-5 w-5 mx-auto text-green-600 mb-1" />
+              <div className="text-2xl font-bold">{users?.length || 0}</div>
+              <div className="text-xs text-muted-foreground">Users</div>
+            </div>
+            <div className="p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg text-center">
+              <CheckSquare className="h-5 w-5 mx-auto text-orange-600 mb-1" />
+              <div className="text-2xl font-bold">
+                {todos?.filter((t: Todo) => t.completed).length || 0}
+              </div>
+              <div className="text-xs text-muted-foreground">Completed Todos</div>
+            </div>
+            <div className="p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg text-center">
+              <Image className="h-5 w-5 mx-auto text-pink-600 mb-1" />
+              <div className="text-2xl font-bold">{photos?.length || 0}</div>
+              <div className="text-xs text-muted-foreground">Photos</div>
+            </div>
           </div>
-          <div className="p-4 bg-pink-50 dark:bg-pink-900/20 rounded-lg text-center">
-            <Image className="h-5 w-5 mx-auto text-pink-600 mb-1" />
-            <div className="text-2xl font-bold">{photos?.length || 0}</div>
-            <div className="text-xs text-muted-foreground">Photos</div>
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-5 mb-5">
-          <div>
-            <div className="text-sm font-medium mb-2">Posts per User</div>
-            <ResponsiveContainer width="100%" height={200}>
-              <ReBarChart data={stats.postsChartData || []}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip />
-                <Bar dataKey="posts" fill="#8884d8" />
-              </ReBarChart>
-            </ResponsiveContainer>
+          <div className="grid grid-cols-2 gap-5 mb-5">
+            <div>
+              <div className="text-sm font-medium mb-2">Posts per User</div>
+              <ResponsiveContainer width="100%" height={200}>
+                <ReBarChart data={stats.postsChartData || []}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis tick={{ fontSize: 11 }} />
+                  <Tooltip />
+                  <Bar dataKey="posts" fill="#8884d8" />
+                </ReBarChart>
+              </ResponsiveContainer>
+            </div>
+            <div>
+              <h4 className="text-sm font-medium mb-2">Todo Status</h4>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={stats.todoChartData || []}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={70}
+                    dataKey="value"
+                    label
+                  >
+                    {(stats.todoChartData || []).map((_, index: number) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <div>
-            <h4 className="text-sm font-medium mb-2">Todo Status</h4>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={stats.todoChartData || []}
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={70}
-                  dataKey="value"
-                  label
-                >
-                  {(stats.todoChartData || []).map((_, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
 
-        <h4 className="text-sm font-medium mb-2">User Activity</h4>
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/50">
-                <th className="p-2 text-left">Name</th>
-                <th className="p-2 text-center">Posts</th>
-                <th className="p-2 text-center">Todos</th>
-                <th className="p-2 text-center">Albums</th>
-                <th className="p-2 text-center">Completion %</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(stats.userActivity || []).map((user, i: number) => (
-                <tr key={i} className="border-t">
-                  <td className="p-2">{user.name}</td>
-                  <td className="p-2 text-center">{user.postCount}</td>
-                  <td className="p-2 text-center">{user.todoCount}</td>
-                  <td className="p-2 text-center">{user.albumCount}</td>
-                  <td className="p-2 text-center">
-                    <Badge
-                      variant={
-                        Number(stats.completionRates?.[user.id]) > 50 ? 'default' : 'destructive'
-                      }
-                    >
-                      {stats.completionRates?.[user.id] || 0}%
-                    </Badge>
-                  </td>
+          <h4 className="text-sm font-medium mb-2">User Activity</h4>
+          <div className="border rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/50">
+                  <th className="p-2 text-left">Name</th>
+                  <th className="p-2 text-center">Posts</th>
+                  <th className="p-2 text-center">Todos</th>
+                  <th className="p-2 text-center">Albums</th>
+                  <th className="p-2 text-center">Completion %</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {(stats.userActivity || []).map((user, i: number) => (
+                  <tr key={i} className="border-t">
+                    <td className="p-2">{user.name}</td>
+                    <td className="p-2 text-center">{user.postCount}</td>
+                    <td className="p-2 text-center">{user.todoCount}</td>
+                    <td className="p-2 text-center">{user.albumCount}</td>
+                    <td className="p-2 text-center">
+                      <Badge
+                        variant={
+                          Number(stats.completionRates?.[user.id]) > 50 ? 'default' : 'destructive'
+                        }
+                      >
+                        {stats.completionRates?.[user.id] || 0}%
+                      </Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-        <div className="mt-4 text-xs text-muted-foreground space-y-1">
-          <p>Average words per post: {stats.avgWordCount?.toFixed(1)}</p>
-          <p>Total comments: {comments?.length}</p>
-          <p>Total albums: {albums?.length}</p>
-          <p>Calculation timestamp: {stats.calculationTimestamp}</p>
-        </div>
-      </CardContent>
-    </Card>
-  );
-});
+          <div className="mt-4 text-xs text-muted-foreground space-y-1">
+            <p>Average words per post: {stats.avgWordCount?.toFixed(1)}</p>
+            <p>Total comments: {comments?.length}</p>
+            <p>Total albums: {albums?.length}</p>
+            <p>Calculation timestamp: {stats.calculationTimestamp}</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  },
+);
 
 Analytics.displayName = 'Analytics';
 
