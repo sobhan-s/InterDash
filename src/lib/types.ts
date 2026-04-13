@@ -437,7 +437,7 @@ export interface GraphLink {
 }
 
 export interface MathPlaygroundResult {
-  matrixProduct: number[][];
+  matrixProduct: Float64Array<ArrayBuffer>[];
   determinant: number;
   mean: number;
   std: number;
