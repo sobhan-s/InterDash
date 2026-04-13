@@ -21,7 +21,7 @@ const D3Visualization = React.lazy(() => import('../D3Visualization'));
 const MathPlayground = React.lazy(() => import('../MathPlayground'));
 
 import { DashboardOverviewTabProps } from '../../lib/types';
-import { AppContext } from '@/App';
+import { AppContext } from '@/core/AppContext'; 
 
 const DashboardOverviewTab = React.memo(({
   lastUpdated,
