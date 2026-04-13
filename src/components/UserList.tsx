@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Users, Mail, Building, Phone, Globe, Info } from 'lucide-react';
 import { API_ENDPOINTS } from '../utils/constants';
-import type { DetailedUser, Post, UserListProps } from '@/lib/types';
+import type { DetailedUser, Post, UserListProps, User } from '@/lib/types';
 
 const UserListComponent = ({
   users: propUsers,
@@ -20,26 +20,30 @@ const UserListComponent = ({
 
   useEffect(() => {
     if (propUsers && propUsers.length > 0) return;
-    const cancel=new AbortController();
-    fetch(API_ENDPOINTS.users,{signal:cancel.signal})
+    const cancel = new AbortController();
+    fetch(API_ENDPOINTS.users, { signal: cancel.signal })
       .then((r) => r.json())
       .then((data) => setUsers(data))
-      .catch((error) => {if(!cancel.signal.aborted){
-        console.error('Failed to fetch users',error)
-      } });
-      return ()=>cancel.abort();
+      .catch((error) => {
+        if (!cancel.signal.aborted) {
+          console.error('Failed to fetch users', error)
+        }
+      });
+    return () => cancel.abort();
   }, [propUsers]);
 
   useEffect(() => {
     if (propPosts && propPosts.length > 0) return;
-    const cancel=new AbortController();
-    fetch(API_ENDPOINTS.posts,{signal:cancel.signal})
+    const cancel = new AbortController();
+    fetch(API_ENDPOINTS.posts, { signal: cancel.signal })
       .then((r) => r.json())
       .then((data) => setPosts(data))
-      .catch((error) => {if(!cancel.signal.aborted){
-        console.error('Failed to fetch posts',error)
-      } });
-      return ()=>cancel.abort();
+      .catch((error) => {
+        if (!cancel.signal.aborted) {
+          console.error('Failed to fetch posts', error)
+        }
+      });
+    return () => cancel.abort();
   }, [propPosts]);
 
 
@@ -55,13 +59,13 @@ const UserListComponent = ({
   }, [users, globalSearchQuery]);
 
   const sorted = useMemo(() => [...filteredUsers].sort((a, b) => {
-    const aVal = String((a as any)[sortField] ?? '').toLowerCase();
-    const bVal = String((b as any)[sortField] ?? '').toLowerCase();
+    const aVal = String((a as User)[sortField] ?? '').toLowerCase();
+    const bVal = String((b as User)[sortField] ?? '').toLowerCase();
     return aVal.localeCompare(bVal);
   }), [filteredUsers, sortField]);
 
   const selectedUser = useMemo(
-    () => sorted.find((u: any) => u.id === selectedId) ?? null,
+    () => sorted.find((u: User) => u.id === selectedId) ?? null,
     [sorted, selectedId]
   );
 
@@ -72,12 +76,12 @@ const UserListComponent = ({
     setSortField(e.target.value);
   }, []);
 
-  const handleUserClick = useCallback((user: any) => {
+  const handleUserClick = useCallback((user: User) => {
     setSelectedId(user.id);
     if (onUserClick) onUserClick(user);
   }, [onUserClick]);
 
-  const handleUserKeyDown = useCallback((e: React.KeyboardEvent, user: any) => {
+  const handleUserKeyDown = useCallback((e: React.KeyboardEvent, user: User) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       setSelectedId(user.id);
@@ -91,21 +95,21 @@ const UserListComponent = ({
     }
   }, []);
 
-  const handleMouseEnter = useCallback((e: React.MouseEvent, user: any) => {
+  const handleMouseEnter = useCallback((e: React.MouseEvent, user: User) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const tooltipWidth=200;
+    const tooltipWidth = 200;
     let top = rect.bottom + window.scrollY + 6;
 
     if (rect.bottom + 100 > window.innerHeight) {
       top = rect.top + window.scrollY - 110;
     }
 
-    let left = rect.left + window.scrollX + rect.width / 2 -tooltipWidth/2;
-    if(left+tooltipWidth>window.innerWidth+window.scrollX){
-      left=window.innerWidth+window.scrollX-tooltipWidth-10;
+    let left = rect.left + window.scrollX + rect.width / 2 - tooltipWidth / 2;
+    if (left + tooltipWidth > window.innerWidth + window.scrollX) {
+      left = window.innerWidth + window.scrollX - tooltipWidth - 10;
     }
-    if(left<window.scrollX){
-      left=window.scrollX+10
+    if (left < window.scrollX) {
+      left = window.scrollX + 10
     }
 
     setTooltip({ top, left });
@@ -147,8 +151,8 @@ const UserListComponent = ({
             <button
               key={user.id}
               className={`relative w-full text-left p-3 border rounded-lg ${selectedId === user.id
-                  ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20'
-                  : 'hover:bg-muted/50'
+                ? 'bg-blue-50 border-blue-300 dark:bg-blue-900/20'
+                : 'hover:bg-muted/50'
                 }`}
               onClick={() => handleUserClick(user)}
               onKeyDown={(e) => handleUserKeyDown(e, user)}

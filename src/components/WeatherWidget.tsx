@@ -97,7 +97,7 @@ const WeatherWidgetComponent = ({ theme, data, onCityClick }: WeatherWidgetProps
     setUnit(value);
   }, []);
 
-  const handleCityClick = useCallback((city: any) => {
+  const handleCityClick = useCallback((city: WeatherCityData) => {
     if (onCityClick) onCityClick({ ...city, timestamp: Date.now() });
 
     setExpanded((prev) => ({

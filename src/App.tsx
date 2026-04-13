@@ -59,7 +59,7 @@ export const AppContext = createContext<AppContextValue>({
   addToast: () => { },
 });
 
- const MAX_ERRORS = 20;
+const MAX_ERRORS = 20;
 class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
   { hasError: boolean; errorLog: ErrorLogEntry[] }
@@ -75,7 +75,7 @@ class ErrorBoundary extends React.Component<
     this.setState((prev) => ({
       ...prev,
       errorLog: [...prev.errorLog, { error: error.toString(), time: Date.now() }]
-      .slice(-MAX_ERRORS),
+        .slice(-MAX_ERRORS),
     }));
   }
   render() {
@@ -127,14 +127,14 @@ function App() {
     }, 3000);
   }, []);
   useEffect(() => {
-    const cancel=new AbortController();
+    const cancel = new AbortController();
     Promise.all([
-      fetch('https://jsonplaceholder.typicode.com/posts',{signal:cancel.signal}).then((r) => r.json()),
-      fetch('https://jsonplaceholder.typicode.com/users',{signal:cancel.signal}).then((r) => r.json()),
-      fetch('https://jsonplaceholder.typicode.com/todos',{signal:cancel.signal}).then((r) => r.json()),
-      fetch('https://jsonplaceholder.typicode.com/comments',{signal:cancel.signal}).then((r) => r.json()),
-      fetch('https://jsonplaceholder.typicode.com/albums',{signal:cancel.signal}).then((r) => r.json()),
-      fetch('https://jsonplaceholder.typicode.com/photos?_limit=50',{signal:cancel.signal}).then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/posts', { signal: cancel.signal }).then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/users', { signal: cancel.signal }).then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/todos', { signal: cancel.signal }).then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/comments', { signal: cancel.signal }).then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/albums', { signal: cancel.signal }).then((r) => r.json()),
+      fetch('https://jsonplaceholder.typicode.com/photos?_limit=50', { signal: cancel.signal }).then((r) => r.json()),
     ])
       .then(([p, u, t, c, al, ph]: [Post[], User[], Todo[], Comment[], Album[], Photo[]]) => {
         setPosts(p);
@@ -145,7 +145,7 @@ function App() {
         setPhotos(ph);
       })
       .catch((e) => {
-        if(!cancel.signal.aborted){
+        if (!cancel.signal.aborted) {
           console.error('Failed to fetch app data:', e)
         }
       });
@@ -182,8 +182,8 @@ function App() {
           if (parsed.debug) setDebugMode(true);
         }
       } catch (e) {
-        console.error('arbitary execution',e)
-       }
+        console.error('arbitary execution', e)
+      }
     }
   }, []);
 
@@ -192,14 +192,14 @@ function App() {
       if (event.origin !== 'http://localhost:3000') return;
 
       if (event.data && typeof event.data === 'object' && !Array.isArray(event)) {
-        const merge = (target: any, source: any) => {
+        const merge = (target: Record<string, unknown>, source: Record<string, unknown>) => {
           for (const key in source) {
             if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
               return;
             }
             if (typeof source[key] === 'object' && source[key] !== null) {
               if (!target[key]) target[key] = {};
-              merge(target[key], source[key]);
+              merge(target[key] as Record<string, unknown>, source[key] as Record<string, unknown>);
             } else {
               target[key] = source[key];
             }
@@ -255,34 +255,35 @@ function App() {
   }, []);
 
   const fetchNotifications = useCallback(async (_params: NotificationFetchParams) => {
-    const cancel=new AbortController()
+    const cancel = new AbortController()
     try {
-      const res = await fetch('https://jsonplaceholder.typicode.com/comments?_limit=5',{signal:cancel.signal});
+      const res = await fetch('https://jsonplaceholder.typicode.com/comments?_limit=5', { signal: cancel.signal });
       const data = await res.json();
       setNotifications(data);
-    } catch (e) { 
-      if(!cancel.signal.aborted){
-        console.error('Failed to fetch notifications',e)
+    } catch (e) {
+      if (!cancel.signal.aborted) {
+        console.error('Failed to fetch notifications', e)
       }
     }
   }, []);
 
   const handleThemeToggle = useCallback(() => {
-    setTheme((prev)=>{const next=prev === 'light' ? 'dark' : 'light';
-      document.documentElement.classList.toggle('dark',next==='dark');
+    setTheme((prev) => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      document.documentElement.classList.toggle('dark', next === 'dark');
       return next
     });
-    
+
   }, []);
 
- 
+
 
   const searchFilterData = useMemo(
     () => [...posts, ...users, ...todos],
     [posts, users, todos],
   );
 
- 
+
 
   const contextValue = useMemo(
     () => ({

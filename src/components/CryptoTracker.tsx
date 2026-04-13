@@ -17,16 +17,18 @@ const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
 
 
   useEffect(() => {
-  
+
     if (data && data.length > 0) return;
-    const cancel=new AbortController();
-    fetch(`${API_ENDPOINTS.crypto}?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false`,{signal:cancel.signal})
+    const cancel = new AbortController();
+    fetch(`${API_ENDPOINTS.crypto}?vs_currency=usd&order=market_cap_desc&per_page=50&page=1&sparkline=false`, { signal: cancel.signal })
       .then((r) => r.json())
       .then((d) => { if (Array.isArray(d)) setCoins(d); })
-      .catch((error) => {if(!cancel.signal.aborted){
-        console.error('Failed to fetch crypto data:',error);
-      } });
-      return()=>cancel.abort();
+      .catch((error) => {
+        if (!cancel.signal.aborted) {
+          console.error('Failed to fetch crypto data:', error);
+        }
+      });
+    return () => cancel.abort();
   }, [data]);
 
   const toggleFavorite = (coin: CryptoData) => {
@@ -38,8 +40,8 @@ const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
   const sortedPrices = (coins || [])
     .filter((p: CryptoData) => p.name?.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
-      const aVal = (a as any)[sortBy];
-      const bVal = (b as any)[sortBy];
+      const aVal = (a as CryptoData)[sortBy];
+      const bVal = (b as CryptoData)[sortBy];
       if (aVal < bVal) return sortDir === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortDir === 'asc' ? 1 : -1;
       return 0;
@@ -150,7 +152,7 @@ const CryptoTracker = ({ theme, data, onSelect }: CryptoTrackerProps) => {
           </table>
         </div>
         <p className="text-[11px] text-muted-foreground mt-2">
-          Last updated: {format(new Date(), 'HH:mm:ss')} 
+          Last updated: {format(new Date(), 'HH:mm:ss')}
         </p>
       </CardContent>
     </Card>

@@ -96,7 +96,7 @@ const handleExpand = useCallback(
   )
 
   const handlePostClick = useCallback(
-    (post: any) => {
+    (post: Post) => {
       if (onPostClick) onPostClick(post)
     },
     [onPostClick]

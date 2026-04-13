@@ -3,13 +3,24 @@ import * as mathjs from 'mathjs';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Calculator } from 'lucide-react';
-import { MathPlaygroundProps } from '@/lib/types';
+import { MathPlaygroundProps, MathPlaygroundResult } from '@/lib/types';
 
-const MathPlaygroundComponent = ({  theme }: MathPlaygroundProps) => {
+const MathPlaygroundComponent = ({ theme }: MathPlaygroundProps) => {
   const [matrix, setMatrix] = useState<number[][]>([]);
 
   const results = useMemo(() => {
-    const r: any = {};
+    const r: MathPlaygroundResult = {
+      matrixProduct: [],
+      determinant: 0,
+      mean: 0,
+      std: 0,
+      median: 0,
+      variance: 0,
+      expr1: 0,
+      expr2: 0,
+      expr3: 0,
+      fib: []
+    };
 
     const size = 50;
 
@@ -21,17 +32,17 @@ const MathPlaygroundComponent = ({  theme }: MathPlaygroundProps) => {
       Array.from({ length: size }, () => Math.random() * 20 - 10),
     );
 
-  
+
     r.matrixProduct = mathjs.multiply(A, B);
     r.determinant = mathjs.det(A);
 
-    
+
     const bigDataset = Array.from({ length: 20000 }, () => Math.random() * 1000);
 
     r.mean = mathjs.mean(bigDataset);
-    r.std = mathjs.std(bigDataset);
+    r.std = mathjs.std(bigDataset) as unknown as number;
     r.median = mathjs.median(bigDataset);
-    r.variance = mathjs.variance(bigDataset);
+    r.variance = mathjs.variance(bigDataset) as unknown as number;
 
     // Expressions
     r.expr1 = Math.sin(Math.PI / 4) * Math.cos(Math.PI / 3);
@@ -60,7 +71,7 @@ const MathPlaygroundComponent = ({  theme }: MathPlaygroundProps) => {
 
       <CardContent>
         <div className="grid grid-cols-2 gap-4 text-sm">
-          
+
           <div>
             <h4 className="font-medium text-xs mb-2">Statistics</h4>
             <div className="space-y-1 text-xs">
@@ -94,7 +105,7 @@ const MathPlaygroundComponent = ({  theme }: MathPlaygroundProps) => {
           </div>
         </div>
 
-        
+
         <div className="mt-3">
           <h4 className="font-medium text-xs mb-2">5×5 Matrix Preview</h4>
           <div className="overflow-auto">
