@@ -23,39 +23,36 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
   }, [selectedPhoto]);
 
   useEffect(() => {
-  const cancel = new AbortController();
+    const cancel = new AbortController();
 
-  const fetchPhotos = async () => {
-    setLoading(true);
-    try {
-      if (propPhotos?.length) {
-        setPhotos(propPhotos);
-      } else {
-        const res = await fetch(
-          `${API_ENDPOINTS.photos}?_limit=100`,
-          { signal: cancel.signal }
-        );
-        const data = await res.json();
+    const fetchPhotos = async () => {
+      setLoading(true);
+      try {
+        if (propPhotos?.length) {
+          setPhotos(propPhotos);
+        } else {
+          const res = await fetch(`${API_ENDPOINTS.photos}?_limit=100`, { signal: cancel.signal });
+          const data = await res.json();
 
+          if (!cancel.signal.aborted) {
+            setPhotos(data);
+          }
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          setPhotos([]);
+        }
+      } finally {
         if (!cancel.signal.aborted) {
-          setPhotos(data);
+          setLoading(false);
         }
       }
-    } catch (e) {
-      if (e.name !== 'AbortError') {
-        setPhotos([]);
-      }
-    } finally {
-      if (!cancel.signal.aborted) {
-        setLoading(false);
-      }
-    }
-  };
+    };
 
-  fetchPhotos();
+    fetchPhotos();
 
-  return () => cancel.abort();
-}, [propPhotos]);
+    return () => cancel.abort();
+  }, [propPhotos]);
 
   const handleSelectPhoto = useCallback((photo: Photo) => {
     setSelectedPhoto(photo);
@@ -127,6 +124,10 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
                     alt={photo.title}
                     loading="lazy"
                     className="w-[110px] h-[110px] object-cover rounded"
+                    onError={(e) => {
+                      e.currentTarget.src = `https://picsum.photos/seed/${photo.id}/110/110`;
+                      e.currentTarget.onerror = null;
+                    }}
                   />
                 </button>
               ))}
@@ -147,8 +148,13 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
                 src={selectedPhoto.url}
                 alt={selectedPhoto.title}
                 className="max-w-[80vw] max-h-[80vh] rounded-lg"
+                onError={(e) => {
+                  e.currentTarget.src = `https://picsum.photos/seed/${selectedPhoto.id}/800/600`;
+                  e.currentTarget.onerror = null;
+                }}
               />
-              <p className="mt-3 text-sm text-white text-center">{selectedPhoto.title}</p>
+              That's the only two places. Nothing else in the file needs changing.Want to be
+              notified w<p className="mt-3 text-sm text-white text-center">{selectedPhoto.title}</p>
             </div>
           </div>
         )}
