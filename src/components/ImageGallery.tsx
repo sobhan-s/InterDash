@@ -88,6 +88,7 @@ const ImageGalleryComponent = ({ photos: propPhotos }: ImageGalleryProps) => {
               value={columns}
               onChange={handleColumnChange}
               className="w-20"
+              aria-label='columns-range-input'
             />
             <span className="text-muted-foreground">{columns}</span>
           </div>

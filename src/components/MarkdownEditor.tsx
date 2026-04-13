@@ -112,6 +112,7 @@ function hello() {
               value={markdown}
               onChange={handleChange}
               className="w-full h-[300px] p-3 font-mono text-sm border rounded-md resize-y bg-background"
+              aria-label='markdown-editor-textarea'
             />
           </div>
 
