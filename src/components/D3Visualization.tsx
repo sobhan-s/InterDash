@@ -16,8 +16,6 @@ interface D3VisualizationProps {
   theme: string
 }
 
-// Custom comparator: only re-render when data length or theme changes.
-// counter is intentionally excluded — it never affects the graph output.
 const arePropsEqual = (prev: D3VisualizationProps, next: D3VisualizationProps) =>
   prev.data.length === next.data.length && prev.theme === next.theme;
 

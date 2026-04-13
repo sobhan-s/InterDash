@@ -52,6 +52,7 @@ const CustomTabPanel = ({ tabs, title }: CustomTabPanelProps) => {
 
     if (nextIndex !== i) {
       e.preventDefault();
+      setActiveIndex(nextIndex);
       tabRefs.current[nextIndex]?.focus();
     }
   };
