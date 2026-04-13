@@ -10,11 +10,7 @@ import {
 import { schemeCategory10 } from 'd3-scale-chromatic'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { GitBranch } from 'lucide-react'
-
-interface D3VisualizationProps {
-  data: any[]
-  theme: string
-}
+import { D3VisualizationProps, RawData, GraphNode, GraphLink } from '@/lib/types'
 
 const arePropsEqual = (prev: D3VisualizationProps, next: D3VisualizationProps) =>
   prev.data.length === next.data.length && prev.theme === next.theme;
@@ -24,13 +20,13 @@ const D3Visualization = React.memo(({ data, theme }: D3VisualizationProps) => {
   const [dimensions] = useState({ width: 600, height: 300 })
 
   const graph = useMemo(() => {
-    const nodes = data.slice(0, 50).map((d: any, i: number) => ({
+    const nodes: GraphNode[] = data.slice(0, 50).map((d: RawData, i: number) => ({
       id: d.id || i,
       name: d.title || d.name || `Item ${i}`,
       value: ((d.id || i) % 100) + 1,
     }))
 
-    const links = nodes.slice(1).map((node, i) => ({
+    const links: GraphLink[] = nodes.slice(1).map((node, i) => ({
       source: nodes[Math.max(0, Math.floor(i / 2))],
       target: node,
     }))
@@ -52,8 +48,8 @@ const D3Visualization = React.memo(({ data, theme }: D3VisualizationProps) => {
 
     const { nodes, links } = graph
 
-    const simulation = forceSimulation(nodes as any)
-      .force('link', forceLink(links as any).id((d: any) => d.id).distance(50))
+    const simulation = forceSimulation<GraphNode>(nodes)
+      .force('link', forceLink<GraphNode, GraphLink>(links).id((d) => d.id).distance(50))
       .force('charge', forceManyBody().strength(-100))
       .force('center', forceCenter(width / 2, height / 2))
       .force('collision', forceCollide().radius(15))
@@ -70,26 +66,26 @@ const D3Visualization = React.memo(({ data, theme }: D3VisualizationProps) => {
       .selectAll('circle')
       .data(nodes)
       .join('circle')
-      .attr('r', (d: any) => 3 + d.value / 20)
-      .attr('fill', (d: any, i: number) => schemeCategory10[i % 10])
+      .attr('r', (d: GraphNode) => 3 + d.value / 20)
+      .attr('fill', (d: GraphNode, i: number) => schemeCategory10[i % 10])
       .attr('stroke', '#fff')
       .attr('stroke-width', 1.5)
 
-    node.append('title').text((d: any) => d.name)
+    node.append('title').text((d: GraphNode) => d.name)
 
     simulation.on('tick', () => {
       link
-        .attr('x1', (d: any) => d.source.x)
-        .attr('y1', (d: any) => d.source.y)
-        .attr('x2', (d: any) => d.target.x)
-        .attr('y2', (d: any) => d.target.y)
+        .attr('x1', (d: GraphLink) => d.source.x)
+        .attr('y1', (d: GraphLink) => d.source.y)
+        .attr('x2', (d: GraphLink) => d.target.x)
+        .attr('y2', (d: GraphLink) => d.target.y)
 
       node
-        .attr('cx', (d: any) => d.x)
-        .attr('cy', (d: any) => d.y)
+        .attr('cx', (d: GraphNode) => d.x)
+        .attr('cy', (d: GraphNode) => d.y)
     })
 
-    
+
     return () => { simulation.stop() }
   }, [graph, dimensions])
 
@@ -106,7 +102,7 @@ const D3Visualization = React.memo(({ data, theme }: D3VisualizationProps) => {
           <svg ref={svgRef} width={dimensions.width} height={dimensions.height} className="w-full" />
         </div>
         <p className="text-xs text-muted-foreground mt-2">
-          Nodes: {Math.min(data?.length || 0, 50)} 
+          Nodes: {Math.min(data?.length || 0, 50)}
         </p>
       </CardContent>
     </Card>

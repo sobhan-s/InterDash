@@ -239,7 +239,7 @@ export interface AnalyticsProps {
   albums: Album[];
   photos: Photo[];
   theme: string;
-  
+
 }
 
 export interface DataChartProps {
@@ -346,6 +346,12 @@ export interface DashboardModalProps {
   onClose: () => void;
 }
 
+export interface ProfileFormData {
+  profileName?: string;
+  profileEmail?: string;
+  profileBio?: string;
+}
+
 export interface DashboardOverviewTabProps {
   theme: string;
   globalSearchQuery: string;
@@ -358,7 +364,7 @@ export interface DashboardOverviewTabProps {
   comments: Comment[];
   albums: Album[];
   photos: Photo[];
-  formData: Record<string, unknown>;
+  formData: ProfileFormData;
   validationErrors: Record<string, string>;
   onSelectItem: (item: unknown) => void;
   onOpenModal: (content: unknown) => void;
@@ -404,4 +410,41 @@ export interface UseDashboardStateOptions {
   albums: Album[];
   setTodos: React.Dispatch<React.SetStateAction<Todo[]>>;
   addToast: (message: string, type?: 'info' | 'success' | 'error') => void;
+}
+
+export interface D3VisualizationProps {
+  data: RawData[];
+  theme: string;
+}
+
+export interface RawData {
+  id?: number;
+  title?: string;
+  name?: string;
+}
+
+export interface GraphNode {
+  id: number | string;
+  name: string;
+  value: number;
+  x?: number;
+  y?: number;
+}
+
+export interface GraphLink {
+  source: GraphNode;
+  target: GraphNode;
+}
+
+export interface MathPlaygroundResult {
+  matrixProduct: number[][];
+  determinant: number;
+  mean: number;
+  std: number;
+  median: number;
+  variance: number;
+  expr1: number;
+  expr2: number;
+  expr3: number;
+  fib: number[];
 }

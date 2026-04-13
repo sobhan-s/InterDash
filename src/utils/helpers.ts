@@ -11,7 +11,7 @@ export const formatCurrency = (amount: number): string => {
 
 export const debounce = (func: Function, wait: number) => {
   let timeout: ReturnType<typeof setTimeout>
-  return function executedFunction(...args: any[]) {
+  return function executedFunction(...args: unknown[]) {
     const later = () => {
       clearTimeout(timeout)
       func(...args)
@@ -21,7 +21,7 @@ export const debounce = (func: Function, wait: number) => {
   }
 }
 
-export const deepClone = (obj: any): any => {
+export const deepClone = (obj: unknown): unknown => {
   return JSON.parse(JSON.stringify(obj))
 }
 
@@ -29,11 +29,11 @@ export const capitalizeFirst = (str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1)
 }
 
-export const shuffle = (array: any[]): any[] => {
+export const shuffle = (array: unknown[]): unknown[] => {
   const arr = [...array]
   for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr
 }

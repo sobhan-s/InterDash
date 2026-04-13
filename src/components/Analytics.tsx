@@ -3,7 +3,7 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Activity, Users, FileText, CheckSquare, Image } from 'lucide-react';
-import type { AnalyticsProps, AnalyticsStats, Todo } from '@/lib/types';
+import type { Album, AnalyticsProps, AnalyticsStats, Post, Todo } from '@/lib/types';
 
 import {
   BarChart as ReBarChart,
@@ -64,20 +64,20 @@ const Analytics = React.memo(({
     const postsByUser = posts.reduce((acc, p) => {
       (acc[p.userId] ??= []).push(p);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, Post[]>);
 
     const todosByUser = todos.reduce((acc, t) => {
       (acc[t.userId] ??= []).push(t);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, Todo[]>);
 
     const albumsByUser = albums.reduce((acc, a) => {
       (acc[a.userId] ??= []).push(a);
       return acc;
-    }, {} as Record<string, any[]>);
+    }, {} as Record<string, Album[]>);
 
     result.completionRates = {} as Record<string, string>;
-    Object.entries(todosByUser).forEach(([userId, userTodos]: [string, any[]]) => {
+    Object.entries(todosByUser).forEach(([userId, userTodos]: [string, Todo[]]) => {
       const completed = userTodos.filter((t: Todo) => t.completed).length;
       result.completionRates![userId] = ((completed / userTodos.length) * 100).toFixed(1);
     });

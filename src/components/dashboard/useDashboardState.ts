@@ -1,7 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { SortOrder, UseDashboardStateOptions, Post } from '../../lib/types';
-
-
+import type { SortOrder, UseDashboardStateOptions, Post, ProfileFormData } from '../../lib/types';
 
 export const useDashboardState = ({
   posts,
@@ -17,7 +15,7 @@ export const useDashboardState = ({
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState<unknown>(null);
   const [page, setPage] = useState(1);
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<ProfileFormData>({});
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const toggleTimeoutsRef = useRef<number[]>([]);
   const itemsPerPage = 10;
@@ -25,7 +23,7 @@ export const useDashboardState = ({
   const openModal = useCallback((content: unknown) => {
     setModalContent(content);
     setModalOpen(true);
-  }, []); 
+  }, []);
 
   const closeModal = useCallback(() => {
     setModalOpen(false);
@@ -62,7 +60,7 @@ export const useDashboardState = ({
     setSelectedItems((currentItems) => [...currentItems.slice(-50), item]);
   }, []);
 
-  
+
   const getSortedAndFilteredPosts = useCallback(() => {
     let filteredPosts = posts;
 
@@ -96,7 +94,7 @@ export const useDashboardState = ({
     }));
   }, []);
 
-  
+
   const formDataRef = useRef(formData);
   useEffect(() => {
     formDataRef.current = formData;
@@ -120,7 +118,7 @@ export const useDashboardState = ({
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
-  }, []); 
+  }, []);
 
   const handleProfileSave = useCallback(() => {
     const isValid = validateForm();
