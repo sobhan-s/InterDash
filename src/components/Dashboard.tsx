@@ -28,7 +28,6 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
     albums,
     photos,
     loading,
-    error,
     lastUpdated,
     setTodos,
   } = useDashboardData({
@@ -88,8 +87,7 @@ const Dashboard = ({ theme, globalSearchQuery }: DashboardProps) => {
     );
   }
 
-  if (error) {
-  }
+  
 
   return (
     <div>
